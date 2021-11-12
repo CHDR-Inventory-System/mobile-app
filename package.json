@@ -10,8 +10,8 @@
     "precommit": "lint-staged",
     "lint": "eslint .",
     "check-types": "tsc --noemit",
-    "format": "prettier --write './**/*{.ts,.tsx}'",
-    "format:check": "prettier --check './**/*{.ts,.tsx}'"
+    "format": "prettier --write \"./**/*{.ts,.tsx}\"",
+    "format:check": "prettier --check \"./**/*{.ts,.tsx}\""
   },
   "engines": {
     "node": "^14.17.0 || >=16.0.0"
