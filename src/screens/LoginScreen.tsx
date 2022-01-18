@@ -15,7 +15,7 @@ import Button from '../components/Button';
 import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { platformValue } from '../util/platform';
-import Alert from '../components/Alert';
+import Alert, { AlertProps } from '../components/Alert';
 
 type Credentials = {
   email: string;
@@ -25,16 +25,16 @@ type Credentials = {
 type ErrorObject = {
   title: string;
   message: string;
+  type: AlertProps['type'];
 };
-
-const Spacer = () => <View style={{ flex: 1 }} />;
 
 const LoginScreen = (): JSX.Element => {
   const [isAlertShowing, setShowAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorObject, setErrorObject] = useState<ErrorObject>({
     title: '',
-    message: ''
+    message: '',
+    type: undefined
   });
 
   // TODO: Implement login once the API is available
@@ -46,15 +46,15 @@ const LoginScreen = (): JSX.Element => {
     // This should be removed when login is actually implemented
     setIsLoading(true);
     setShowAlert(false);
-
     setTimeout(() => {
       setErrorObject({
         title: 'Invalid credentials',
-        message: 'Make sure your email and password are both correct and try again.'
+        message: 'Make sure your email and password are both correct and try again.',
+        type: 'error'
       });
       setShowAlert(true);
       setIsLoading(false);
-    }, 3000);
+    }, 1000);
   };
 
   return (
@@ -73,36 +73,38 @@ const LoginScreen = (): JSX.Element => {
               onSubmit={login}
             >
               {({ handleChange, handleBlur, handleSubmit }) => (
-                <View style={{ flex: 1 }}>
-                  <View style={styles.header}>
-                    <Text style={styles.title}>CHDR Inventory</Text>
-                    <Text style={styles.subtitle}>Barcode Scanner</Text>
+                <View style={styles.formContentContainer}>
+                  <View>
+                    <View style={styles.header}>
+                      <Text style={styles.title}>CHDR Inventory</Text>
+                      <Text style={styles.subtitle}>Barcode Scanner</Text>
+                    </View>
+                    <View style={styles.inputContainer}>
+                      <LabeledInput
+                        autoCapitalize="none"
+                        onBlur={handleBlur('email')}
+                        label="Email"
+                        keyboardType="email-address"
+                        style={styles.input}
+                        onChangeText={handleChange('email')}
+                      />
+                      <LabeledInput
+                        onBlur={handleBlur('password')}
+                        label="Password"
+                        secureTextEntry
+                        style={styles.input}
+                        onChangeText={handleChange('password')}
+                      />
+                      {isAlertShowing && (
+                        <Alert
+                          type={errorObject.type}
+                          title={errorObject.title}
+                          message={errorObject.message}
+                          onClose={() => setShowAlert(false)}
+                        />
+                      )}
+                    </View>
                   </View>
-                  <View style={styles.inputContainer}>
-                    <LabeledInput
-                      autoCapitalize="none"
-                      onBlur={handleBlur('email')}
-                      label="Email"
-                      keyboardType="email-address"
-                      style={styles.input}
-                      onChangeText={handleChange('email')}
-                    />
-                    <LabeledInput
-                      onBlur={handleBlur('password')}
-                      label="Password"
-                      secureTextEntry
-                      style={styles.input}
-                      onChangeText={handleChange('password')}
-                    />
-                  </View>
-                  {isAlertShowing && (
-                    <Alert
-                      title={errorObject.title}
-                      message={errorObject.message}
-                      onClose={() => setShowAlert(false)}
-                    />
-                  )}
-                  <Spacer />
                   <Button
                     text="Login"
                     onPress={handleSubmit}
@@ -125,6 +127,10 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 24,
     marginRight: 24
+  },
+  formContentContainer: {
+    flex: 1,
+    justifyContent: 'space-between'
   },
   header: {
     paddingTop: platformValue(64, 42),

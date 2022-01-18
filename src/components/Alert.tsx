@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 
-type AlertProps = {
+export type AlertProps = {
   title: string;
   message: string;
   type?: 'warning' | 'error';
