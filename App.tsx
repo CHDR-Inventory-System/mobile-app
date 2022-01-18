@@ -4,8 +4,12 @@ import AppLoading from 'expo-app-loading';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/LoginScreen';
+import MainScreen from './src/screens/MainScreen';
+import Navbar from './src/components/Navbar';
+import { Portal, PortalProvider } from '@gorhom/portal';
+import { RootStackParamsList } from './src/types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
   const [fontsLoaded] = useFonts({
@@ -19,21 +23,33 @@ const App = (): JSX.Element => {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{
-            headerShown: false,
-            gestureEnabled: false,
-            contentStyle: {
-              backgroundColor: 'white'
-            }
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <PortalProvider>
+      <Portal>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Login"
+            screenOptions={{
+              gestureEnabled: false,
+              contentStyle: {
+                backgroundColor: '#FFF'
+              },
+              header: () => <Navbar />
+            }}
+          >
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Main"
+              component={MainScreen}
+              options={{ headerShown: true }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Portal>
+    </PortalProvider>
   );
 };
 

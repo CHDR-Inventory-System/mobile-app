@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 
-type AlertProps = {
+export type AlertProps = {
   title: string;
   message: string;
   type?: 'warning' | 'error';
@@ -16,7 +16,7 @@ const Alert = ({
   onClose = () => {}
 }: AlertProps): JSX.Element => {
   return (
-    <TouchableOpacity onPress={onClose}>
+    <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
       <View style={[styles.container, type === 'error' ? styles.error : styles.warning]}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.message}>{message}</Text>
