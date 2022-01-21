@@ -30,7 +30,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
       <BottomSheet
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        snapPoints={['25%']}
+        snapPoints={['30%']}
         backgroundStyle={styles.backgroundStyle}
         onClose={onClose}
       >

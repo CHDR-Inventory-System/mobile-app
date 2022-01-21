@@ -10,10 +10,11 @@ import { RouteProp } from '@react-navigation/native';
 export type RootStackParamsList = {
   Login: undefined;
   Main: undefined;
+  BarcodeScanner: undefined;
 };
 
 /**
- * This type should be passed to the `useNavigation` hook so TypeScript can determine
+ * This type should be used with the `useNavigation` hook so TypeScript can determine
  * what parameters (if any) a route should take.
  *
  * @example
@@ -27,7 +28,7 @@ export type NavigationProps = NativeStackNavigationProp<
 >;
 
 /**
- * This type should be passed to the `useRoute` hook so TypeScript
+ * This type should be used with the `useRoute` hook so TypeScript
  * can determine what properties a route has.
  *
  * @example

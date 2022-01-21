@@ -8,6 +8,7 @@ import MainScreen from './src/screens/MainScreen';
 import Navbar from './src/components/Navbar';
 import { Portal, PortalProvider } from '@gorhom/portal';
 import { RootStackParamsList } from './src/types/navigation';
+import BarcodeScanner from './src/screens/BarcodeScanner';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -45,6 +46,14 @@ const App = (): JSX.Element => {
               name="Main"
               component={MainScreen}
               options={{ headerShown: true }}
+            />
+            <Stack.Screen
+              name="BarcodeScanner"
+              component={BarcodeScanner}
+              options={{
+                headerShown: false,
+                gestureEnabled: true
+              }}
             />
           </Stack.Navigator>
         </NavigationContainer>
