@@ -3,19 +3,18 @@ import axios from 'axios';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.headers.put['Content-Type'] = 'application/json';
-axios.defaults.baseURL = process.env.NODE_ENV === 'development' ? 'http://localhost:4565/api' : '/csi/api';
+axios.defaults.baseURL =
+  process.env.NODE_ENV === 'development' ? 'http://localhost:4565/api' : '/csi/api';
 
-class loginAPI {
-  static async login(nid: string, password: string): Promise <string> {
-    const response = await axios.get('/user', {
-      params: {
-        Nid: nid,
-        Password: password
-      }
+class API {
+  static async login(nid: string, password: string): Promise<string> {
+    const response = await axios.post('/users/login', {
+      nid,
+      password
     });
 
     return response.data;
   }
 }
 
-export default loginAPI;
+export default API;

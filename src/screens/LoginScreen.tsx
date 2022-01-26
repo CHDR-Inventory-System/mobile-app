@@ -19,7 +19,6 @@ import Alert, { AlertProps } from '../components/Alert';
 import loginAPI from '../util/loginAPI';
 import { AxiosError } from 'axios';
 
-
 type Credentials = {
   nid: string;
   password: string;
@@ -40,23 +39,24 @@ const LoginScreen = (): JSX.Element => {
     type: undefined
   });
 
-  // login function called when login button is pressed 
+  // login function called when login button is pressed
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     setIsLoading(true);
-    // seee if either nid or password field is empty, if it is display error 
-    if(credentials.nid == '' || credentials.password == '') {
-       setErrorObject({
-            title: 'Field Empty',
-            message: 'One or both fields are empty .',
-            type: 'error'
-          });
-          setShowAlert(true);
-          setIsLoading(false);
+    // seee if either nid or password field is empty, if it is display error
+    if (credentials.nid == '' || credentials.password == '') {
+      setErrorObject({
+        title: 'Field Empty',
+        message: 'One or both fields are empty .',
+        type: 'error'
+      });
+      setShowAlert(true);
+      setIsLoading(false);
     }
-    // otherwise call loginApi and check if credentials match, if not display error as seen fit 
+    // otherwise call loginApi and check if credentials match, if not display error as seen fit
     else {
-      loginAPI.login(credentials.nid, credentials.password)
+      loginAPI
+        .login(credentials.nid, credentials.password)
         .then(() => new Error('Not Implemented'))
         .catch((err: AxiosError) => {
           if (err.response?.status === 404) {
@@ -66,7 +66,6 @@ const LoginScreen = (): JSX.Element => {
               type: 'error'
             });
             setShowAlert(true);
-
           } else {
             setErrorObject({
               title: 'Server Error',
@@ -80,7 +79,6 @@ const LoginScreen = (): JSX.Element => {
     }
   };
 
-    
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
