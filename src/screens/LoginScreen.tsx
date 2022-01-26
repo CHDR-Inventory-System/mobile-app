@@ -18,7 +18,6 @@ import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
 import loginAPI from '../util/loginAPI';
 import { AxiosError } from 'axios';
-import { ExceptionMap } from 'antd/lib/result';
 
 
 type Credentials = {
@@ -53,7 +52,7 @@ const LoginScreen = (): JSX.Element => {
             type: 'error'
           });
           setShowAlert(true);
-          setIsLoading(false)
+          setIsLoading(false);
     }
     // otherwise call loginApi and check if credentials match, if not display error as seen fit 
     else {
@@ -78,8 +77,8 @@ const LoginScreen = (): JSX.Element => {
           }
         })
         .finally(() => setIsLoading(false));
-    };
-  }
+    }
+  };
 
     
   return (
@@ -134,7 +133,7 @@ const LoginScreen = (): JSX.Element => {
                     text="Login"
                     onPress={handleSubmit}
                     style={styles.loginButton}
-                    disabled={isLoading }
+                    disabled={isLoading}
                   />
                 </View>
               )}
