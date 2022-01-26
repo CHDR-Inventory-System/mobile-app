@@ -16,9 +16,13 @@ import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
+import loginAPI from '../util/loginAPI';
+import { AxiosError } from 'axios';
+import { ExceptionMap } from 'antd/lib/result';
+
 
 type Credentials = {
-  email: string;
+  nid: string;
   password: string;
 };
 
@@ -37,26 +41,47 @@ const LoginScreen = (): JSX.Element => {
     type: undefined
   });
 
-  // TODO: Implement login once the API is available
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // login function called when login button is pressed 
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
-
-    // TODO: Dummy code below to simulate loading and errors.
-    // This should be removed when login is actually implemented
     setIsLoading(true);
-    setShowAlert(false);
-    setTimeout(() => {
-      setErrorObject({
-        title: 'Invalid credentials',
-        message: 'Make sure your email and password are both correct and try again.',
-        type: 'error'
-      });
-      setShowAlert(true);
-      setIsLoading(false);
-    }, 1000);
-  };
+    // seee if either nid or password field is empty, if it is display error 
+    if(credentials.nid == '' || credentials.password == '') {
+       setErrorObject({
+            title: 'Field Empty',
+            message: 'One or both fields are empty .',
+            type: 'error'
+          });
+          setShowAlert(true);
+          setIsLoading(false)
+    }
+    // otherwise call loginApi and check if credentials match, if not display error as seen fit 
+    else {
+      loginAPI.login(credentials.nid, credentials.password)
+        .then(() => new Error('Not Implemented'))
+        .catch((err: AxiosError) => {
+          if (err.response?.status === 404) {
+            setErrorObject({
+              title: 'Invalid Credentials',
+              message: 'Make sure your NID and password are correct and try again.',
+              type: 'error'
+            });
+            setShowAlert(true);
 
+          } else {
+            setErrorObject({
+              title: 'Server Error',
+              message: 'An unexpected error occurred, please try again.',
+              type: 'error'
+            });
+            setShowAlert(true);
+          }
+        })
+        .finally(() => setIsLoading(false));
+    };
+  }
+
+    
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -67,7 +92,7 @@ const LoginScreen = (): JSX.Element => {
           <View style={{ flex: 1 }}>
             <Formik
               initialValues={{
-                email: '',
+                nid: '',
                 password: ''
               }}
               onSubmit={login}
@@ -82,11 +107,11 @@ const LoginScreen = (): JSX.Element => {
                     <View style={styles.inputContainer}>
                       <LabeledInput
                         autoCapitalize="none"
-                        onBlur={handleBlur('email')}
-                        label="Email"
-                        keyboardType="email-address"
+                        onBlur={handleBlur('nid')}
+                        label="NID"
+                        //keyboardType="default"
                         style={styles.input}
-                        onChangeText={handleChange('email')}
+                        onChangeText={handleChange('nid')}
                       />
                       <LabeledInput
                         onBlur={handleBlur('password')}
@@ -109,7 +134,7 @@ const LoginScreen = (): JSX.Element => {
                     text="Login"
                     onPress={handleSubmit}
                     style={styles.loginButton}
-                    disabled={isLoading}
+                    disabled={isLoading }
                   />
                 </View>
               )}
