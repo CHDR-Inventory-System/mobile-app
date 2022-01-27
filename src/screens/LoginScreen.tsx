@@ -16,7 +16,7 @@ import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
-import loginAPI from '../util/loginAPI';
+import loginAPI from '../util/API';
 import { AxiosError } from 'axios';
 
 type Credentials = {
@@ -44,39 +44,38 @@ const LoginScreen = (): JSX.Element => {
     Keyboard.dismiss();
     setIsLoading(true);
     // seee if either nid or password field is empty, if it is display error
-    if (credentials.nid == '' || credentials.password == '') {
+    if (credentials.nid === '' || credentials.password === '') {
       setErrorObject({
-        title: 'Field Empty',
-        message: 'One or both fields are empty .',
+        title: 'Missing Field',
+        message: 'Your NID and/or password are required Please fill and try again',
         type: 'error'
       });
       setShowAlert(true);
       setIsLoading(false);
+      return 0;
     }
     // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    else {
-      loginAPI
-        .login(credentials.nid, credentials.password)
-        .then(() => new Error('Not Implemented'))
-        .catch((err: AxiosError) => {
-          if (err.response?.status === 404) {
-            setErrorObject({
-              title: 'Invalid Credentials',
-              message: 'Make sure your NID and password are correct and try again.',
-              type: 'error'
-            });
-            setShowAlert(true);
-          } else {
-            setErrorObject({
-              title: 'Server Error',
-              message: 'An unexpected error occurred, please try again.',
-              type: 'error'
-            });
-            setShowAlert(true);
-          }
-        })
-        .finally(() => setIsLoading(false));
-    }
+    loginAPI.login(credentials.nid, credentials.password)
+      .then(() => new Error('Not Implemented'))
+      .catch((err: AxiosError) => {
+        if (err.response?.status === 404) {
+          setErrorObject({
+            title: 'Invalid Credentials',
+            message: 'Make sure your NID and password are correct and try again.',
+            type: 'error'
+          });
+          setShowAlert(true);
+        } else {
+          setErrorObject({
+            title: 'Server Error',
+            message: 'An unexpected error occurred, please try again.',
+            type: 'error'
+          });
+          setShowAlert(true);
+        }
+      })
+      .finally(() => setIsLoading(false));
+
   };
 
   return (
