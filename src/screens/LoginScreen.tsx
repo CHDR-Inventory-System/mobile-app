@@ -55,7 +55,8 @@ const LoginScreen = (): JSX.Element => {
       return 0;
     }
     // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    loginAPI.login(credentials.nid, credentials.password)
+    loginAPI
+      .login(credentials.nid, credentials.password)
       .then(() => new Error('Not Implemented'))
       .catch((err: AxiosError) => {
         if (err.response?.status === 404) {
@@ -75,7 +76,6 @@ const LoginScreen = (): JSX.Element => {
         }
       })
       .finally(() => setIsLoading(false));
-
   };
 
   return (
@@ -106,6 +106,7 @@ const LoginScreen = (): JSX.Element => {
                         onBlur={handleBlur('nid')}
                         label="NID"
                         //keyboardType="default"
+                        placeholder="*UCF NID"
                         style={styles.input}
                         onChangeText={handleChange('nid')}
                       />
@@ -113,6 +114,7 @@ const LoginScreen = (): JSX.Element => {
                         onBlur={handleBlur('password')}
                         label="Password"
                         secureTextEntry
+                        placeholder="*UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
                       />
