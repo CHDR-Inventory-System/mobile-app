@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { Item } from './API';
+import { Item, User, JWT } from './API';
 
 /**
  * A list of routes/screens and the props that each screen takes. Whenever
@@ -10,7 +10,7 @@ import { Item } from './API';
  */
 export type RootStackParamsList = {
   Login: undefined;
-  Main: undefined;
+  Main: User & JWT;
   BarcodeScanner: undefined;
   ItemDetail: Item;
 };

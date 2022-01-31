@@ -41,7 +41,6 @@ const LoginScreen = (): JSX.Element => {
     type: undefined
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigation = useNavigation<NavigationProps>();
 
   // login function called when login button is pressed
@@ -49,7 +48,7 @@ const LoginScreen = (): JSX.Element => {
     Keyboard.dismiss();
     setIsLoading(true);
 
-    // seee if either nid or password field is empty, if it is display error
+    // see if either nid or password field is empty, if it is display error
     if (credentials.nid === '' || credentials.password === '') {
       setErrorObject({
         title: 'Missing Field',
@@ -61,27 +60,28 @@ const LoginScreen = (): JSX.Element => {
       return;
     }
 
-    // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    API.login(credentials.nid, credentials.password)
-      .then(() => new Error('Not Implemented'))
-      .catch((err: AxiosError) => {
-        if (err.response?.status === 404) {
-          setErrorObject({
-            title: 'Invalid Credentials',
-            message: 'Make sure your NID and password are correct and try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        } else {
-          setErrorObject({
-            title: 'Server Error',
-            message: 'An unexpected error occurred, please try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        }
-      })
-      .finally(() => setIsLoading(false));
+    try {
+      const user = await API.login(credentials.nid, credentials.password);
+      setIsLoading(false);
+      navigation.navigate('Main', user);
+    } catch (err) {
+      if ((err as AxiosError).response?.status === 404) {
+        setErrorObject({
+          title: 'Invalid Credentials',
+          message: 'Make sure your NID and password are correct and try again.',
+          type: 'error'
+        });
+      } else {
+        setErrorObject({
+          title: 'Server Error',
+          message: 'An unexpected error occurred, please try again.',
+          type: 'error'
+        });
+      }
+
+      setIsLoading(false);
+      setShowAlert(true);
+    }
   };
 
   return (

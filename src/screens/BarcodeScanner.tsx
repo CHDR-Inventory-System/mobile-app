@@ -84,7 +84,7 @@ const BarcodeScanner = (): JSX.Element => {
             paddingTop: 16 + insets.bottom
           }}
         >
-          <TouchableOpacity onPress={() => navigation.navigate('Main')} activeOpacity={1}>
+          <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={1}>
             <FontAwesome5 name="arrow-left" color="white" size={32} />
           </TouchableOpacity>
 

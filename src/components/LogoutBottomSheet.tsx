@@ -25,6 +25,11 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
 
   const navigation = useNavigation<NavigationProps>();
 
+  const onLogoutPress = () => {
+    onClose?.();
+    setTimeout(() => navigation.navigate('Login'));
+  };
+
   return (
     <Portal>
       <BottomSheet
@@ -42,11 +47,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
               <Text style={styles.emailText}>jsmith@ucf.edu</Text>
             </View>
           </View>
-          <Button
-            text="Log Out"
-            style={styles.logoutButton}
-            onPress={() => navigation.navigate('Login')}
-          />
+          <Button text="Log Out" style={styles.logoutButton} onPress={onLogoutPress} />
         </View>
       </BottomSheet>
     </Portal>
