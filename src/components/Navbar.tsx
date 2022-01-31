@@ -11,7 +11,10 @@ const Navbar = (): JSX.Element => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>CHDR</Text>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>CHDR</Text>
+          <Text style={styles.subTitle}>Admin</Text>
+        </View>
         <Avatar text="JS" onPress={() => setSheetShowing(true)} />
         {isSheetShowing && <LogoutBottomSheet onClose={() => setSheetShowing(false)} />}
       </View>
@@ -21,7 +24,7 @@ const Navbar = (): JSX.Element => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF'
+    backgroundColor: Colors.appBackgroundColor
   },
   content: {
     height: 80,
@@ -36,6 +39,17 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontFamily: Fonts.heading,
     fontSize: 32
+  },
+  subTitle: {
+    alignSelf: 'center',
+    marginLeft: 12,
+    color: Colors.textMuted,
+    fontSize: Fonts.defaultTextSize,
+    fontFamily: Fonts.subtitle
+  },
+  textContainer: {
+    display: 'flex',
+    flexDirection: 'row'
   }
 });
 

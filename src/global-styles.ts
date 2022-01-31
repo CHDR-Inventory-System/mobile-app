@@ -5,7 +5,8 @@ export const Colors = {
   'monoChromatic-4': '#BCBBF7',
   'monoChromatic-5': '#FBFAFE',
   text: 'rgb(35, 35, 35)',
-  textMuted: 'rgb(128, 128, 128)'
+  textMuted: 'rgb(128, 128, 128)',
+  appBackgroundColor: 'rgb(250, 250, 250)'
 };
 
 export const Fonts = {

@@ -18,35 +18,29 @@ type LabeledInputProps = {
   inputStyle: TextStyle;
 } & TextInputProps;
 
-const LabeledInput = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  style,
-  labelStyle,
-  inputStyle,
-  keyboardType,
-  onBlur,
-  autoCapitalize,
-  secureTextEntry = false,
-  autoCorrect = false
-}: Partial<LabeledInputProps>): JSX.Element => (
-  <View style={[style]}>
-    <Text style={[labelStyle, styles.label]}>{label}</Text>
-    <TextInput
-      autoCapitalize={autoCapitalize}
-      onBlur={onBlur}
-      style={[inputStyle, styles.input]}
-      value={value}
-      keyboardType={keyboardType}
-      placeholder={placeholder}
-      secureTextEntry={secureTextEntry}
-      autoCorrect={autoCorrect}
-      onChangeText={onChangeText}
-    />
-  </View>
-);
+const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
+  const {
+    label,
+    style,
+    labelStyle,
+    inputStyle,
+    secureTextEntry = false,
+    autoCorrect = false,
+    ...textInputProps
+  } = props;
+
+  return (
+    <View style={[style]}>
+      <Text style={[styles.label, labelStyle]}>{label}</Text>
+      <TextInput
+        style={[inputStyle, styles.input]}
+        autoCorrect={autoCorrect}
+        secureTextEntry={secureTextEntry}
+        {...textInputProps}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   label: {
@@ -62,7 +56,7 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     fontSize: Fonts.defaultTextSize,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 6,
     borderColor: 'rgb(218, 218, 218)',
     fontFamily: Fonts.text,
     color: Colors.text

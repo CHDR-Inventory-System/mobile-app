@@ -9,6 +9,8 @@ import Navbar from './src/components/Navbar';
 import { Portal, PortalProvider } from '@gorhom/portal';
 import { RootStackParamsList } from './src/types/navigation';
 import BarcodeScanner from './src/screens/BarcodeScanner';
+import { Colors } from './src/global-styles';
+import ItemDetail from './src/screens/ItemDetail';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -28,11 +30,11 @@ const App = (): JSX.Element => {
       <Portal>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Login"
+            initialRouteName="Main"
             screenOptions={{
               gestureEnabled: false,
               contentStyle: {
-                backgroundColor: '#FFF'
+                backgroundColor: Colors.appBackgroundColor
               },
               header: () => <Navbar />
             }}
@@ -52,6 +54,14 @@ const App = (): JSX.Element => {
               component={BarcodeScanner}
               options={{
                 headerShown: false,
+                gestureEnabled: true
+              }}
+            />
+            <Stack.Screen
+              name="ItemDetail"
+              component={ItemDetail}
+              options={{
+                headerShown: true,
                 gestureEnabled: true
               }}
             />

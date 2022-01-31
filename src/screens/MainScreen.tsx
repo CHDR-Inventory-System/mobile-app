@@ -1,25 +1,59 @@
-import React, { useEffect } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
-import { Colors, Fonts } from '../global-styles';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native';
+import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { platformValue } from '../util/platform';
-import { SimpleLineIcons, FontAwesome5 } from '@expo/vector-icons';
+import { SimpleLineIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { Platform } from 'expo-modules-core';
-
-const EmptyInventoryContent = () => (
-  <View style={styles.emptyContentContainer}>
-    <FontAwesome5 name="barcode" size={128} style={styles.barcodeIcon} />
-    <Text style={styles.emptyTextTitle}>No Items in Inventory</Text>
-    <Text style={styles.emptyTextDescription}>Scan a barcode to get started.</Text>
-  </View>
-);
+import mockInventory from '../../assets/mocks/inventory.json';
+import ItemCard from '../components/ItemCard';
+import { Item } from '../types/API';
+import EmptyInventoryContent from '../components/EmptyInventoryContent';
+import LabeledInput from '../components/LabeledInput';
 
 const MainScreen = (): JSX.Element => {
+  const [inventoryItems, setInventoryItems] = useState<Item[]>(mockInventory);
+  // Because searching for items requires us to modify the main data source of
+  // the FlatList component, we need to store the main items in a separate array
+  // so we don't have to re-query the API every time a search is cleared
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [itemCache, setItemCache] = useState<Item[]>(mockInventory);
+  const [isRefreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
+
+  const searchItem = (query: string) => {
+    if (!query) {
+      setInventoryItems(itemCache);
+      return;
+    }
+
+    const items = [...inventoryItems].filter(item => item.name.includes(query));
+
+    setInventoryItems(items);
+  };
+
+  const renderInventoryItem = ({ item }: ListRenderItemInfo<Item>) => (
+    <ItemCard item={item} style={styles.itemCard} />
+  );
+
+  const renderListHeader = () => (
+    <View style={styles.searchContainer}>
+      <LabeledInput
+        placeholderTextColor="rgba(0, 0, 0, 0.5)"
+        editable={!isRefreshing}
+        label="Search"
+        returnKeyType="search"
+        onSubmitEditing={event => searchItem(event.nativeEvent.text.trim())}
+        placeholder="Search for an item by name..."
+        clearButtonMode="always"
+        labelStyle={styles.searchInputLabel}
+      />
+    </View>
+  );
 
   useEffect(() => {
     // Prevents the user from going back to the login screen
@@ -37,7 +71,23 @@ const MainScreen = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <EmptyInventoryContent />
+      <FlatList
+        contentContainerStyle={{ flexGrow: 1 }}
+        ListHeaderComponent={renderListHeader()}
+        ListEmptyComponent={<EmptyInventoryContent refreshing={isRefreshing} />}
+        data={inventoryItems}
+        renderItem={renderInventoryItem}
+        refreshing={isRefreshing}
+        keyExtractor={item => item.ID.toString()}
+        initialNumToRender={5}
+        onRefresh={() => {
+          setRefreshing(true);
+          setTimeout(() => {
+            setRefreshing(false);
+            setInventoryItems([...inventoryItems].sort(() => 0.5 - Math.random()));
+          }, 1000);
+        }}
+      />
       <Button
         text="Scan Barcode"
         textStyle={styles.scanButtonText}
@@ -58,23 +108,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between'
   },
-  emptyContentContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    marginBottom: 84,
-    alignItems: 'center'
-  },
-  emptyTextTitle: {
-    fontSize: 24,
-    color: Colors.text,
-    fontFamily: Fonts.heading,
-    marginBottom: 16
-  },
-  emptyTextDescription: {
-    fontFamily: Fonts.text,
-    color: Colors.textMuted,
-    fontSize: Fonts.defaultTextSize
-  },
   scanButton: {
     borderRadius: 0
   },
@@ -82,10 +115,19 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.text,
     marginTop: platformValue(0, 3)
   },
-  barcodeIcon: {
+  itemCard: {
+    marginTop: 32,
     marginBottom: 32,
+    width: '90%'
+  },
+  searchContainer: {
+    width: '87%',
     alignSelf: 'center',
-    color: Colors.text
+    marginTop: 8
+  },
+  searchInputLabel: {
+    fontSize: 24,
+    marginBottom: 22
   }
 });
 
