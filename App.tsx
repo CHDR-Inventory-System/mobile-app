@@ -20,7 +20,7 @@ const App = (): JSX.Element => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="display">
+      <Stack.Navigator initialRouteName="loginc">
         <Stack.Screen
           name="login"
           component={LoginScreen}
