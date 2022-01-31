@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { StyleSheet, Image, View, Text, ViewStyle } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, ViewStyle } from 'react-native';
 import Button from './Button';
 import { Item } from '../types/API';
 import { Fonts } from '../global-styles';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
+import ImageWithFallback from './ImageWithFallback';
 
 type ItemCardProps = {
   item: Item;
@@ -12,24 +13,14 @@ type ItemCardProps = {
 };
 
 const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
-  const [didImageFail, setDidImageFail] = useState(false);
   const navigation = useNavigation<NavigationProps>();
 
   return (
     <View style={[styles.container, style]}>
-      {didImageFail ? (
-        // TODO: Move this to a component called <FallbackImage />
-        <Image
-          style={styles.image}
-          source={require('../../assets/images/missing-image-placeholder.png')}
-        />
-      ) : (
-        <Image
-          style={styles.image}
-          onError={() => setDidImageFail(true)}
-          source={{ uri: item.images[0]?.imageURL || undefined }}
-        />
-      )}
+      <ImageWithFallback
+        style={styles.image}
+        source={{ uri: item.images[0]?.imageURL || undefined }}
+      />
       <Text style={styles.itemName}>{item.name.replace(/[\n\r]+/g, '')}</Text>
       {item.description && (
         <View style={styles.descriptionContainer}>
@@ -61,9 +52,8 @@ const styles = StyleSheet.create({
   image: {
     borderRadius: 8,
     width: '100%',
-    height: 170,
+    height: 180,
     marginBottom: 32
-    // backgroundColor: 'rgba(0, 0, 0, 0.07)'
   },
   itemName: {
     fontSize: 24,

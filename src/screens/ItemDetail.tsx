@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView
 } from 'react-native';
 import { Fonts } from '../global-styles';
@@ -13,6 +12,7 @@ import { RouteProps, NavigationProps } from '../types/navigation';
 import { AntDesign } from '@expo/vector-icons';
 import { platformValue } from '../util/platform';
 import Button from '../components/Button';
+import ImageWithFallback from '../components/ImageWithFallback';
 
 const formatDate = (date: string | null) =>
   date === null
@@ -53,14 +53,16 @@ const ItemDetail = (): JSX.Element => {
         </View>
       </View>
       <View style={styles.contentBody}>
-        <Image style={styles.image} source={{ uri: item.images[0]?.imageURL }} />
+        <ImageWithFallback
+          style={styles.image}
+          source={{ uri: item.images[0]?.imageURL }}
+        />
         {item.description && (
           <>
             <Text style={styles.descriptionSubtitle}>Description:</Text>
             <Text style={styles.itemDescription}>{item.description}</Text>
           </>
         )}
-
         {renderItemProperty('Location', item.location)}
         {renderItemProperty('Barcode', item.barcode)}
         {renderItemProperty('Quantity', item.quantity)}
@@ -72,7 +74,6 @@ const ItemDetail = (): JSX.Element => {
         {renderItemProperty('Purchase Date', formatDate(item.purchaseDate))}
         {renderItemProperty('Vendor Name', item.vendorName)}
         {renderItemProperty('Vendor Price', item.vendorPrice)}
-
         <Button text="Edit Item" style={styles.editItemButton} />
       </View>
     </ScrollView>
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 16,
     flexDirection: 'row'
   },
@@ -118,8 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: '100%',
     alignSelf: 'center',
-    height: 200,
-    backgroundColor: 'rgba(0, 0, 0, 0.07)'
+    height: 200
   },
   descriptionSubtitle: {
     fontFamily: Fonts.subtitle,
