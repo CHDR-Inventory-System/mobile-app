@@ -18,9 +18,11 @@ import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
+import API from '../util/API';
+import { AxiosError } from 'axios';
 
 type Credentials = {
-  email: string;
+  nid: string;
   password: string;
 };
 
@@ -38,33 +40,48 @@ const LoginScreen = (): JSX.Element => {
     message: '',
     type: undefined
   });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigation = useNavigation<NavigationProps>();
 
-  // TODO: Implement login once the API is available
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // login function called when login button is pressed
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     setIsLoading(true);
-    setShowAlert(false);
 
-    // TODO: Dummy code below to simulate loading and errors.
-    // This should be removed when login is actually implemented
-    if (!credentials.email || !credentials.password) {
-      setTimeout(() => {
-        setErrorObject({
-          title: 'Invalid credentials',
-          message: 'Make sure your email and password are both correct and try again.',
-          type: 'error'
-        });
-        setShowAlert(true);
-        setIsLoading(false);
-      }, 1000);
-
+    // seee if either nid or password field is empty, if it is display error
+    if (credentials.nid === '' || credentials.password === '') {
+      setErrorObject({
+        title: 'Missing Field',
+        message: 'Your NID and/or password are required Please fill and try again',
+        type: 'error'
+      });
+      setShowAlert(true);
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(false);
-    navigation.navigate('Main');
+    // otherwise call loginApi and check if credentials match, if not display error as seen fit
+    API.login(credentials.nid, credentials.password)
+      .then(() => new Error('Not Implemented'))
+      .catch((err: AxiosError) => {
+        if (err.response?.status === 404) {
+          setErrorObject({
+            title: 'Invalid Credentials',
+            message: 'Make sure your NID and password are correct and try again.',
+            type: 'error'
+          });
+          setShowAlert(true);
+        } else {
+          setErrorObject({
+            title: 'Server Error',
+            message: 'An unexpected error occurred, please try again.',
+            type: 'error'
+          });
+          setShowAlert(true);
+        }
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -77,7 +94,7 @@ const LoginScreen = (): JSX.Element => {
           <View style={{ flex: 1 }}>
             <Formik
               initialValues={{
-                email: '',
+                nid: '',
                 password: ''
               }}
               onSubmit={login}
@@ -92,16 +109,17 @@ const LoginScreen = (): JSX.Element => {
                     <View style={styles.inputContainer}>
                       <LabeledInput
                         autoCapitalize="none"
-                        onBlur={handleBlur('email')}
-                        label="Email"
-                        keyboardType="email-address"
+                        onBlur={handleBlur('nid')}
+                        label="NID"
+                        placeholder="UCF NID"
                         style={styles.input}
-                        onChangeText={handleChange('email')}
+                        onChangeText={handleChange('nid')}
                       />
                       <LabeledInput
                         onBlur={handleBlur('password')}
                         label="Password"
                         secureTextEntry
+                        placeholder="UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
                       />
