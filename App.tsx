@@ -1,21 +1,40 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useFonts } from 'expo-font';
+import AppLoading from 'expo-app-loading';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoginScreen from './src/screens/LoginScreen';
 
-export default function App(): JSX.Element {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+const Stack = createNativeStackNavigator();
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
+const App = (): JSX.Element => {
+  const [fontsLoaded] = useFonts({
+    'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
+    'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
+    'Gotham-Bold': require('./assets/fonts/Gotham-Bold.ttf')
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
   }
-});
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            contentStyle: {
+              backgroundColor: 'white'
+            }
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default App;
