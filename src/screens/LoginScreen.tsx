@@ -16,7 +16,7 @@ import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
-import loginAPI from '../util/API';
+import API from '../util/API';
 import { AxiosError } from 'axios';
 
 type Credentials = {
@@ -52,11 +52,10 @@ const LoginScreen = (): JSX.Element => {
       });
       setShowAlert(true);
       setIsLoading(false);
-      return 0;
+      return;
     }
     // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    loginAPI
-      .login(credentials.nid, credentials.password)
+    API.login(credentials.nid, credentials.password)
       .then(() => new Error('Not Implemented'))
       .catch((err: AxiosError) => {
         if (err.response?.status === 404) {

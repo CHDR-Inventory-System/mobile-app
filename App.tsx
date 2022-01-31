@@ -20,9 +20,9 @@ const App = (): JSX.Element => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="display">
         <Stack.Screen
-          name="Login"
+          name="login"
           component={LoginScreen}
           options={{
             headerShown: false,
