@@ -31,7 +31,9 @@ const MainScreen = (): JSX.Element => {
       return;
     }
 
-    const items = [...inventoryItems].filter(item => item.name.includes(query));
+    const items = [...itemCache].filter(item =>
+      item.name.toLowerCase().trim().includes(query.toLowerCase().trim())
+    );
 
     setInventoryItems(items);
   };
