@@ -8,6 +8,7 @@ import ImageWithFallback from '../components/ImageWithFallback';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { ItemImage } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
+import { StatusBar } from 'expo-status-bar';
 
 type CarouselItem<T> = {
   index: number;
@@ -76,6 +77,7 @@ const ItemDetail = (): JSX.Element => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar style="dark" />
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} />
       <View style={styles.contentBody}>
         {renderImages()}

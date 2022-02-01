@@ -14,11 +14,12 @@ import ItemDetail from './src/screens/ItemDetail';
 import { UserProvider } from './src/contexts/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from './src/types/API';
+import { StatusBar } from 'expo-status-bar';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
   const [isLoading, setLoading] = useState(true);
   const [initialUserValue, setInitialUserValue] = useState<User | null>(null);
   const [fontsLoaded] = useFonts({
@@ -86,6 +87,7 @@ const App = (): JSX.Element => {
     <PortalProvider>
       <Portal>
         <UserProvider initialValue={initialUserValue}>
+          <StatusBar style="dark" />
           <NavigationContainer>{stack}</NavigationContainer>
         </UserProvider>
       </Portal>

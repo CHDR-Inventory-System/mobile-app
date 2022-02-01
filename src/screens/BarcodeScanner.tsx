@@ -1,12 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarCodeScanningResult, Camera } from 'expo-camera';
 import { BarCodeScanner as ExpoBarcodeScanner } from 'expo-barcode-scanner';
-import { View, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator
+} from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { StatusBar } from 'expo-status-bar';
+import mockInventory from '../../assets/mocks/inventory.json';
+import { Item } from '../types/API';
+import { Fonts } from '../global-styles';
 
 const Spacer = () => <View style={{ flex: 1 }} />;
 
@@ -14,23 +23,33 @@ const BarcodeScanner = (): JSX.Element => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [hasScanned, setHasScanned] = useState(false);
   const [isFlashOn, setFlash] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
-  const cameraRef = useRef<Camera>();
+  const cameraRef = useRef<Camera>(null);
   const navigation = useNavigation<NavigationProps>();
 
   const onBarcodeScanned = (barcode: BarCodeScanningResult) => {
     setHasScanned(true);
-    cameraRef.current?.pausePreview();
+    setLoading(true);
+    setFlash(false);
 
-    Alert.alert('Barcode Scanned', barcode.data, [
-      {
-        text: 'OK',
-        onPress: () => {
-          setHasScanned(false);
-          cameraRef.current?.resumePreview();
-        }
-      }
-    ]);
+    const inventoryItem: Item | undefined = mockInventory.find(
+      item => item.barcode.trim() === barcode.data.trim()
+    );
+
+    // TODO: Actually make an API call here
+    if (inventoryItem) {
+      setTimeout(() => {
+        setLoading(false);
+        navigation.navigate('ItemDetail', inventoryItem);
+      }, 1000);
+
+      return;
+    }
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   const requestCameraPermission = async () => {
@@ -38,9 +57,36 @@ const BarcodeScanner = (): JSX.Element => {
     setHasPermission(status === 'granted');
   };
 
+  const renderLoadingScreen = () =>
+    isLoading ? (
+      <View style={[styles.loadingContainer, styles.rescanContainer]}>
+        <ActivityIndicator size="large" style={styles.loadingIndicator} />
+        <Text style={styles.rescanText}>Loading...</Text>
+      </View>
+    ) : null;
+
+  const renderRescanScreen = () =>
+    hasScanned && !isLoading ? (
+      <TouchableOpacity
+        style={styles.rescanContainer}
+        activeOpacity={1}
+        onPress={() => setHasScanned(false)}
+      >
+        <Text style={styles.rescanText}>Tap to rescan</Text>
+      </TouchableOpacity>
+    ) : null;
+
   useEffect(() => {
     requestCameraPermission();
   }, []);
+
+  useEffect(() => {
+    if (hasScanned) {
+      cameraRef.current?.pausePreview();
+    } else {
+      cameraRef.current?.resumePreview();
+    }
+  }, [hasScanned]);
 
   if (hasPermission === null) {
     return <View />;
@@ -57,9 +103,9 @@ const BarcodeScanner = (): JSX.Element => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      {renderLoadingScreen()}
+      {renderRescanScreen()}
       <Camera
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         ref={cameraRef}
         ratio="16:9"
         flashMode={isFlashOn ? 'torch' : 'off'}
@@ -116,6 +162,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   cameraButton: {
+    color: '#FFF'
+  },
+  loadingIndicator: {
+    marginBottom: 36
+  },
+  rescanContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 2,
+    flexDirection: 'column'
+  },
+  loadingContainer: {
+    zIndex: 4
+  },
+  rescanText: {
+    fontFamily: Fonts.subtitle,
+    fontSize: 24,
     color: '#FFF'
   }
 });

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { JWT, User } from '../types/API';
+import { Item, JWT, User } from '../types/API';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.headers.put['Content-Type'] = 'application/json';
@@ -13,6 +13,11 @@ class API {
       password
     });
 
+    return response.data;
+  }
+
+  static async getItemByBarcode(barcode: string): Promise<Item> {
+    const response = await axios.get(`/inventory/barcode/${barcode}`);
     return response.data;
   }
 }
