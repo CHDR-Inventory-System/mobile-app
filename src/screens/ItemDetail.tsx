@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
+  Dimensions
 } from 'react-native';
 import { Fonts } from '../global-styles';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -13,6 +14,15 @@ import { AntDesign } from '@expo/vector-icons';
 import { platformValue } from '../util/platform';
 import Button from '../components/Button';
 import ImageWithFallback from '../components/ImageWithFallback';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
+import { ItemImage } from '../types/API';
+
+type CarouselItem<T> = {
+  index: number;
+  item: T;
+};
+
+const { width: viewportWidth } = Dimensions.get('window');
 
 const formatDate = (date: string | null) =>
   date === null
@@ -26,6 +36,7 @@ const formatDate = (date: string | null) =>
       });
 
 const ItemDetail = (): JSX.Element => {
+  const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
   const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
   const navigation = useNavigation<NavigationProps>();
 
@@ -42,6 +53,36 @@ const ItemDetail = (): JSX.Element => {
     );
   };
 
+  const renderImage = ({ item }: CarouselItem<ItemImage>) => (
+    <ImageWithFallback style={styles.image} source={{ uri: item.imageURL }} />
+  );
+
+  const renderImages = () => {
+    // If this item has no images, we still want to show the
+    // "no-image-available" placeholder image
+    if (item.images.length === 0) {
+      return (
+        <ImageWithFallback style={[styles.fallbackImage, styles.image]} source={null} />
+      );
+    }
+
+    return (
+      <>
+        <Carousel
+          data={item.images}
+          renderItem={renderImage}
+          sliderWidth={viewportWidth * 0.93}
+          itemWidth={viewportWidth * 0.93}
+          onSnapToItem={index => setActiveCarouselIndex(index)}
+        />
+        <Pagination
+          dotsLength={item.images.length}
+          activeDotIndex={activeCarouselIndex}
+        />
+      </>
+    );
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -53,10 +94,7 @@ const ItemDetail = (): JSX.Element => {
         </View>
       </View>
       <View style={styles.contentBody}>
-        <ImageWithFallback
-          style={styles.image}
-          source={{ uri: item.images[0]?.imageURL }}
-        />
+        {renderImages()}
         {item.description && (
           <>
             <Text style={styles.descriptionSubtitle}>Description:</Text>
@@ -115,11 +153,13 @@ const styles = StyleSheet.create({
   },
   image: {
     marginTop: 16,
-    marginBottom: 24,
     borderRadius: 8,
     width: '100%',
     alignSelf: 'center',
     height: 200
+  },
+  fallbackImage: {
+    marginBottom: 24
   },
   descriptionSubtitle: {
     fontFamily: Fonts.subtitle,

@@ -118,8 +118,7 @@ const styles = StyleSheet.create({
     marginTop: platformValue(0, 3)
   },
   itemCard: {
-    marginTop: 32,
-    marginBottom: 32,
+    marginVertical: 24,
     width: '90%'
   },
   searchContainer: {

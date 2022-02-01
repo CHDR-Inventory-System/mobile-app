@@ -46,8 +46,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
-
-    elevation: 5
+    elevation: 2
   },
   image: {
     borderRadius: 8,
@@ -58,7 +57,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 24,
     fontFamily: Fonts.heading,
-    marginBottom: 16,
+    marginBottom: 8,
     lineHeight: 30
   },
   descriptionSubtitle: {

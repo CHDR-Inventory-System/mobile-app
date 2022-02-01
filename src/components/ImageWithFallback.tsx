@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 
 type ImageWithFallbackProps = {
-  source: ImageSourcePropType;
+  source: ImageSourcePropType | null;
   style?: ImageStyle;
-} & ImageProps;
+} & Omit<ImageProps, 'source'>;
 
 /**
  * This component displays images and takes all the regular props an
