@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TextStyle
+} from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
@@ -8,7 +15,7 @@ import { Fonts } from '../global-styles';
 
 type BackTitleHeaderProps = {
   title: string;
-  titleStyle?: TextStyle
+  titleStyle?: TextStyle;
   style?: ViewStyle;
   onBackPress?: () => void;
 };

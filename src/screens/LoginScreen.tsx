@@ -20,6 +20,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import API from '../util/API';
 import { AxiosError } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useUser from '../hooks/user';
 
 type Credentials = {
   nid: string;
@@ -42,6 +44,7 @@ const LoginScreen = (): JSX.Element => {
   });
 
   const navigation = useNavigation<NavigationProps>();
+  const { userDispatch } = useUser();
 
   // login function called when login button is pressed
   const login = async (credentials: Credentials) => {
@@ -62,8 +65,15 @@ const LoginScreen = (): JSX.Element => {
 
     try {
       const user = await API.login(credentials.nid, credentials.password);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+
+      userDispatch({
+        type: 'INIT',
+        payload: user
+      });
+
       setIsLoading(false);
-      navigation.navigate('Main', user);
+      navigation.navigate('Main');
     } catch (err) {
       if ((err as AxiosError).response?.status === 404) {
         setErrorObject({

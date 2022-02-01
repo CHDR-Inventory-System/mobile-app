@@ -8,6 +8,8 @@ import { Portal } from '@gorhom/portal';
 import { BottomSheetBackdropProps, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useUser from '../hooks/user';
 
 type LogoutBottomSheetProps = {
   onClose?: () => void;
@@ -24,9 +26,19 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
   );
 
   const navigation = useNavigation<NavigationProps>();
+  const { userDispatch } = useUser();
 
-  const onLogoutPress = () => {
+  const onLogoutPress = async () => {
     onClose?.();
+    userDispatch({ type: 'LOG_OUT' });
+
+    try {
+      await AsyncStorage.removeItem('user');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error clearing storage', err);
+    }
+
     setTimeout(() => navigation.navigate('Login'));
   };
 

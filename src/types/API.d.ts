@@ -12,7 +12,7 @@ export type User = {
   nid: string;
   role: UserRole;
   verified: boolean;
-};
+} & JWT;
 
 export type ItemImage = {
   ID: number;
