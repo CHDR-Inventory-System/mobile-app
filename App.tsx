@@ -30,7 +30,7 @@ const App = (): JSX.Element => {
       <Portal>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Main"
+            initialRouteName="Login"
             screenOptions={{
               gestureEnabled: false,
               contentStyle: {

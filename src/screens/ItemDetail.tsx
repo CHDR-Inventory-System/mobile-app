@@ -1,21 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Dimensions
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Fonts } from '../global-styles';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { RouteProps, NavigationProps } from '../types/navigation';
-import { AntDesign } from '@expo/vector-icons';
-import { platformValue } from '../util/platform';
+import { useRoute } from '@react-navigation/native';
+import { RouteProps } from '../types/navigation';
 import Button from '../components/Button';
 import ImageWithFallback from '../components/ImageWithFallback';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { ItemImage } from '../types/API';
+import BackTitleHeader from '../components/BackTitleHeader';
 
 type CarouselItem<T> = {
   index: number;
@@ -38,7 +30,6 @@ const formatDate = (date: string | null) =>
 const ItemDetail = (): JSX.Element => {
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
   const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
-  const navigation = useNavigation<NavigationProps>();
 
   const renderItemProperty = (property: string, value: string | number | null) => {
     if (!value) {
@@ -85,14 +76,7 @@ const ItemDetail = (): JSX.Element => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <TouchableOpacity activeOpacity={1} onPress={() => navigation.goBack()}>
-          <AntDesign name="arrowleft" size={32} color="black" style={styles.icon} />
-        </TouchableOpacity>
-        <View style={styles.itemNameContainer}>
-          <Text style={styles.itemName}>{item.name.replace(/[\n\r]+/g, '')}</Text>
-        </View>
-      </View>
+      <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} />
       <View style={styles.contentBody}>
         {renderImages()}
         {item.description && (
@@ -126,30 +110,6 @@ const styles = StyleSheet.create({
     width: '93%',
     alignSelf: 'center',
     marginBottom: 32
-  },
-  icon: {
-    marginRight: 16
-  },
-  header: {
-    paddingTop: 8,
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    flexDirection: 'row'
-  },
-  itemNameContainer: {
-    // Necessary because of a bug in React Native
-    // https://stackoverflow.com/a/47254969/9124220
-    // https://github.com/facebook/react-native/issues/1438
-    width: 0,
-    flexGrow: 1,
-    flex: 1
-  },
-  itemName: {
-    fontFamily: Fonts.heading,
-    fontSize: 28,
-    lineHeight: 30,
-    flexShrink: 1,
-    marginTop: platformValue(0, 4)
   },
   image: {
     marginTop: 16,
