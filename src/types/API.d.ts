@@ -4,7 +4,7 @@ export type JWT = {
   token: string;
 };
 
-export type User = {
+export type User = JWT & {
   ID: number;
   created: string;
   email: string;
@@ -12,7 +12,7 @@ export type User = {
   nid: string;
   role: UserRole;
   verified: boolean;
-} & JWT;
+};
 
 export type ItemImage = {
   ID: number;
