@@ -16,8 +16,12 @@ import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../types/navigation';
 import API from '../util/API';
 import { AxiosError } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useUser from '../hooks/user';
 
 type Credentials = {
   nid: string;
@@ -39,11 +43,15 @@ const LoginScreen = (): JSX.Element => {
     type: undefined
   });
 
+  const navigation = useNavigation<NavigationProps>();
+  const { userDispatch } = useUser();
+
   // login function called when login button is pressed
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     setIsLoading(true);
-    // seee if either nid or password field is empty, if it is display error
+
+    // see if either nid or password field is empty, if it is display error
     if (credentials.nid === '' || credentials.password === '') {
       setErrorObject({
         title: 'Missing Field',
@@ -54,27 +62,36 @@ const LoginScreen = (): JSX.Element => {
       setIsLoading(false);
       return;
     }
-    // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    API.login(credentials.nid, credentials.password)
-      .then(() => new Error('Not Implemented'))
-      .catch((err: AxiosError) => {
-        if (err.response?.status === 404) {
-          setErrorObject({
-            title: 'Invalid Credentials',
-            message: 'Make sure your NID and password are correct and try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        } else {
-          setErrorObject({
-            title: 'Server Error',
-            message: 'An unexpected error occurred, please try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        }
-      })
-      .finally(() => setIsLoading(false));
+
+    try {
+      const user = await API.login(credentials.nid, credentials.password);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+
+      userDispatch({
+        type: 'INIT',
+        payload: user
+      });
+
+      setIsLoading(false);
+      navigation.navigate('Main');
+    } catch (err) {
+      if ((err as AxiosError).response?.status === 404) {
+        setErrorObject({
+          title: 'Invalid Credentials',
+          message: 'Make sure your NID and password are correct and try again.',
+          type: 'error'
+        });
+      } else {
+        setErrorObject({
+          title: 'Server Error',
+          message: 'An unexpected error occurred, please try again.',
+          type: 'error'
+        });
+      }
+
+      setIsLoading(false);
+      setShowAlert(true);
+    }
   };
 
   return (
@@ -104,8 +121,7 @@ const LoginScreen = (): JSX.Element => {
                         autoCapitalize="none"
                         onBlur={handleBlur('nid')}
                         label="NID"
-                        //keyboardType="default"
-                        placeholder="*UCF NID"
+                        placeholder="UCF NID"
                         style={styles.input}
                         onChangeText={handleChange('nid')}
                       />
@@ -113,7 +129,7 @@ const LoginScreen = (): JSX.Element => {
                         onBlur={handleBlur('password')}
                         label="Password"
                         secureTextEntry
-                        placeholder="*UCF Password"
+                        placeholder="UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
                       />
