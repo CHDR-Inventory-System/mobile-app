@@ -17,6 +17,7 @@
     "node": "^14.17.0 || >=16.0.0"
   },
   "dependencies": {
+    "@expo/react-native-action-sheet": "^3.13.0",
     "@react-navigation/native": "^6.0.6",
     "@react-navigation/native-stack": "^6.2.5",
     "axios": "^0.25.0",

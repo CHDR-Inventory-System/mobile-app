@@ -15,6 +15,24 @@ class API {
 
     return response.data;
   }
+  /*
+  static async addItem(item: Partial<Item>): Promise<{ itemId: number }> {
+const itemKeys = Object.keys(item) as Array<keyof typeof item>;
+
+// Since this function takes a partial item, we need to filter out
+// any null or undefined properties
+itemKeys.forEach(key => {
+if (item[key] === null || item[key] === undefined) {
+delete item[key];
+}
+});
+
+const response = await axios.post('/inventory/add', { ...item });
+
+return response.data;
+}
+
+  */
 }
 
 export default API;
