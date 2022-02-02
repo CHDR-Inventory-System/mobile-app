@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { Fonts } from '../global-styles';
-import { useRoute } from '@react-navigation/native';
-import { RouteProps } from '../types/navigation';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { NavigationProps, RouteProps } from '../types/navigation';
 import Button from '../components/Button';
 import ImageWithFallback from '../components/ImageWithFallback';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { ItemImage } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
+import { formatDate } from '../util/date';
 
 type CarouselItem<T> = {
   index: number;
@@ -16,20 +17,14 @@ type CarouselItem<T> = {
 
 const { width: viewportWidth } = Dimensions.get('window');
 
-const formatDate = (date: string | null) =>
-  date === null
-    ? null
-    : new Date(date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric'
-      });
-
 const ItemDetail = (): JSX.Element => {
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
   const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
+  const navigation = useNavigation<NavigationProps>();
+
+  const goToEditScreen = () => {
+    navigation.navigate('EditItemScreen', item);
+  };
 
   const renderItemProperty = (property: string, value: string | number | null) => {
     if (!value) {
@@ -91,12 +86,12 @@ const ItemDetail = (): JSX.Element => {
         {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
         {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
         {renderItemProperty('Serial', item.serial)}
-        {renderItemProperty('Created', formatDate(item.created))}
+        {renderItemProperty('Created', formatDate(item.created, false))}
         {renderItemProperty('Type', item.type)}
-        {renderItemProperty('Purchase Date', formatDate(item.purchaseDate))}
+        {renderItemProperty('Purchase Date', formatDate(item.purchaseDate, false))}
         {renderItemProperty('Vendor Name', item.vendorName)}
         {renderItemProperty('Vendor Price', item.vendorPrice)}
-        <Button text="Edit Item" style={styles.editItemButton} />
+        <Button text="Edit Item" style={styles.editItemButton} onPress={goToEditScreen} />
       </View>
     </ScrollView>
   );

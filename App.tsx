@@ -14,11 +14,13 @@ import ItemDetail from './src/screens/ItemDetail';
 import { UserProvider } from './src/contexts/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from './src/types/API';
+import EditItemScreen from './src/screens/EditItemScreen';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
   const [isLoading, setLoading] = useState(true);
   const [initialUserValue, setInitialUserValue] = useState<User | null>(null);
   const [fontsLoaded] = useFonts({
@@ -71,6 +73,14 @@ const App = (): JSX.Element => {
           gestureEnabled: true
         }}
       />
+      <Stack.Screen
+        name="EditItemScreen"
+        component={EditItemScreen}
+        options={{
+          headerShown: true,
+          gestureEnabled: false
+        }}
+      />
     </Stack.Navigator>
   );
 
@@ -83,13 +93,15 @@ const App = (): JSX.Element => {
   }
 
   return (
-    <PortalProvider>
-      <Portal>
-        <UserProvider initialValue={initialUserValue}>
-          <NavigationContainer>{stack}</NavigationContainer>
-        </UserProvider>
-      </Portal>
-    </PortalProvider>
+    <ActionSheetProvider>
+      <PortalProvider>
+        <Portal>
+          <UserProvider initialValue={initialUserValue}>
+            <NavigationContainer>{stack}</NavigationContainer>
+          </UserProvider>
+        </Portal>
+      </PortalProvider>
+    </ActionSheetProvider>
   );
 };
 

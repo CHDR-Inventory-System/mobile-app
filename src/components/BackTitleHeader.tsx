@@ -11,7 +11,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { platformValue } from '../util/platform';
-import { Fonts } from '../global-styles';
+import { Colors, Fonts } from '../global-styles';
 
 type BackTitleHeaderProps = {
   title: string;
@@ -55,6 +55,8 @@ const BackTitleHeader = ({
 
 const styles = StyleSheet.create({
   header: {
+    zIndex: 2,
+    backgroundColor: Colors.appBackgroundColor,
     paddingTop: 8,
     paddingHorizontal: 20,
     paddingBottom: 16,

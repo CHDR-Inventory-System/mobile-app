@@ -16,6 +16,7 @@ type LabeledInputProps = {
   style: ViewStyle;
   labelStyle: TextStyle;
   inputStyle: TextStyle;
+  disabled?: boolean;
 } & TextInputProps;
 
 const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
@@ -26,11 +27,12 @@ const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
     inputStyle,
     secureTextEntry = false,
     autoCorrect = false,
+    disabled = false,
     ...textInputProps
   } = props;
 
   return (
-    <View style={[style]}>
+    <View style={[style]} pointerEvents={disabled ? 'none' : 'auto'}>
       <Text style={[styles.label, labelStyle]}>{label}</Text>
       <TextInput
         style={[inputStyle, styles.input]}

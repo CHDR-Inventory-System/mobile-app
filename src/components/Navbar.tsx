@@ -24,6 +24,7 @@ const Navbar = (): JSX.Element => {
 
 const styles = StyleSheet.create({
   container: {
+    zIndex: 100,
     backgroundColor: Colors.appBackgroundColor
   },
   content: {
