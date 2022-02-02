@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Alert } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import Avatar from './Avatar';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -28,7 +28,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
   const navigation = useNavigation<NavigationProps>();
   const { userDispatch } = useUser();
 
-  const onLogoutPress = async () => {
+  const logout = async () => {
     onClose?.();
     userDispatch({ type: 'LOG_OUT' });
 
@@ -39,7 +39,22 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
       console.error('Error clearing storage', err);
     }
 
-    setTimeout(() => navigation.navigate('Login'));
+    // Need to let the bottom sheet finishing closing so
+    // the backdrop doesn't stay open after this component
+    // is unmounted
+    setTimeout(() => navigation.navigate('Login'), 10);
+  };
+
+  const onLogoutPress = () => {
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+      {
+        text: 'Yes',
+        onPress: logout
+      },
+      {
+        text: 'Cancel'
+      }
+    ]);
   };
 
   return (

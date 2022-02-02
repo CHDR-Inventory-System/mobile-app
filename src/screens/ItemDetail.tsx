@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { Fonts } from '../global-styles';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  SafeAreaView,
+  Platform
+} from 'react-native';
+import { Colors, Fonts } from '../global-styles';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
 import Button from '../components/Button';
 import ImageWithFallback from '../components/ImageWithFallback';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
-import { ItemImage } from '../types/API';
+import { Item, ItemImage } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { formatDate } from '../util/date';
 
@@ -22,12 +30,16 @@ const ItemDetail = (): JSX.Element => {
   const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
   const navigation = useNavigation<NavigationProps>();
 
-  const goToEditScreen = () => {
+  const goToEditScreen = (item: Item) => {
     navigation.navigate('EditItemScreen', item);
   };
 
+  const goToItemDetailScreen = (item: Item) => {
+    navigation.push('ItemDetail', item);
+  };
+
   const renderItemProperty = (property: string, value: string | number | null) => {
-    if (!value) {
+    if (value === null || value === undefined || !value.toString().trim()) {
       return null;
     }
 
@@ -61,45 +73,87 @@ const ItemDetail = (): JSX.Element => {
           itemWidth={viewportWidth * 0.93}
           onSnapToItem={index => setActiveCarouselIndex(index)}
         />
-        <Pagination
-          dotsLength={item.images.length}
-          activeDotIndex={activeCarouselIndex}
-        />
+        <View style={{ marginBottom: item.images.length === 1 ? 32 : 0 }}>
+          <Pagination
+            dotStyle={{ marginBottom: -6 }}
+            dotsLength={item.images.length}
+            activeDotIndex={activeCarouselIndex}
+          />
+        </View>
+      </>
+    );
+  };
+
+  const renderChildren = () => {
+    if (!item.children || item.children?.length === 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <Text style={styles.itemChildrenHeader}>Children</Text>
+        <Text style={styles.childrenSubtitle}>Tap an item to view its details</Text>
+        {item.children.map(child => (
+          <Button
+            activeOpacity={0.2}
+            key={child.ID}
+            text={child.name.replace(/[\n\r]+/g, '')}
+            style={styles.itemChildButton}
+            textStyle={styles.itemChildText}
+            onPress={() => goToItemDetailScreen(child)}
+          />
+        ))}
       </>
     );
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} />
-      <View style={styles.contentBody}>
-        {renderImages()}
-        {item.description && (
-          <>
-            <Text style={styles.descriptionSubtitle}>Description:</Text>
-            <Text style={styles.itemDescription}>{item.description}</Text>
-          </>
-        )}
-        {renderItemProperty('Location', item.location)}
-        {renderItemProperty('Barcode', item.barcode)}
-        {renderItemProperty('Quantity', item.quantity)}
-        {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
-        {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
-        {renderItemProperty('Serial', item.serial)}
-        {renderItemProperty('Created', formatDate(item.created, false))}
-        {renderItemProperty('Type', item.type)}
-        {renderItemProperty('Purchase Date', formatDate(item.purchaseDate, false))}
-        {renderItemProperty('Vendor Name', item.vendorName)}
-        {renderItemProperty('Vendor Price', item.vendorPrice)}
-        <Button text="Edit Item" style={styles.editItemButton} onPress={goToEditScreen} />
-      </View>
-    </ScrollView>
+    <SafeAreaView style={{ flex: 1 }}>
+      <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.contentBody}>
+          {renderImages()}
+          {!!item.description && (
+            <>
+              <Text style={styles.descriptionSubtitle}>Description:</Text>
+              <Text style={styles.itemDescription}>{item.description}</Text>
+            </>
+          )}
+          {renderItemProperty('Location', item.location)}
+          {renderItemProperty('Barcode', item.barcode)}
+          {renderItemProperty('Quantity', item.quantity)}
+          {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
+          {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
+          {renderItemProperty('Serial', item.serial)}
+          {renderItemProperty('Created', formatDate(item.created, false))}
+          {renderItemProperty('Type', item.type)}
+          {renderItemProperty('Purchase Date', formatDate(item.purchaseDate, false))}
+          {renderItemProperty('Vendor Name', item.vendorName)}
+          {renderItemProperty('Vendor Price', item.vendorPrice)}
+
+          {renderChildren()}
+
+          <Button
+            text="Edit Item"
+            style={styles.actionButton}
+            onPress={() => goToEditScreen(item)}
+          />
+          {item.main && <Button text="Add Child Item" style={styles.actionButton} />}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1
+  },
+  header: {
+    marginTop: Platform.select({
+      ios: 8,
+      android: 32
+    })
   },
   contentBody: {
     width: '93%',
@@ -124,7 +178,7 @@ const styles = StyleSheet.create({
   itemDescription: {
     fontFamily: Fonts.text,
     fontSize: Fonts.defaultTextSize,
-    marginBottom: 20,
+    marginBottom: 16,
     lineHeight: 22
   },
   itemProperty: {
@@ -141,8 +195,30 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.text,
     fontSize: Fonts.defaultTextSize
   },
-  editItemButton: {
-    marginVertical: 16
+  actionButton: {
+    marginTop: 16
+  },
+  itemChildrenHeader: {
+    marginTop: 16,
+    marginBottom: 8,
+    fontFamily: Fonts.heading,
+    fontSize: 28
+  },
+  childrenSubtitle: {
+    fontFamily: Fonts.text,
+    color: Colors.textMuted,
+    marginTop: 4,
+    marginBottom: 12,
+    fontSize: Fonts.defaultTextSize
+  },
+  itemChildButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    marginVertical: 8,
+    alignItems: 'flex-start'
+  },
+  itemChildText: {
+    color: '#000',
+    fontFamily: Fonts.text
   }
 });
 

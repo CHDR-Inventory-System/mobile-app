@@ -73,7 +73,7 @@ const LoginScreen = (): JSX.Element => {
       });
 
       setIsLoading(false);
-      navigation.navigate('Main');
+      navigation.replace('Main');
     } catch (err) {
       if ((err as AxiosError).response?.status === 404) {
         setErrorObject({

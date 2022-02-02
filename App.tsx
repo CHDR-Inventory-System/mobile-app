@@ -56,7 +56,7 @@ const App = (): JSX.Element => {
         component={LoginScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="Main" component={MainScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="Main" component={MainScreen} />
       <Stack.Screen
         name="BarcodeScanner"
         component={BarcodeScanner}
@@ -69,17 +69,14 @@ const App = (): JSX.Element => {
         name="ItemDetail"
         component={ItemDetail}
         options={{
-          headerShown: true,
+          headerShown: false,
           gestureEnabled: true
         }}
       />
       <Stack.Screen
         name="EditItemScreen"
         component={EditItemScreen}
-        options={{
-          headerShown: true,
-          gestureEnabled: false
-        }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

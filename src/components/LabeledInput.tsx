@@ -16,7 +16,9 @@ type LabeledInputProps = {
   style: ViewStyle;
   labelStyle: TextStyle;
   inputStyle: TextStyle;
+  required?: boolean;
   disabled?: boolean;
+  errorMessage?: string;
 } & TextInputProps;
 
 const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
@@ -28,18 +30,24 @@ const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
     secureTextEntry = false,
     autoCorrect = false,
     disabled = false,
+    required = false,
+    errorMessage = '',
     ...textInputProps
   } = props;
 
   return (
     <View style={[style]} pointerEvents={disabled ? 'none' : 'auto'}>
-      <Text style={[styles.label, labelStyle]}>{label}</Text>
+      <View style={styles.textLabelContainer}>
+        <Text style={[styles.label, labelStyle]}>{label}</Text>
+        {required && <Text style={styles.requiredAsterisk}>*</Text>}
+      </View>
       <TextInput
-        style={[inputStyle, styles.input]}
+        style={[styles.input, errorMessage ? styles.errorInput : {}, inputStyle]}
         autoCorrect={autoCorrect}
         secureTextEntry={secureTextEntry}
         {...textInputProps}
       />
+      {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
     </View>
   );
 };
@@ -50,6 +58,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.subtitle,
     marginBottom: 12,
     color: Colors.text
+  },
+  textLabelContainer: {
+    flexDirection: 'row'
+  },
+  requiredAsterisk: {
+    marginLeft: 4,
+    fontFamily: Fonts.text,
+    color: '#ff4d4f',
+    transform: [{ scale: 1.5 }, { translateY: 6 }]
   },
   input: {
     paddingTop: platformValue(8, 12),
@@ -62,6 +79,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgb(218, 218, 218)',
     fontFamily: Fonts.text,
     color: Colors.text
+  },
+  errorInput: {
+    borderColor: '#DE1306'
+  },
+  errorText: {
+    fontFamily: Fonts.text,
+    marginTop: 8,
+    marginLeft: 4,
+    color: '#DE1306',
+    lineHeight: 20
   }
 });
 

@@ -25,7 +25,10 @@ export type Item = {
   ID: number;
   available: boolean;
   barcode: string;
-  children?: Omit<Item, 'images'>[];
+  /**
+   * Note that item children won't have any children
+   */
+  children?: Item[];
   created: string;
   description: string | null;
   images: ItemImage[];

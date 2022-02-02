@@ -1,5 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ListRenderItemInfo
+} from 'react-native';
 import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -55,20 +60,6 @@ const MainScreen = (): JSX.Element => {
       />
     </View>
   );
-
-  useEffect(() => {
-    // Prevents the user from going back to the login screen
-    // if the back button was pressed. This will only apply to
-    // Androids since iPhones don't have a back button
-    navigation.addListener('beforeRemove', event => {
-      if (Platform.OS === 'android' && event.data.action.type === 'GO_BACK') {
-        event.preventDefault();
-        return;
-      }
-
-      navigation.dispatch(event.data.action);
-    });
-  }, []);
 
   return (
     <View style={styles.container}>

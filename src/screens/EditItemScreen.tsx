@@ -1,11 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Alert,
+  Alert as RNAlert,
   KeyboardAvoidingView,
   StyleSheet,
   View,
   Platform,
-  ScrollView
+  ScrollView,
+  BackHandler,
+  SafeAreaView
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import BackTitleHeader from '../components/BackTitleHeader';
@@ -21,6 +23,8 @@ import Button from '../components/Button';
 import { formatDate } from '../util/date';
 import { Formik, FormikHelpers } from 'formik';
 import { Item } from '../types/API';
+import * as yup from 'yup';
+import Alert from '../components/Alert';
 
 /**
  * Because not all react native components work on all devices, there are a
@@ -40,6 +44,32 @@ const EditItemScreen = (): JSX.Element => {
     item.purchaseDate ? formatDate(item.purchaseDate, false) : ''
   );
 
+  const itemSchema = yup.object({
+    name: yup.string().trim().required('A name is required'),
+    description: yup.string().trim().optional(),
+    vendorName: yup.string().trim().optional(),
+    barcode: yup.string().trim().required('This item must have a barcode'),
+    location: yup.string().trim().required('Location is required'),
+    type: yup.string().trim().required('Type is required'),
+    serial: yup.string().trim().optional(),
+    quantity: yup
+      .number()
+      .required('Quantity is required')
+      .positive()
+      .min(0, 'Quantity must by greater than 0')
+      .integer('Quantity cannot contain decimals'),
+    vendorPrice: yup
+      .number()
+      .notRequired()
+      .typeError('Invalid vendor price')
+      .nullable(true)
+      // Because trying to parse an empty string to a number would result in an
+      // error, we have to instead return null since the schema allows it
+      .transform((value: string, originalValue: string) =>
+        originalValue === '' ? null : value
+      )
+  });
+
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
   const renderBackdrop = useCallback(
@@ -50,7 +80,7 @@ const EditItemScreen = (): JSX.Element => {
   );
 
   const confirmBackPress = () => {
-    Alert.alert(
+    RNAlert.alert(
       'Unsaved Changes',
       "Are you sure you want to go back? you'll lose any unsaved changes.",
       [
@@ -63,6 +93,11 @@ const EditItemScreen = (): JSX.Element => {
         }
       ]
     );
+  };
+
+  const handleHardwareBackPress = () => {
+    confirmBackPress();
+    return true;
   };
 
   const showStatusActionSheet = (setFieldValue: FormikHelpers<Item>['setFieldValue']) => {
@@ -164,67 +199,96 @@ const EditItemScreen = (): JSX.Element => {
 
   const handleSubmit = (item: Item) => {
     // eslint-disable-next-line no-console
-    console.log(item);
+    console.log(itemSchema.cast(item));
+    navigation.goBack();
   };
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleHardwareBackPress);
+    };
+  }, []);
+
   return (
-    <Formik initialValues={item} onSubmit={handleSubmit}>
-      {({ handleChange, handleSubmit, values, setFieldValue }) => (
-        <View style={{ flex: 1 }}>
-          <BackTitleHeader title="Edit Item" onBackPress={confirmBackPress} />
+    <Formik
+      initialValues={item}
+      onSubmit={handleSubmit}
+      validationSchema={itemSchema}
+      validateOnChange={false}
+    >
+      {({ handleChange, handleSubmit, values, setFieldValue, errors }) => (
+        <SafeAreaView style={{ flex: 1 }}>
           <KeyboardAvoidingView
             behavior="height"
             style={{ flex: 1 }}
             keyboardVerticalOffset={125}
           >
+            <BackTitleHeader
+              title="Edit Item"
+              onBackPress={confirmBackPress}
+              style={styles.header}
+            />
             <ScrollView style={styles.inputContainer} showsVerticalScrollIndicator={true}>
+              <Alert
+                message="Fields marked with an asterisk are required."
+                type="info"
+                style={styles.requiredFieldsAlert}
+              />
               <View>
                 <LabeledInput
+                  required
                   label="Name"
                   value={values.name}
                   style={styles.input}
                   onChangeText={handleChange('name')}
                   returnKeyType="done"
+                  errorMessage={errors.name}
                 />
                 <LabeledInput
                   multiline
-                  blurOnSubmit
                   onChangeText={handleChange('description')}
                   label="Description"
                   value={values.description || undefined}
                   style={styles.input}
                   inputStyle={styles.multilineInput}
-                  returnKeyType="done"
                 />
                 <LabeledInput
+                  required
                   label="Location"
                   onChangeText={handleChange('location')}
                   value={values.location}
                   style={styles.input}
                   returnKeyType="done"
+                  errorMessage={errors.location}
                 />
                 <LabeledInput
+                  required
                   label="Barcode"
                   value={values.barcode}
                   style={styles.input}
                   onChangeText={handleChange('barcode')}
                   returnKeyType="done"
+                  errorMessage={errors.barcode}
                 />
                 <LabeledInput
+                  required
                   label="Quantity"
                   value={values.quantity.toString() || undefined}
                   onChangeText={value => setFieldValue('quantity', value)}
                   keyboardType="decimal-pad"
                   returnKeyType="done"
                   style={styles.input}
+                  errorMessage={errors.quantity}
                 />
 
                 <TouchableWithoutFeedback
                   onPress={() => showStatusActionSheet(setFieldValue)}
                 >
                   <LabeledInput
-                    // TODO: Handle this
                     disabled
+                    required
                     label="Status"
                     editable={false}
                     value={values.available ? 'Available' : 'Unavailable'}
@@ -242,6 +306,7 @@ const EditItemScreen = (): JSX.Element => {
                 >
                   <LabeledInput
                     disabled
+                    required
                     label="Purchase Date"
                     value={purchaseDate}
                     style={styles.input}
@@ -257,16 +322,19 @@ const EditItemScreen = (): JSX.Element => {
                   onChangeText={handleChange('serial')}
                 />
                 <LabeledInput
+                  required
                   label="Type"
                   onChangeText={handleChange('type')}
                   value={values.type}
                   style={styles.input}
+                  errorMessage={errors.type}
                 />
                 <LabeledInput
                   label="Vendor Name"
                   value={values.vendorName || undefined}
                   style={styles.input}
                   onChangeText={handleChange('vendorName')}
+                  returnKeyType="done"
                 />
                 <LabeledInput
                   label="Vendor Price"
@@ -275,18 +343,25 @@ const EditItemScreen = (): JSX.Element => {
                   style={styles.input}
                   keyboardType="numeric"
                   returnKeyType="done"
+                  errorMessage={errors.vendorPrice}
                 />
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
           <Button text="Save" style={styles.saveButton} onPress={handleSubmit} />
-        </View>
+        </SafeAreaView>
       )}
     </Formik>
   );
 };
 
 const styles = StyleSheet.create({
+  header: {
+    marginTop: Platform.select({
+      ios: 8,
+      android: 32
+    })
+  },
   inputContainer: {
     paddingHorizontal: 16
   },
@@ -297,9 +372,13 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   saveButton: {
-    marginBottom: 24,
+    marginBottom: 8,
     marginTop: 16,
     marginHorizontal: 16
+  },
+  requiredFieldsAlert: {
+    marginVertical: 12,
+    padding: 16
   }
 });
 
