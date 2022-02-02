@@ -3,7 +3,6 @@ import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native';
 import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { platformValue } from '../util/platform';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
@@ -96,8 +95,8 @@ const MainScreen = (): JSX.Element => {
         icon={<SimpleLineIcons name="camera" size={20} color="#FFF" />}
         style={{
           ...styles.scanButton,
-          paddingBottom: platformValue(16, 0) + insets.bottom,
-          paddingTop: platformValue(16, 0) + insets.bottom
+          paddingBottom: insets.bottom === 0 ? 18 : insets.bottom,
+          paddingTop: insets.bottom === 0 ? 18 : insets.bottom
         }}
         onPress={() => navigation.navigate('BarcodeScanner')}
       />
@@ -115,7 +114,10 @@ const styles = StyleSheet.create({
   },
   scanButtonText: {
     fontFamily: Fonts.text,
-    marginTop: platformValue(0, 3)
+    marginTop: Platform.select({
+      ios: 3,
+      android: 0
+    })
   },
   itemCard: {
     marginVertical: 24,
