@@ -19,6 +19,8 @@ import { Portal } from '@gorhom/portal';
 import { BottomSheetBackdropProps, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import Button from '../components/Button';
 import { formatDate } from '../util/date';
+import { Formik, FormikHelpers } from 'formik';
+import { Item } from '../types/API';
 
 /**
  * Because not all react native components work on all devices, there are a
@@ -34,6 +36,9 @@ const EditItemScreen = (): JSX.Element => {
   const { showActionSheetWithOptions } = useActionSheet();
   const [isDatePickerShowing, setDatePickerShowing] = useState(false);
   const [isDateSheetShowing, setDateSheetShowing] = useState(false);
+  const [purchaseDate, setPurchaseDate] = useState(
+    item.purchaseDate ? formatDate(item.purchaseDate, false) : ''
+  );
 
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
@@ -60,8 +65,12 @@ const EditItemScreen = (): JSX.Element => {
     );
   };
 
-  const showStatusActionSheet = () => {
+  const showStatusActionSheet = (setFieldValue: FormikHelpers<Item>['setFieldValue']) => {
     const options = [
+      {
+        title: 'Cancel',
+        value: undefined
+      },
       {
         title: 'Available',
         value: true
@@ -74,13 +83,11 @@ const EditItemScreen = (): JSX.Element => {
     showActionSheetWithOptions(
       {
         options: options.map(({ title }) => title),
-        destructiveButtonIndex: 1,
         cancelButtonIndex: 0
       },
       buttonIndex => {
-        if (buttonIndex !== undefined) {
-          // eslint-disable-next-line no-console
-          console.log(options[buttonIndex]);
+        if (buttonIndex !== undefined && buttonIndex > 0) {
+          setFieldValue('available', options[buttonIndex].value);
         }
       }
     );
@@ -93,9 +100,15 @@ const EditItemScreen = (): JSX.Element => {
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onDatePickerChange = (event: Event, date?: Date | undefined) => {
+    if (date) {
+      setPurchaseDate(formatDate(date.toString(), false));
+    }
+
     // Since the date picker only shows as a dialog on Android, we
     // only need to worry about hiding it on Android
-    setDatePickerShowing(Platform.OS === 'android');
+    if (Platform.OS === 'android') {
+      setDatePickerShowing(false);
+    }
   };
 
   const renderDatePickerBottomSheet = () => {
@@ -112,15 +125,14 @@ const EditItemScreen = (): JSX.Element => {
         >
           <View style={{ flex: 1 }}>
             <DateTimePicker
-              // Disabled because this type is to complicated to write out...
+              // Disabled because this type is too complicated to write out...
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
               onChange={onDatePickerChange}
-              value={new Date()}
+              value={new Date(purchaseDate)}
               mode="date"
               display="spinner"
               style={{ flex: 1 }}
-              maximumDate={new Date()}
             />
           </View>
         </BottomSheet>
@@ -128,112 +140,149 @@ const EditItemScreen = (): JSX.Element => {
     );
   };
 
-  const renderPurchaseDatePicker = () =>
-    Platform.select({
-      ios: renderDatePickerBottomSheet(),
-      android: isDatePickerShowing && (
-        <DateTimePicker
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          onChange={onDatePickerChange}
-          value={new Date()}
-          maximumDate={new Date()}
-          mode="date"
-          display="default"
-        />
-      )
-    });
+  const renderPurchaseDatePicker = () => {
+    if (Platform.OS === 'ios') {
+      return renderDatePickerBottomSheet();
+    }
+
+    if (!isDatePickerShowing) {
+      return null;
+    }
+
+    return (
+      <DateTimePicker
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        onChange={onDatePickerChange}
+        value={new Date(purchaseDate)}
+        maximumDate={new Date()}
+        mode="date"
+        display="default"
+      />
+    );
+  };
+
+  const handleSubmit = (item: Item) => {
+    // eslint-disable-next-line no-console
+    console.log(item);
+  };
 
   return (
-    <View style={{ flex: 1 }}>
-      <BackTitleHeader title="Edit Item" onBackPress={confirmBackPress} />
-      <KeyboardAvoidingView
-        behavior="height"
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={125}
-      >
-        <ScrollView style={styles.inputContainer} showsVerticalScrollIndicator={true}>
-          <LabeledInput
-            label="Title"
-            value={item.name}
-            style={styles.input}
-            returnKeyType="done"
-          />
-          <LabeledInput
-            label="Description"
-            value={item.description || ''}
-            style={styles.input}
-            inputStyle={styles.multilineInput}
-            returnKeyType="done"
-            multiline
-            blurOnSubmit
-          />
-          <LabeledInput
-            label="Location"
-            value={item.location}
-            style={styles.input}
-            returnKeyType="done"
-          />
-          <LabeledInput
-            label="Barcode"
-            value={item.barcode}
-            style={styles.input}
-            returnKeyType="done"
-          />
-          <LabeledInput
-            label="Quantity"
-            value={item.quantity.toString()}
-            keyboardType="numeric"
-            returnKeyType="done"
-            style={styles.input}
-          />
-
-          <TouchableWithoutFeedback onPress={showStatusActionSheet}>
-            <LabeledInput
-              disabled
-              label="Status"
-              editable={false}
-              value={item.available ? 'Available' : 'Unavailable'}
-              style={styles.input}
-            />
-          </TouchableWithoutFeedback>
-
-          <TouchableWithoutFeedback
-            onPress={() =>
-              Platform.select({
-                ios: setDateSheetShowing(true),
-                android: setDatePickerShowing(true)
-              })
-            }
+    <Formik initialValues={item} onSubmit={handleSubmit}>
+      {({ handleChange, handleSubmit, values, setFieldValue }) => (
+        <View style={{ flex: 1 }}>
+          <BackTitleHeader title="Edit Item" onBackPress={confirmBackPress} />
+          <KeyboardAvoidingView
+            behavior="height"
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={125}
           >
-            <LabeledInput
-              disabled
-              label="Purchase Date"
-              value={item.purchaseDate ? formatDate(item.purchaseDate, false) : ''}
-              style={styles.input}
-            />
-          </TouchableWithoutFeedback>
+            <ScrollView style={styles.inputContainer} showsVerticalScrollIndicator={true}>
+              <View>
+                <LabeledInput
+                  label="Name"
+                  value={values.name}
+                  style={styles.input}
+                  onChangeText={handleChange('name')}
+                  returnKeyType="done"
+                />
+                <LabeledInput
+                  multiline
+                  blurOnSubmit
+                  onChangeText={handleChange('description')}
+                  label="Description"
+                  value={values.description || undefined}
+                  style={styles.input}
+                  inputStyle={styles.multilineInput}
+                  returnKeyType="done"
+                />
+                <LabeledInput
+                  label="Location"
+                  onChangeText={handleChange('location')}
+                  value={values.location}
+                  style={styles.input}
+                  returnKeyType="done"
+                />
+                <LabeledInput
+                  label="Barcode"
+                  value={values.barcode}
+                  style={styles.input}
+                  onChangeText={handleChange('barcode')}
+                  returnKeyType="done"
+                />
+                <LabeledInput
+                  label="Quantity"
+                  value={values.quantity.toString() || undefined}
+                  onChangeText={value => setFieldValue('quantity', value)}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  style={styles.input}
+                />
 
-          {renderPurchaseDatePicker()}
+                <TouchableWithoutFeedback
+                  onPress={() => showStatusActionSheet(setFieldValue)}
+                >
+                  <LabeledInput
+                    // TODO: Handle this
+                    disabled
+                    label="Status"
+                    editable={false}
+                    value={values.available ? 'Available' : 'Unavailable'}
+                    style={styles.input}
+                  />
+                </TouchableWithoutFeedback>
 
-          <LabeledInput label="Serial" value={item.serial || ''} style={styles.input} />
-          <LabeledInput label="Type" value={item.type} style={styles.input} />
-          <LabeledInput
-            label="Vendor Name"
-            value={item.vendorName || ''}
-            style={styles.input}
-          />
-          <LabeledInput
-            label="Vendor Price"
-            value={item.vendorPrice?.toString() || ''}
-            style={styles.input}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
-      <Button text="Save" style={styles.saveButton} />
-    </View>
+                <TouchableWithoutFeedback
+                  onPress={() =>
+                    Platform.select({
+                      ios: setDateSheetShowing(true),
+                      android: setDatePickerShowing(true)
+                    })
+                  }
+                >
+                  <LabeledInput
+                    disabled
+                    label="Purchase Date"
+                    value={purchaseDate}
+                    style={styles.input}
+                  />
+                </TouchableWithoutFeedback>
+
+                {renderPurchaseDatePicker()}
+
+                <LabeledInput
+                  label="Serial"
+                  value={values.serial || undefined}
+                  style={styles.input}
+                  onChangeText={handleChange('serial')}
+                />
+                <LabeledInput
+                  label="Type"
+                  onChangeText={handleChange('type')}
+                  value={values.type}
+                  style={styles.input}
+                />
+                <LabeledInput
+                  label="Vendor Name"
+                  value={values.vendorName || undefined}
+                  style={styles.input}
+                  onChangeText={handleChange('vendorName')}
+                />
+                <LabeledInput
+                  label="Vendor Price"
+                  value={values.vendorPrice?.toString() || undefined}
+                  onChangeText={value => setFieldValue('vendorPrice', value)}
+                  style={styles.input}
+                  keyboardType="numeric"
+                  returnKeyType="done"
+                />
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+          <Button text="Save" style={styles.saveButton} onPress={handleSubmit} />
+        </View>
+      )}
+    </Formik>
   );
 };
 
