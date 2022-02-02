@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
-  SafeAreaView,
   Platform,
   Alert
 } from 'react-native';
@@ -18,6 +17,7 @@ import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { Item, ItemImage } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { formatDate } from '../util/date';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type CarouselItem<T> = {
   index: number;
@@ -136,7 +136,7 @@ const ItemDetail = (): JSX.Element => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.contentBody}>

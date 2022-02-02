@@ -6,8 +6,7 @@ import {
   View,
   Platform,
   ScrollView,
-  BackHandler,
-  SafeAreaView
+  BackHandler
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import BackTitleHeader from '../components/BackTitleHeader';
@@ -25,6 +24,33 @@ import { Formik, FormikHelpers } from 'formik';
 import { Item } from '../types/API';
 import * as yup from 'yup';
 import Alert from '../components/Alert';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const itemSchema = yup.object({
+  name: yup.string().trim().required('A name is required'),
+  description: yup.string().trim().optional(),
+  vendorName: yup.string().trim().optional(),
+  barcode: yup.string().trim().required('This item must have a barcode'),
+  location: yup.string().trim().required('Location is required'),
+  type: yup.string().trim().required('Type is required'),
+  serial: yup.string().trim().optional(),
+  quantity: yup
+    .number()
+    .required('Quantity is required')
+    .positive()
+    .min(0, 'Quantity must by greater than 0')
+    .integer('Quantity cannot contain decimals'),
+  vendorPrice: yup
+    .number()
+    .notRequired()
+    .typeError('Invalid vendor price')
+    .nullable(true)
+    // Because trying to parse an empty string to a number would result in an
+    // error, we have to instead return null since the schema allows it
+    .transform((value: string, originalValue: string) =>
+      originalValue === '' ? null : value
+    )
+});
 
 /**
  * Because not all react native components work on all devices, there are a
@@ -43,32 +69,7 @@ const EditItemScreen = (): JSX.Element => {
   const [purchaseDate, setPurchaseDate] = useState(
     item.purchaseDate ? formatDate(item.purchaseDate, false) : ''
   );
-
-  const itemSchema = yup.object({
-    name: yup.string().trim().required('A name is required'),
-    description: yup.string().trim().optional(),
-    vendorName: yup.string().trim().optional(),
-    barcode: yup.string().trim().required('This item must have a barcode'),
-    location: yup.string().trim().required('Location is required'),
-    type: yup.string().trim().required('Type is required'),
-    serial: yup.string().trim().optional(),
-    quantity: yup
-      .number()
-      .required('Quantity is required')
-      .positive()
-      .min(0, 'Quantity must by greater than 0')
-      .integer('Quantity cannot contain decimals'),
-    vendorPrice: yup
-      .number()
-      .notRequired()
-      .typeError('Invalid vendor price')
-      .nullable(true)
-      // Because trying to parse an empty string to a number would result in an
-      // error, we have to instead return null since the schema allows it
-      .transform((value: string, originalValue: string) =>
-        originalValue === '' ? null : value
-      )
-  });
+  const insets = useSafeAreaInsets();
 
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
@@ -350,7 +351,15 @@ const EditItemScreen = (): JSX.Element => {
               </View>
             </ScrollView>
           </KeyboardAvoidingView>
-          <Button text="Save" style={styles.saveButton} onPress={handleSubmit} />
+          <Button
+            text="Save"
+            style={{
+              ...styles.saveButton,
+              marginBottom:
+                insets.bottom === 0 ? 8 : Platform.select({ ios: 0, android: 8 })
+            }}
+            onPress={handleSubmit}
+          />
         </SafeAreaView>
       )}
     </Formik>

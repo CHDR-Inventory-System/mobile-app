@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from './src/types/API';
 import EditItemScreen from './src/screens/EditItemScreen';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -90,15 +91,17 @@ const App = (): JSX.Element => {
   }
 
   return (
-    <ActionSheetProvider>
-      <PortalProvider>
-        <Portal>
-          <UserProvider initialValue={initialUserValue}>
-            <NavigationContainer>{stack}</NavigationContainer>
-          </UserProvider>
-        </Portal>
-      </PortalProvider>
-    </ActionSheetProvider>
+    <SafeAreaProvider>
+      <ActionSheetProvider>
+        <PortalProvider>
+          <Portal>
+            <UserProvider initialValue={initialUserValue}>
+              <NavigationContainer>{stack}</NavigationContainer>
+            </UserProvider>
+          </Portal>
+        </PortalProvider>
+      </ActionSheetProvider>
+    </SafeAreaProvider>
   );
 };
 
