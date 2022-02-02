@@ -52,7 +52,8 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
         onPress: logout
       },
       {
-        text: 'Cancel'
+        text: 'Cancel',
+        style: 'cancel'
       }
     ]);
   };

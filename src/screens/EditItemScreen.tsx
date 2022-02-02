@@ -86,10 +86,12 @@ const EditItemScreen = (): JSX.Element => {
       [
         {
           text: 'Go Back',
+          style: 'destructive',
           onPress: () => navigation.goBack()
         },
         {
-          text: 'Cancel'
+          text: 'Cancel',
+          style: 'cancel'
         }
       ]
     );

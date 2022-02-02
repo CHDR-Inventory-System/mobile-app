@@ -15,6 +15,16 @@ class API {
 
     return response.data;
   }
+
+  static async deleteItem(id: number): Promise<void> {
+    const response = await axios.delete(`/inventory/item/${id}`, {
+      data: {
+        id
+      }
+    });
+
+    return response.data;
+  }
 }
 
 export default API;

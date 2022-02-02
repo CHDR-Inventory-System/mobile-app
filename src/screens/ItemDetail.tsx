@@ -6,7 +6,8 @@ import {
   ScrollView,
   Dimensions,
   SafeAreaView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -93,18 +94,45 @@ const ItemDetail = (): JSX.Element => {
       <>
         <Text style={styles.itemChildrenHeader}>Children</Text>
         <Text style={styles.childrenSubtitle}>Tap an item to view its details</Text>
-        {item.children.map(child => (
-          <Button
-            activeOpacity={0.2}
-            key={child.ID}
-            text={child.name.replace(/[\n\r]+/g, '')}
-            style={styles.itemChildButton}
-            textStyle={styles.itemChildText}
-            onPress={() => goToItemDetailScreen(child)}
-          />
-        ))}
+        <View style={styles.childrenList}>
+          {item.children.map(child => (
+            <Button
+              activeOpacity={0.2}
+              key={child.ID}
+              text={child.name.replace(/[\n\r]+/g, '')}
+              style={styles.itemChildButton}
+              textStyle={styles.itemChildText}
+              onPress={() => goToItemDetailScreen(child)}
+            />
+          ))}
+        </View>
       </>
     );
+  };
+
+  const deleteItem = async () => {
+    // TODO: Make API call here
+    navigation.pop();
+  };
+
+  const showDeleteItemAlert = () => {
+    const title = item.main ? 'Delete Item' : 'Delete Child Item';
+
+    const message = item.main
+      ? 'Are you sure? This will delete all children, images, and reservations associated with this item.'
+      : 'Are you sure? This will delete all, images, and reservations associated with this item (the parent item will not be deleted).';
+
+    Alert.alert(title, message, [
+      {
+        text: 'Delete',
+        onPress: deleteItem,
+        style: 'destructive'
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel'
+      }
+    ]);
   };
 
   return (
@@ -139,6 +167,12 @@ const ItemDetail = (): JSX.Element => {
             onPress={() => goToEditScreen(item)}
           />
           {item.main && <Button text="Add Child Item" style={styles.actionButton} />}
+          <Button
+            text="Delete Item"
+            style={styles.actionButton}
+            variant="danger"
+            onPress={showDeleteItemAlert}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -219,6 +253,9 @@ const styles = StyleSheet.create({
   itemChildText: {
     color: '#000',
     fontFamily: Fonts.text
+  },
+  childrenList: {
+    marginBottom: 16
   }
 });
 

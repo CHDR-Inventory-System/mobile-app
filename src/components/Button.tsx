@@ -11,6 +11,7 @@ import { Colors, Fonts } from '../global-styles';
 
 type ButtonProps = {
   text: string;
+  variant?: 'primary' | 'danger';
   icon?: JSX.Element;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -24,29 +25,44 @@ const Button = ({
   textStyle,
   text,
   icon,
+  variant = 'primary',
   activeOpacity = 0.8,
   onPress = () => {},
   disabled = false
-}: ButtonProps): JSX.Element => (
-  <TouchableOpacity
-    disabled={disabled}
-    activeOpacity={activeOpacity}
-    style={[styles.button, disabled ? styles.disabled : {}, style]}
-    onPress={onPress}
-  >
-    <View style={styles.contentRow}>
-      <Text style={[styles.buttonText, textStyle]}>{text}</Text>
-      {icon && <View style={styles.icon}>{icon}</View>}
-    </View>
-  </TouchableOpacity>
-);
+}: ButtonProps): JSX.Element => {
+  const styleMap = {
+    primary: styles.primary,
+    danger: styles.danger
+  };
+
+  const disabledStyle = disabled ? styles.disabled : {};
+
+  return (
+    <TouchableOpacity
+      disabled={disabled}
+      activeOpacity={activeOpacity}
+      style={[styles.button, disabledStyle, styleMap[variant], style]}
+      onPress={onPress}
+    >
+      <View style={styles.contentRow}>
+        <Text style={[styles.buttonText, textStyle]}>{text}</Text>
+        {icon && <View style={styles.icon}>{icon}</View>}
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   disabled: {
     backgroundColor: '#C4C4CA'
   },
+  primary: {
+    backgroundColor: Colors['monoChromatic-1']
+  },
+  danger: {
+    backgroundColor: Colors.danger
+  },
   button: {
-    backgroundColor: Colors['monoChromatic-1'],
     borderRadius: 6,
     alignItems: 'center',
     paddingTop: 14,
