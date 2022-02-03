@@ -19,7 +19,11 @@ const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
     <View style={[styles.container, style]}>
       <ImageWithFallback
         style={styles.image}
-        source={{ uri: item.images[0]?.imageURL || undefined }}
+        source={
+          // Passing undefined if there are no images so that the
+          // image component will show the "No image available" placeholder
+          item.images.length === 0 ? undefined : { uri: item.images[0].imageURL }
+        }
       />
       <Text style={styles.itemName}>{item.name.replace(/[\n\r]+/g, '')}</Text>
       {item.description && (

@@ -5,28 +5,31 @@ import {
   ImageProps,
   ImageSourcePropType,
   ImageStyle,
-  ImageURISource,
   ActivityIndicator,
   StyleSheet,
-  TouchableOpacity
+  TouchableOpacity,
+  ViewStyle,
+  ImageURISource,
+  GestureResponderEvent
 } from 'react-native';
 
 type ImageWithFallbackProps = {
-  source: ImageSourcePropType | null;
+  source?: ImageSourcePropType;
   style?: ImageStyle;
+  onLongPress?: (event: GestureResponderEvent) => void;
 } & Omit<ImageProps, 'source'>;
 
 /**
  * This component displays images and takes all the regular props an
  * {@link Image} does, however, it also displays a loading indicator while the
  * image loads and displays an error image if the image failed to load,
- * or a "no-image-available" image if this component received an empty string
+ * or a "no-image-available" image if this component received a falsy value
  * for the source.
  */
 const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
+  const { source, style, onLongPress, ...imageProps } = props;
   const [didImageFail, setDidImageFail] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const { source, style, ...imageProps } = props;
 
   const onErrorImagePress = () => {
     setDidImageFail(false);
@@ -48,7 +51,8 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
           ...styles.loadingContainer,
           borderRadius: style?.borderRadius,
           width: style?.width,
-          height: style?.height
+          height: style?.height,
+          ...(style as ViewStyle)
         }}
       >
         <ActivityIndicator size="large" />
@@ -56,37 +60,50 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
     );
 
   const renderImage = () => {
-    const errorImageSource = didImageFail
-      ? require('../../assets/images/error-image-placeholder.png')
-      : require('../../assets/images/no-image-placeholder.png');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const errorImageSource = require('../../assets/images/error-image-placeholder.png');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const noImageSource = require('../../assets/images/no-image-placeholder.png');
 
-    // If the image fails to load, we need to show the "error image" place holder.
-    // If there is no image, we'll just show the "no image" placeholder.
-    if (didImageFail || !source || !(source as ImageURISource).uri) {
+    if (source === undefined || source === null) {
+      return <Image style={style} source={noImageSource} {...imageProps} />;
+    }
+
+    if (didImageFail) {
       return (
         <TouchableOpacity
-          onPress={didImageFail ? onErrorImagePress : undefined}
-          activeOpacity={didImageFail ? 0.7 : 1}
+          onPress={onErrorImagePress}
+          onLongPress={onLongPress}
+          activeOpacity={0.7}
         >
           <Image style={style} source={errorImageSource} {...imageProps} />
         </TouchableOpacity>
       );
     }
 
+    // Because image load events won't fire if the image URI is null
+    // or undefined, we need to use some non-empty string to force those
+    // events to fire.
+    if (!(source as ImageURISource)?.uri) {
+      (source as ImageURISource).uri = 'INVALID';
+    }
+
     return (
-      <Image
-        style={style}
-        onError={onImageLoadError}
-        source={source}
-        onLoadStart={() => setLoading(true)}
-        onLoadEnd={() => setLoading(false)}
-        {...imageProps}
-      />
+      <TouchableOpacity onLongPress={onLongPress} activeOpacity={!!onLongPress ? 0.7 : 1}>
+        <Image
+          style={style}
+          onError={onImageLoadError}
+          source={source}
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
+          {...imageProps}
+        />
+      </TouchableOpacity>
     );
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       {renderLoader()}
       {renderImage()}
     </View>
@@ -94,6 +111,9 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'relative'
+  },
   loadingContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1,

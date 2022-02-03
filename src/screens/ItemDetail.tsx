@@ -61,7 +61,7 @@ const ItemDetail = (): JSX.Element => {
     // "no-image-available" placeholder image
     if (item.images.length === 0) {
       return (
-        <ImageWithFallback style={[styles.fallbackImage, styles.image]} source={null} />
+        <ImageWithFallback style={[styles.fallbackImage, styles.image]} />
       );
     }
 

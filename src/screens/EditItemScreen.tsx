@@ -20,11 +20,14 @@ import { Portal } from '@gorhom/portal';
 import { BottomSheetBackdropProps, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import Button from '../components/Button';
 import { formatDate } from '../util/date';
-import { Formik, FormikHelpers } from 'formik';
+import { Formik, FormikHelpers, FormikProps } from 'formik';
 import { Item } from '../types/API';
 import * as yup from 'yup';
 import Alert from '../components/Alert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import ImageEditList from '../components/edit/ImageEditList';
+import { Fonts } from '../global-styles';
+import LoadingOverlay from '../components/Loading';
 
 const itemSchema = yup.object({
   name: yup.string().trim().required('A name is required'),
@@ -66,6 +69,7 @@ const EditItemScreen = (): JSX.Element => {
   const { showActionSheetWithOptions } = useActionSheet();
   const [isDatePickerShowing, setDatePickerShowing] = useState(false);
   const [isDateSheetShowing, setDateSheetShowing] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState(
     item.purchaseDate ? formatDate(item.purchaseDate, false) : ''
   );
@@ -106,25 +110,28 @@ const EditItemScreen = (): JSX.Element => {
   const showStatusActionSheet = (setFieldValue: FormikHelpers<Item>['setFieldValue']) => {
     const options = [
       {
-        title: 'Cancel',
-        value: undefined
-      },
-      {
         title: 'Available',
         value: true
       },
       {
         title: 'Unavailable',
         value: false
+      },
+      {
+        title: 'Cancel',
+        value: undefined
       }
     ];
     showActionSheetWithOptions(
       {
         options: options.map(({ title }) => title),
-        cancelButtonIndex: 0
+        cancelButtonIndex: 2,
+        textStyle: {
+          fontFamily: Fonts.text
+        }
       },
       buttonIndex => {
-        if (buttonIndex !== undefined && buttonIndex > 0) {
+        if (buttonIndex !== undefined && buttonIndex !== 2) {
           setFieldValue('available', options[buttonIndex].value);
         }
       }
@@ -200,10 +207,10 @@ const EditItemScreen = (): JSX.Element => {
     );
   };
 
-  const handleSubmit = (item: Item) => {
+  const onFormSubmit = (item: Item) => {
     // eslint-disable-next-line no-console
     console.log(itemSchema.cast(item));
-    navigation.goBack();
+    // navigation.goBack();
   };
 
   useEffect(() => {
@@ -214,161 +221,172 @@ const EditItemScreen = (): JSX.Element => {
     };
   }, []);
 
+  const renderForm = ({
+    handleChange,
+    values,
+    setFieldValue,
+    errors,
+    handleSubmit
+  }: FormikProps<Readonly<Item>>) => (
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+      <LoadingOverlay loading={isLoading} />
+      <BackTitleHeader
+        title="Edit Item"
+        onBackPress={confirmBackPress}
+        style={styles.header}
+      />
+      <KeyboardAvoidingView
+        behavior="height"
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={125}
+      >
+        <ScrollView style={styles.inputContainer} showsVerticalScrollIndicator={false}>
+          <Alert
+            title="Required Fields"
+            message="Fields marked with an asterisk are required."
+            type="info"
+            style={styles.requiredFieldsAlert}
+          />
+          <View>
+            <LabeledInput
+              required
+              label="Name"
+              value={values.name}
+              style={styles.input}
+              onChangeText={handleChange('name')}
+              returnKeyType="done"
+              errorMessage={errors.name}
+            />
+            <LabeledInput
+              multiline
+              onChangeText={handleChange('description')}
+              label="Description"
+              value={values.description || undefined}
+              style={styles.input}
+              inputStyle={styles.multilineInput}
+            />
+            <LabeledInput
+              required
+              label="Location"
+              onChangeText={handleChange('location')}
+              value={values.location}
+              style={styles.input}
+              returnKeyType="done"
+              errorMessage={errors.location}
+            />
+            <LabeledInput
+              required
+              label="Barcode"
+              value={values.barcode}
+              style={styles.input}
+              onChangeText={handleChange('barcode')}
+              returnKeyType="done"
+              errorMessage={errors.barcode}
+            />
+            <LabeledInput
+              required
+              label="Quantity"
+              value={values.quantity.toString() || undefined}
+              onChangeText={value => setFieldValue('quantity', value)}
+              keyboardType="decimal-pad"
+              returnKeyType="done"
+              style={styles.input}
+              errorMessage={errors.quantity}
+            />
+
+            <TouchableWithoutFeedback
+              onPress={() => showStatusActionSheet(setFieldValue)}
+            >
+              <LabeledInput
+                disabled
+                required
+                label="Status"
+                editable={false}
+                value={values.available ? 'Available' : 'Unavailable'}
+                style={styles.input}
+              />
+            </TouchableWithoutFeedback>
+
+            <TouchableWithoutFeedback
+              onPress={() =>
+                Platform.select({
+                  ios: setDateSheetShowing(true),
+                  android: setDatePickerShowing(true)
+                })
+              }
+            >
+              <LabeledInput
+                disabled
+                required
+                label="Purchase Date"
+                value={purchaseDate}
+                style={styles.input}
+              />
+            </TouchableWithoutFeedback>
+
+            {renderPurchaseDatePicker()}
+
+            <LabeledInput
+              label="Serial"
+              value={values.serial || undefined}
+              style={styles.input}
+              onChangeText={handleChange('serial')}
+            />
+            <LabeledInput
+              required
+              label="Type"
+              onChangeText={handleChange('type')}
+              value={values.type}
+              style={styles.input}
+              errorMessage={errors.type}
+            />
+            <LabeledInput
+              label="Vendor Name"
+              value={values.vendorName || undefined}
+              style={styles.input}
+              onChangeText={handleChange('vendorName')}
+              returnKeyType="done"
+            />
+            <LabeledInput
+              label="Vendor Price"
+              value={values.vendorPrice?.toString() || undefined}
+              onChangeText={value => setFieldValue('vendorPrice', value)}
+              style={styles.input}
+              keyboardType="numeric"
+              returnKeyType="done"
+              errorMessage={errors.vendorPrice}
+            />
+          </View>
+          <ImageEditList onLoadStateChange={setLoading} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <Button
+        text="Save"
+        style={{
+          ...styles.saveButton,
+          marginBottom: insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })
+        }}
+        onPress={handleSubmit}
+      />
+    </SafeAreaView>
+  );
+
   return (
     <Formik
       initialValues={item}
-      onSubmit={handleSubmit}
+      onSubmit={values => onFormSubmit(values)}
       validationSchema={itemSchema}
       validateOnChange={false}
     >
-      {({ handleChange, handleSubmit, values, setFieldValue, errors }) => (
-        <SafeAreaView style={{ flex: 1 }}>
-          <KeyboardAvoidingView
-            behavior="height"
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={125}
-          >
-            <BackTitleHeader
-              title="Edit Item"
-              onBackPress={confirmBackPress}
-              style={styles.header}
-            />
-            <ScrollView style={styles.inputContainer} showsVerticalScrollIndicator={true}>
-              <Alert
-                message="Fields marked with an asterisk are required."
-                type="info"
-                style={styles.requiredFieldsAlert}
-              />
-              <View>
-                <LabeledInput
-                  required
-                  label="Name"
-                  value={values.name}
-                  style={styles.input}
-                  onChangeText={handleChange('name')}
-                  returnKeyType="done"
-                  errorMessage={errors.name}
-                />
-                <LabeledInput
-                  multiline
-                  onChangeText={handleChange('description')}
-                  label="Description"
-                  value={values.description || undefined}
-                  style={styles.input}
-                  inputStyle={styles.multilineInput}
-                />
-                <LabeledInput
-                  required
-                  label="Location"
-                  onChangeText={handleChange('location')}
-                  value={values.location}
-                  style={styles.input}
-                  returnKeyType="done"
-                  errorMessage={errors.location}
-                />
-                <LabeledInput
-                  required
-                  label="Barcode"
-                  value={values.barcode}
-                  style={styles.input}
-                  onChangeText={handleChange('barcode')}
-                  returnKeyType="done"
-                  errorMessage={errors.barcode}
-                />
-                <LabeledInput
-                  required
-                  label="Quantity"
-                  value={values.quantity.toString() || undefined}
-                  onChangeText={value => setFieldValue('quantity', value)}
-                  keyboardType="decimal-pad"
-                  returnKeyType="done"
-                  style={styles.input}
-                  errorMessage={errors.quantity}
-                />
-
-                <TouchableWithoutFeedback
-                  onPress={() => showStatusActionSheet(setFieldValue)}
-                >
-                  <LabeledInput
-                    disabled
-                    required
-                    label="Status"
-                    editable={false}
-                    value={values.available ? 'Available' : 'Unavailable'}
-                    style={styles.input}
-                  />
-                </TouchableWithoutFeedback>
-
-                <TouchableWithoutFeedback
-                  onPress={() =>
-                    Platform.select({
-                      ios: setDateSheetShowing(true),
-                      android: setDatePickerShowing(true)
-                    })
-                  }
-                >
-                  <LabeledInput
-                    disabled
-                    required
-                    label="Purchase Date"
-                    value={purchaseDate}
-                    style={styles.input}
-                  />
-                </TouchableWithoutFeedback>
-
-                {renderPurchaseDatePicker()}
-
-                <LabeledInput
-                  label="Serial"
-                  value={values.serial || undefined}
-                  style={styles.input}
-                  onChangeText={handleChange('serial')}
-                />
-                <LabeledInput
-                  required
-                  label="Type"
-                  onChangeText={handleChange('type')}
-                  value={values.type}
-                  style={styles.input}
-                  errorMessage={errors.type}
-                />
-                <LabeledInput
-                  label="Vendor Name"
-                  value={values.vendorName || undefined}
-                  style={styles.input}
-                  onChangeText={handleChange('vendorName')}
-                  returnKeyType="done"
-                />
-                <LabeledInput
-                  label="Vendor Price"
-                  value={values.vendorPrice?.toString() || undefined}
-                  onChangeText={value => setFieldValue('vendorPrice', value)}
-                  style={styles.input}
-                  keyboardType="numeric"
-                  returnKeyType="done"
-                  errorMessage={errors.vendorPrice}
-                />
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
-          <Button
-            text="Save"
-            style={{
-              ...styles.saveButton,
-              marginBottom:
-                insets.bottom === 0 ? 8 : Platform.select({ ios: 0, android: 8 })
-            }}
-            onPress={handleSubmit}
-          />
-        </SafeAreaView>
-      )}
+      {props => renderForm(props)}
     </Formik>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    marginTop: Platform.select({
+    zIndex: 200,
+    paddingTop: Platform.select({
       ios: 8,
       android: 32
     })
