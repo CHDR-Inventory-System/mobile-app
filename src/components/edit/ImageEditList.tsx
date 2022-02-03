@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFormikContext } from 'formik';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import { StyleSheet, View, Text, Alert, Platform } from 'react-native';
 import { Colors, Fonts } from '../../global-styles';
 import { Item, ItemImage } from '../../types/API';
 import ImageWithFallback from '../../components/ImageWithFallback';
@@ -77,7 +77,10 @@ const ImageEditList = ({ onLoadStateChange }: ImageEditListProps): JSX.Element =
     showActionSheetWithOptions(
       {
         options: options.map(({ title }) => title),
-        cancelButtonIndex: 2,
+        cancelButtonIndex: options.length - 1,
+        destructiveButtonIndex: Platform.select({
+          android: options.length  - 1
+        }),
         textStyle: {
           fontFamily: Fonts.text
         }

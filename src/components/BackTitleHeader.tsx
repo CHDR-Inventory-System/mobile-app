@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  TouchableOpacity,
   Text,
   StyleSheet,
   ViewStyle,
@@ -12,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { platformValue } from '../util/platform';
 import { Colors, Fonts } from '../global-styles';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type BackTitleHeaderProps = {
   title: string;
@@ -43,9 +43,9 @@ const BackTitleHeader = ({
 
   return (
     <View style={[styles.header, style]}>
-      <TouchableOpacity activeOpacity={1} onPress={handleBackPress}>
+      <TouchableWithoutFeedback onPress={handleBackPress}>
         <AntDesign name="arrowleft" size={32} color="black" style={styles.icon} />
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
       <View style={styles.itemNameContainer}>
         <Text style={[styles.itemName, titleStyle]}>{title}</Text>
       </View>

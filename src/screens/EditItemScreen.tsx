@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert as RNAlert,
   KeyboardAvoidingView,
@@ -12,27 +12,21 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { NavigationProps, RouteProps } from '../types/navigation';
 import LabeledInput from '../components/LabeledInput';
-import { useActionSheet } from '@expo/react-native-action-sheet';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import BottomSheet from '@gorhom/bottom-sheet';
-import { Portal } from '@gorhom/portal';
-import { BottomSheetBackdropProps, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import Button from '../components/Button';
-import { formatDate } from '../util/date';
-import { Formik, FormikHelpers, FormikProps } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import { Item } from '../types/API';
 import * as yup from 'yup';
 import Alert from '../components/Alert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import ImageEditList from '../components/edit/ImageEditList';
-import { Fonts } from '../global-styles';
 import LoadingOverlay from '../components/Loading';
+import Select from '../components/Select';
+import DatePickerInput from '../components/DatePickerInput';
 
 const itemSchema = yup.object({
   name: yup.string().trim().required('A name is required'),
-  description: yup.string().trim().optional(),
-  vendorName: yup.string().trim().optional(),
+  description: yup.string().trim().optional().nullable(true),
+  vendorName: yup.string().trim().optional().nullable(true),
   barcode: yup.string().trim().required('This item must have a barcode'),
   location: yup.string().trim().required('Location is required'),
   type: yup.string().trim().required('Type is required'),
@@ -66,23 +60,8 @@ const itemSchema = yup.object({
 const EditItemScreen = (): JSX.Element => {
   const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
   const navigation = useNavigation<NavigationProps>();
-  const { showActionSheetWithOptions } = useActionSheet();
-  const [isDatePickerShowing, setDatePickerShowing] = useState(false);
-  const [isDateSheetShowing, setDateSheetShowing] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [purchaseDate, setPurchaseDate] = useState(
-    item.purchaseDate ? formatDate(item.purchaseDate, false) : ''
-  );
   const insets = useSafeAreaInsets();
-
-  // Need to modify the backdrop so that it shows up if we only have one snap point
-  // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop disappearsOnIndex={-1} appearsOnIndex={0} {...props} />
-    ),
-    []
-  );
 
   const confirmBackPress = () => {
     RNAlert.alert(
@@ -107,107 +86,7 @@ const EditItemScreen = (): JSX.Element => {
     return true;
   };
 
-  const showStatusActionSheet = (setFieldValue: FormikHelpers<Item>['setFieldValue']) => {
-    const options = [
-      {
-        title: 'Available',
-        value: true
-      },
-      {
-        title: 'Unavailable',
-        value: false
-      },
-      {
-        title: 'Cancel',
-        value: undefined
-      }
-    ];
-    showActionSheetWithOptions(
-      {
-        options: options.map(({ title }) => title),
-        cancelButtonIndex: 2,
-        textStyle: {
-          fontFamily: Fonts.text
-        }
-      },
-      buttonIndex => {
-        if (buttonIndex !== undefined && buttonIndex !== 2) {
-          setFieldValue('available', options[buttonIndex].value);
-        }
-      }
-    );
-  };
-
-  /**
-   * On Android, this is called when the `OK` button on the date picker
-   * dialog is clicked. On iOS, it's called whenever the value of the
-   * picker slider changes.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onDatePickerChange = (event: Event, date?: Date | undefined) => {
-    if (date) {
-      setPurchaseDate(formatDate(date.toString(), false));
-    }
-
-    // Since the date picker only shows as a dialog on Android, we
-    // only need to worry about hiding it on Android
-    if (Platform.OS === 'android') {
-      setDatePickerShowing(false);
-    }
-  };
-
-  const renderDatePickerBottomSheet = () => {
-    if (!isDateSheetShowing) {
-      return false;
-    }
-
-    return (
-      <Portal>
-        <BottomSheet
-          onClose={() => setDateSheetShowing(false)}
-          snapPoints={['35%']}
-          backdropComponent={renderBackdrop}
-        >
-          <View style={{ flex: 1 }}>
-            <DateTimePicker
-              // Disabled because this type is too complicated to write out...
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              onChange={onDatePickerChange}
-              value={new Date(purchaseDate)}
-              mode="date"
-              display="spinner"
-              style={{ flex: 1 }}
-            />
-          </View>
-        </BottomSheet>
-      </Portal>
-    );
-  };
-
-  const renderPurchaseDatePicker = () => {
-    if (Platform.OS === 'ios') {
-      return renderDatePickerBottomSheet();
-    }
-
-    if (!isDatePickerShowing) {
-      return null;
-    }
-
-    return (
-      <DateTimePicker
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        onChange={onDatePickerChange}
-        value={new Date(purchaseDate)}
-        maximumDate={new Date()}
-        mode="date"
-        display="default"
-      />
-    );
-  };
-
-  const onFormSubmit = (item: Item) => {
+  const onFormSubmit = async (item: Item) => {
     // eslint-disable-next-line no-console
     console.log(itemSchema.cast(item));
     // navigation.goBack();
@@ -293,39 +172,33 @@ const EditItemScreen = (): JSX.Element => {
               style={styles.input}
               errorMessage={errors.quantity}
             />
-
-            <TouchableWithoutFeedback
-              onPress={() => showStatusActionSheet(setFieldValue)}
-            >
-              <LabeledInput
-                disabled
-                required
-                label="Status"
-                editable={false}
-                value={values.available ? 'Available' : 'Unavailable'}
-                style={styles.input}
-              />
-            </TouchableWithoutFeedback>
-
-            <TouchableWithoutFeedback
-              onPress={() =>
-                Platform.select({
-                  ios: setDateSheetShowing(true),
-                  android: setDatePickerShowing(true)
-                })
-              }
-            >
-              <LabeledInput
-                disabled
-                required
-                label="Purchase Date"
-                value={purchaseDate}
-                style={styles.input}
-              />
-            </TouchableWithoutFeedback>
-
-            {renderPurchaseDatePicker()}
-
+            <Select
+              required
+              label="Availability"
+              style={styles.input}
+              defaultIndex={values.available ? 0 : 1}
+              options={[
+                {
+                  title: 'Available',
+                  value: true,
+                  disabled: true,
+                  onSelect: () => setFieldValue('available', true)
+                },
+                {
+                  title: 'Unavailable',
+                  value: false,
+                  onSelect: () => setFieldValue('available', false)
+                }
+              ]}
+            />
+            <DatePickerInput
+              required
+              mode="date"
+              onChange={date => setFieldValue('purchaseDate', date)}
+              value={item.purchaseDate ? new Date(item.purchaseDate) : null}
+              label="Purchase Date"
+              style={styles.input}
+            />
             <LabeledInput
               label="Serial"
               value={values.serial || undefined}
@@ -362,11 +235,11 @@ const EditItemScreen = (): JSX.Element => {
       </KeyboardAvoidingView>
       <Button
         text="Save"
+        onPress={handleSubmit}
         style={{
           ...styles.saveButton,
           marginBottom: insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })
         }}
-        onPress={handleSubmit}
       />
     </SafeAreaView>
   );
