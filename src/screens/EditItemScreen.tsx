@@ -181,7 +181,6 @@ const EditItemScreen = (): JSX.Element => {
                 {
                   title: 'Available',
                   value: true,
-                  disabled: true,
                   onSelect: () => setFieldValue('available', true)
                 },
                 {

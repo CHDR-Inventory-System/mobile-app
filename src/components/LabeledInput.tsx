@@ -6,9 +6,9 @@ import {
   StyleSheet,
   TextStyle,
   ViewStyle,
-  TextInputProps
+  TextInputProps,
+  Platform
 } from 'react-native';
-import { platformValue } from '../util/platform';
 import { Colors, Fonts } from '../global-styles';
 
 type LabeledInputProps = {
@@ -69,8 +69,14 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.5 }, { translateY: 6 }]
   },
   input: {
-    paddingTop: platformValue(8, 12),
-    paddingBottom: platformValue(8, 12),
+    paddingTop: Platform.select({
+      android: 8,
+      ios: 12
+    }),
+    paddingBottom: Platform.select({
+      android: 8,
+      ios: 12
+    }),
     paddingLeft: 8,
     paddingRight: 8,
     fontSize: Fonts.defaultTextSize,

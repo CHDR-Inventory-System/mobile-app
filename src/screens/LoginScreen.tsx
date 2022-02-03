@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
@@ -14,7 +13,6 @@ import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
 import { Formik } from 'formik';
 import { Colors, Fonts } from '../global-styles';
-import { platformValue } from '../util/platform';
 import Alert, { AlertProps } from '../components/Alert';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
@@ -22,6 +20,8 @@ import API from '../util/API';
 import { AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useUser from '../hooks/user';
+import * as yup from 'yup';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Credentials = {
   nid: string;
@@ -33,6 +33,11 @@ type ErrorObject = {
   message: string;
   type: AlertProps['type'];
 };
+
+const validationSchema = yup.object({
+  nid: yup.string().required('You NID is required'),
+  password: yup.string().required('Your password is required')
+});
 
 const LoginScreen = (): JSX.Element => {
   const [isAlertShowing, setShowAlert] = useState(false);
@@ -46,22 +51,9 @@ const LoginScreen = (): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
   const { userDispatch } = useUser();
 
-  // login function called when login button is pressed
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     setIsLoading(true);
-
-    // see if either nid or password field is empty, if it is display error
-    if (credentials.nid === '' || credentials.password === '') {
-      setErrorObject({
-        title: 'Missing Field',
-        message: 'Your NID and/or password are required Please fill and try again',
-        type: 'error'
-      });
-      setShowAlert(true);
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const user = await API.login(credentials.nid, credentials.password);
@@ -75,7 +67,7 @@ const LoginScreen = (): JSX.Element => {
       setIsLoading(false);
       navigation.replace('Main');
     } catch (err) {
-      if ((err as AxiosError).response?.status === 404) {
+      if ((err as AxiosError).response?.status === 401) {
         setErrorObject({
           title: 'Invalid Credentials',
           message: 'Make sure your NID and password are correct and try again.',
@@ -103,13 +95,15 @@ const LoginScreen = (): JSX.Element => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
             <Formik
+              validateOnChange={false}
+              validationSchema={validationSchema}
               initialValues={{
                 nid: '',
                 password: ''
               }}
               onSubmit={login}
             >
-              {({ handleChange, handleBlur, handleSubmit }) => (
+              {({ handleChange, handleSubmit, errors }) => (
                 <View style={styles.formContentContainer}>
                   <View>
                     <View style={styles.header}>
@@ -119,19 +113,19 @@ const LoginScreen = (): JSX.Element => {
                     <View style={styles.inputContainer}>
                       <LabeledInput
                         autoCapitalize="none"
-                        onBlur={handleBlur('nid')}
                         label="NID"
                         placeholder="UCF NID"
                         style={styles.input}
                         onChangeText={handleChange('nid')}
+                        errorMessage={errors.nid}
                       />
                       <LabeledInput
-                        onBlur={handleBlur('password')}
                         label="Password"
                         secureTextEntry
                         placeholder="UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
+                        errorMessage={errors.password}
                       />
                       {isAlertShowing && (
                         <Alert
@@ -171,7 +165,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   header: {
-    paddingTop: platformValue(64, 42),
+    paddingTop: Platform.select({
+      android: 48,
+      ios: 36
+    }),
     paddingBottom: 24
   },
   title: {

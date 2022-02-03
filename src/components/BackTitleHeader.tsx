@@ -1,15 +1,8 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TextStyle
-} from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, TextStyle, Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
-import { platformValue } from '../util/platform';
 import { Colors, Fonts } from '../global-styles';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
@@ -78,7 +71,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     lineHeight: 30,
     flexShrink: 1,
-    marginTop: platformValue(0, 4)
+    marginTop: Platform.select({
+      android: 0,
+      ios: 4
+    })
   }
 });
 

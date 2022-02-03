@@ -16,8 +16,8 @@ import ImageWithFallback from '../components/ImageWithFallback';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { Item, ItemImage } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
-import { formatDate } from '../util/date';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import moment from 'moment';
 
 type CarouselItem<T> = {
   index: number;
@@ -60,9 +60,7 @@ const ItemDetail = (): JSX.Element => {
     // If this item has no images, we still want to show the
     // "no-image-available" placeholder image
     if (item.images.length === 0) {
-      return (
-        <ImageWithFallback style={[styles.fallbackImage, styles.image]} />
-      );
+      return <ImageWithFallback style={[styles.fallbackImage, styles.image]} />;
     }
 
     return (
@@ -153,9 +151,12 @@ const ItemDetail = (): JSX.Element => {
           {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
           {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
           {renderItemProperty('Serial', item.serial)}
-          {renderItemProperty('Created', formatDate(item.created, false))}
+          {renderItemProperty('Created', moment(item.created).format('MMMM Do YYYY'))}
           {renderItemProperty('Type', item.type)}
-          {renderItemProperty('Purchase Date', formatDate(item.purchaseDate, false))}
+          {renderItemProperty(
+            'Purchase Date',
+            item.purchaseDate && moment(item.purchaseDate).format('MMMM Do YYYY')
+          )}
           {renderItemProperty('Vendor Name', item.vendorName)}
           {renderItemProperty('Vendor Price', item.vendorPrice)}
 
