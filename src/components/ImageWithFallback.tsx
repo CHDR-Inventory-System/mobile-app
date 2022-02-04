@@ -89,7 +89,7 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
     }
 
     return (
-      <TouchableOpacity onLongPress={onLongPress} activeOpacity={!!onLongPress ? 0.7 : 1}>
+      <TouchableOpacity onLongPress={onLongPress} activeOpacity={!!onLongPress ? 0.8 : 1}>
         <Image
           style={style}
           onError={onImageLoadError}

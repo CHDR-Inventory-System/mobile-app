@@ -1,10 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  ListRenderItemInfo
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native';
 import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,23 +10,26 @@ import { Platform } from 'expo-modules-core';
 import mockInventory from '../../assets/mocks/inventory.json';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
-import EmptyInventoryContent from '../components/EmptyInventoryContent';
+import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
 import LabeledInput from '../components/LabeledInput';
+import useInventory from '../hooks/inventory';
+import useLoader from '../hooks/loading';
 
 const MainScreen = (): JSX.Element => {
-  const [inventoryItems, setInventoryItems] = useState<Item[]>(mockInventory);
   // Because searching for items requires us to modify the main data source of
   // the FlatList component, we need to store the main items in a separate array
   // so we don't have to re-query the API every time a search is cleared
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [itemCache, setItemCache] = useState<Item[]>(mockInventory);
+  const [itemCache, setItemCache] = useState<Item[]>([]);
   const [isRefreshing, setRefreshing] = useState(false);
+  const inventory = useInventory();
+  const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
 
   const searchItem = (query: string) => {
     if (!query) {
-      setInventoryItems(itemCache);
+      inventory.setItems(itemCache);
       return;
     }
 
@@ -39,7 +37,7 @@ const MainScreen = (): JSX.Element => {
       item.name.toLowerCase().trim().includes(query.toLowerCase().trim())
     );
 
-    setInventoryItems(items);
+    inventory.setItems(items);
   };
 
   const renderInventoryItem = ({ item }: ListRenderItemInfo<Item>) => (
@@ -61,24 +59,33 @@ const MainScreen = (): JSX.Element => {
     </View>
   );
 
+  const fetchInventory = async () => {
+    // TODO: Make API request here
+    setRefreshing(true);
+    await loader.sleep(1000);
+
+    inventory.setItems(mockInventory);
+    setItemCache(mockInventory);
+
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
   return (
     <View style={styles.container}>
       <FlatList
         contentContainerStyle={{ flexGrow: 1 }}
         ListHeaderComponent={renderListHeader()}
         ListEmptyComponent={<EmptyInventoryContent refreshing={isRefreshing} />}
-        data={inventoryItems}
+        data={inventory.state}
         renderItem={renderInventoryItem}
         refreshing={isRefreshing}
         keyExtractor={item => item.ID.toString()}
         initialNumToRender={5}
-        onRefresh={() => {
-          setRefreshing(true);
-          setTimeout(() => {
-            setRefreshing(false);
-            setInventoryItems([...inventoryItems].sort(() => 0.5 - Math.random()));
-          }, 1000);
-        }}
+        onRefresh={fetchInventory}
       />
       <Button
         text="Scan Barcode"

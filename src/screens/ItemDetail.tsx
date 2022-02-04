@@ -1,42 +1,50 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Platform,
-  Alert
-} from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
 import Button from '../components/Button';
-import ImageWithFallback from '../components/ImageWithFallback';
-import Carousel, { Pagination } from 'react-native-snap-carousel';
-import { Item, ItemImage } from '../types/API';
+import { Item } from '../types/API';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import * as ImagePicker from 'expo-image-picker';
+import CameraBottomSheet from '../components/detail/CameraBottomSheet';
+import { CapturedPicture } from 'expo-camera/build/Camera.types';
+import ImageCarousel from '../components/detail/ImageCarousel';
+import { PortalHost } from '@gorhom/portal';
+import useLoader from '../hooks/loading';
+import useInventory from '../hooks/inventory';
+import LoadingOverlay from '../components/Loading';
 
-type CarouselItem<T> = {
-  index: number;
-  item: T;
-};
+const ItemDetail = (): JSX.Element | null => {
+  const { params } = useRoute<RouteProps<'ItemDetail'>>();
+  const inventory = useInventory();
 
-const { width: viewportWidth } = Dimensions.get('window');
+  // Because the inventory might be a large array to sort through, we need to
+  // make sure we only search through it if an item in the inventory changes
+  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.state]);
 
-const ItemDetail = (): JSX.Element => {
-  const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
-  const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
+  const { showActionSheetWithOptions } = useActionSheet();
+  const [isCameraSheetShowing, setCameraSheetShowing] = useState(false);
   const navigation = useNavigation<NavigationProps>();
+  const loader = useLoader();
 
-  const goToEditScreen = (item: Item) => {
-    navigation.navigate('EditItemScreen', item);
+  if (!item) {
+    return null;
+  }
+
+  const goToEditScreen = () => {
+    navigation.navigate('EditItemScreen', {
+      itemId: params.itemId
+    });
   };
 
-  const goToItemDetailScreen = (item: Item) => {
-    navigation.push('ItemDetail', item);
+  const goToChildItemDetailScreen = (childItem: Item) => {
+    navigation.push('ItemDetail', {
+      itemId: childItem.ID
+    });
   };
 
   const renderItemProperty = (property: string, value: string | number | null) => {
@@ -49,37 +57,6 @@ const ItemDetail = (): JSX.Element => {
         <Text style={styles.itemPropertyName}>{property}:</Text>
         <Text style={styles.itemPropertyValue}>{value}</Text>
       </View>
-    );
-  };
-
-  const renderImage = ({ item }: CarouselItem<ItemImage>) => (
-    <ImageWithFallback style={styles.image} source={{ uri: item.imageURL }} />
-  );
-
-  const renderImages = () => {
-    // If this item has no images, we still want to show the
-    // "no-image-available" placeholder image
-    if (item.images.length === 0) {
-      return <ImageWithFallback style={[styles.fallbackImage, styles.image]} />;
-    }
-
-    return (
-      <>
-        <Carousel
-          data={item.images}
-          renderItem={renderImage}
-          sliderWidth={viewportWidth * 0.93}
-          itemWidth={viewportWidth * 0.93}
-          onSnapToItem={index => setActiveCarouselIndex(index)}
-        />
-        <View style={{ marginBottom: item.images.length === 1 ? 32 : 0 }}>
-          <Pagination
-            dotStyle={{ marginBottom: -6 }}
-            dotsLength={item.images.length}
-            activeDotIndex={activeCarouselIndex}
-          />
-        </View>
-      </>
     );
   };
 
@@ -100,7 +77,7 @@ const ItemDetail = (): JSX.Element => {
               text={child.name.replace(/[\n\r]+/g, '')}
               style={styles.itemChildButton}
               textStyle={styles.itemChildText}
-              onPress={() => goToItemDetailScreen(child)}
+              onPress={() => goToChildItemDetailScreen(child)}
             />
           ))}
         </View>
@@ -109,7 +86,9 @@ const ItemDetail = (): JSX.Element => {
   };
 
   const deleteItem = async () => {
-    // TODO: Make API call here
+    loader.startLoading();
+    await inventory.deleteItem(item.ID);
+    loader.stopLoading();
     navigation.pop();
   };
 
@@ -133,12 +112,81 @@ const ItemDetail = (): JSX.Element => {
     ]);
   };
 
+  const addImage = async (image: CapturedPicture | ImagePicker.ImageInfo) => {
+    // const filename = image.uri.split('/').pop();
+    const { ID, images } = item;
+
+    loader.startLoading();
+
+    await inventory.uploadImage(ID, {
+      ID: images.length === 0 ? 0 : images[images.length - 1].ID + 1,
+      imagePath: image.uri,
+      created: new Date().toLocaleDateString(),
+      imageURL: image.uri
+    });
+
+    loader.stopLoading();
+  };
+
+  const choosePicture = async () => {
+    loader.startLoading();
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsMultipleSelection: false,
+      allowsEditing: false
+    });
+
+    loader.stopLoading();
+
+    if (result.cancelled) {
+      return;
+    }
+
+    addImage(result as ImagePicker.ImageInfo);
+  };
+
+  const renderImageActionSheet = async () => {
+    const options = [
+      {
+        title: 'Take Photo',
+        callback: () => setCameraSheetShowing(true)
+      },
+      {
+        title: 'Choose From Library',
+        callback: () => choosePicture()
+      },
+      {
+        title: 'Cancel'
+      }
+    ];
+
+    showActionSheetWithOptions(
+      {
+        options: options.map(({ title }) => title),
+        cancelButtonIndex: options.length - 1,
+        destructiveButtonIndex: Platform.select({
+          android: options.length - 1
+        }),
+        textStyle: {
+          fontFamily: Fonts.text
+        }
+      },
+      buttonIndex => {
+        if (buttonIndex !== undefined) {
+          options[buttonIndex].callback?.();
+        }
+      }
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
+      <PortalHost name="ItemDetail" />
+      <LoadingOverlay loading={loader.isLoading} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.contentBody}>
-          {renderImages()}
+          <ImageCarousel itemId={params.itemId} />
           {!!item.description && (
             <>
               <Text style={styles.descriptionSubtitle}>Description:</Text>
@@ -158,14 +206,18 @@ const ItemDetail = (): JSX.Element => {
             item.purchaseDate && moment(item.purchaseDate).format('MMMM Do YYYY')
           )}
           {renderItemProperty('Vendor Name', item.vendorName)}
-          {renderItemProperty('Vendor Price', item.vendorPrice)}
+          {renderItemProperty(
+            'Vendor Price',
+            (item.vendorPrice && `$${item.vendorPrice}`) || ''
+          )}
 
           {renderChildren()}
 
+          <Button text="Edit Item" style={styles.actionButton} onPress={goToEditScreen} />
           <Button
-            text="Edit Item"
+            text="Upload Image"
             style={styles.actionButton}
-            onPress={() => goToEditScreen(item)}
+            onPress={renderImageActionSheet}
           />
           {item.main && <Button text="Add Child Item" style={styles.actionButton} />}
           <Button
@@ -176,6 +228,12 @@ const ItemDetail = (): JSX.Element => {
           />
         </View>
       </ScrollView>
+      {isCameraSheetShowing && (
+        <CameraBottomSheet
+          onTakePicture={addImage}
+          onClose={() => setCameraSheetShowing(false)}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -185,8 +243,9 @@ const styles = StyleSheet.create({
     flex: 1
   },
   header: {
-    marginTop: Platform.select({
-      ios: 8,
+    zIndex: 11,
+    paddingTop: Platform.select({
+      ios: 12,
       android: 32
     })
   },
@@ -257,6 +316,13 @@ const styles = StyleSheet.create({
   },
   childrenList: {
     marginBottom: 16
+  },
+  imageDeleteText: {
+    fontFamily: Fonts.text,
+    color: Colors.textMuted,
+    fontSize: Fonts.defaultTextSize,
+    textAlign: 'center',
+    marginTop: 16
   }
 });
 

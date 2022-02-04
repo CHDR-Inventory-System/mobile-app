@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Colors, Fonts } from '../global-styles';
+import { Colors, Fonts } from '../../global-styles';
+import LoadingOverlay from '../Loading';
 
 type EmptyInventoryContentProps = {
   /**
@@ -18,7 +19,13 @@ const EmptyInventoryContent = ({
 }: EmptyInventoryContentProps): JSX.Element => (
   <View style={styles.emptyContentContainer}>
     {refreshing ? (
-      <Text style={styles.emptyTextTitle}>Loading...</Text>
+      <LoadingOverlay
+        text="Loading..."
+        loading={refreshing}
+        backdropStyle={styles.loaderBackdrop}
+        textStyle={styles.loaderText}
+        activityIndicatorColor={Colors.textMuted}
+      />
     ) : (
       <>
         <FontAwesome5 name="barcode" size={128} style={styles.barcodeIcon} />
@@ -32,6 +39,7 @@ const EmptyInventoryContent = ({
 const styles = StyleSheet.create({
   emptyContentContainer: {
     flexGrow: 1,
+    flex: 1,
     justifyContent: 'center',
     marginBottom: 84,
     alignItems: 'center'
@@ -51,6 +59,12 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     alignSelf: 'center',
     color: Colors.text
+  },
+  loaderBackdrop: {
+    backgroundColor: '#fff'
+  },
+  loaderText: {
+    color:  Colors.textMuted
   }
 });
 

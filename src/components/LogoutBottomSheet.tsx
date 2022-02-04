@@ -26,7 +26,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
   );
 
   const navigation = useNavigation<NavigationProps>();
-  const { userDispatch } = useUser();
+  const { dispatch: userDispatch } = useUser();
 
   const logout = async () => {
     onClose?.();

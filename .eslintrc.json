@@ -54,6 +54,10 @@
       "error",
       "never"
     ],
+    "curly": [
+      "error",
+      "all"
+    ],
     "semi": [
       "error",
       "always"

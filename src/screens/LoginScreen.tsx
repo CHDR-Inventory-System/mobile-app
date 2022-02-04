@@ -49,7 +49,7 @@ const LoginScreen = (): JSX.Element => {
   });
 
   const navigation = useNavigation<NavigationProps>();
-  const { userDispatch } = useUser();
+  const { dispatch: userDispatch } = useUser();
 
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();

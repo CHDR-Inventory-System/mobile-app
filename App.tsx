@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/LoginScreen';
 import MainScreen from './src/screens/MainScreen';
 import Navbar from './src/components/Navbar';
-import { Portal, PortalProvider } from '@gorhom/portal';
+import { PortalProvider } from '@gorhom/portal';
 import { RootStackParamsList } from './src/types/navigation';
 import BarcodeScanner from './src/screens/BarcodeScanner';
 import { Colors } from './src/global-styles';
@@ -17,13 +17,14 @@ import { User } from './src/types/API';
 import EditItemScreen from './src/screens/EditItemScreen';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { InventoryProvider } from './src/contexts/InventoryContext';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
   const [isLoading, setLoading] = useState(true);
-  const [initialUserValue, setInitialUserValue] = useState<User | null>(null);
+  const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
   const [fontsLoaded] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
     'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
@@ -93,13 +94,13 @@ const App = (): JSX.Element => {
   return (
     <SafeAreaProvider>
       <ActionSheetProvider>
-        <PortalProvider>
-          <Portal>
-            <UserProvider initialValue={initialUserValue}>
-              <NavigationContainer>{stack}</NavigationContainer>
-            </UserProvider>
-          </Portal>
-        </PortalProvider>
+        <UserProvider initialValue={initialUserValue}>
+          <InventoryProvider>
+            <NavigationContainer>
+              <PortalProvider>{stack}</PortalProvider>
+            </NavigationContainer>
+          </InventoryProvider>
+        </UserProvider>
       </ActionSheetProvider>
     </SafeAreaProvider>
   );

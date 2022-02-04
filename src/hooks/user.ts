@@ -6,7 +6,7 @@ const useUser = (): UserContextType => {
 
   if (!context) {
     throw new Error(
-      `Invalid hook call. Hooks can only be called
+      `Invalid hook call for useUser. Hooks can only be called
       inside of the body of a function component.`
     );
   }

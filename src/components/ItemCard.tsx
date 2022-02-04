@@ -15,6 +15,12 @@ type ItemCardProps = {
 const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
 
+  const goToItemDetailScreen = () => {
+    navigation.navigate('ItemDetail', {
+      itemId: item.ID
+    });
+  };
+
   return (
     <View style={[styles.container, style]}>
       <ImageWithFallback
@@ -26,13 +32,13 @@ const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
         }
       />
       <Text style={styles.itemName}>{item.name.replace(/[\n\r]+/g, '')}</Text>
-      {item.description && (
+      {!!item.description && (
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionSubtitle}>Description</Text>
           <Text style={styles.description}>{item.description}</Text>
         </View>
       )}
-      <Button text="View Item" onPress={() => navigation.navigate('ItemDetail', item)} />
+      <Button text="View Item" onPress={goToItemDetailScreen} />
     </View>
   );
 };

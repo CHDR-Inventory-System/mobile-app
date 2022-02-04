@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Alert as RNAlert,
   KeyboardAvoidingView,
@@ -18,10 +18,11 @@ import { Item } from '../types/API';
 import * as yup from 'yup';
 import Alert from '../components/Alert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import ImageEditList from '../components/edit/ImageEditList';
 import LoadingOverlay from '../components/Loading';
 import Select from '../components/Select';
 import DatePickerInput from '../components/DatePickerInput';
+import useInventory from '../hooks/inventory';
+import useLoader from '../hooks/loading';
 
 const itemSchema = yup.object({
   name: yup.string().trim().required('A name is required'),
@@ -49,18 +50,14 @@ const itemSchema = yup.object({
     )
 });
 
-/**
- * Because not all react native components work on all devices, there are a
- * few differences in this component between Android and iOS.
- *
- * `Android`: The date picker renders as a dialog
- *
- * `iOS`: The date picker renders as a native picker inside a bottom sheet
- */
 const EditItemScreen = (): JSX.Element => {
-  const { params: item } = useRoute<RouteProps<'ItemDetail'>>();
+  const { params } = useRoute<RouteProps<'ItemDetail'>>();
+  const inventory = useInventory();
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const item = useMemo(() => inventory.getItem(params.itemId)!, [inventory.state]);
   const navigation = useNavigation<NavigationProps>();
-  const [isLoading, setLoading] = useState(false);
+  const loader = useLoader();
   const insets = useSafeAreaInsets();
 
   const confirmBackPress = () => {
@@ -87,9 +84,10 @@ const EditItemScreen = (): JSX.Element => {
   };
 
   const onFormSubmit = async (item: Item) => {
-    // eslint-disable-next-line no-console
-    console.log(itemSchema.cast(item));
-    // navigation.goBack();
+    loader.startLoading();
+    await inventory.updateItem(item);
+    loader.stopLoading();
+    navigation.goBack();
   };
 
   useEffect(() => {
@@ -108,7 +106,7 @@ const EditItemScreen = (): JSX.Element => {
     handleSubmit
   }: FormikProps<Readonly<Item>>) => (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
-      <LoadingOverlay loading={isLoading} />
+      <LoadingOverlay loading={loader.isLoading} text="Saving" />
       <BackTitleHeader
         title="Edit Item"
         onBackPress={confirmBackPress}
@@ -138,6 +136,7 @@ const EditItemScreen = (): JSX.Element => {
             />
             <LabeledInput
               multiline
+              autoCorrect
               onChangeText={handleChange('description')}
               label="Description"
               value={values.description || undefined}
@@ -191,7 +190,6 @@ const EditItemScreen = (): JSX.Element => {
               ]}
             />
             <DatePickerInput
-              required
               mode="date"
               onChange={date => setFieldValue('purchaseDate', date)}
               value={item.purchaseDate ? new Date(item.purchaseDate) : null}
@@ -229,7 +227,6 @@ const EditItemScreen = (): JSX.Element => {
               errorMessage={errors.vendorPrice}
             />
           </View>
-          <ImageEditList onLoadStateChange={setLoading} />
         </ScrollView>
       </KeyboardAvoidingView>
       <Button
