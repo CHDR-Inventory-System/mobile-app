@@ -15,9 +15,7 @@ import { Formik, FormikHandlers } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
-import API from '../util/API';
 import { AxiosError } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import useUser from '../hooks/user';
 import * as yup from 'yup';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,20 +36,14 @@ const LoginScreen = (): JSX.Element => {
   const loader = useLoader();
 
   const navigation = useNavigation<NavigationProps>();
-  const { dispatch: userDispatch } = useUser();
+  const user = useUser();
 
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     loader.startLoading();
 
     try {
-      const user = await API.login(credentials.nid, credentials.password);
-      await AsyncStorage.setItem('user', JSON.stringify(user));
-
-      userDispatch({
-        type: 'INIT',
-        payload: user
-      });
+      await user.login(credentials.nid, credentials.password);
 
       loader.stopLoading();
       navigation.replace('Main');

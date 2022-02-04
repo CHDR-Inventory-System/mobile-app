@@ -25,15 +25,18 @@ const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
-  const loader = useLoader(true);
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
+  const loader = useLoader(true);
   const [fontsLoaded] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
     'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
     'Gotham-Bold': require('./assets/fonts/Gotham-Bold.ttf')
   });
 
-  const loadUser = () => {
+  const loadUserFromStorage = () => {
+    // If the user was previously logged in, grab their credentials
+    // from AsyncStorage, set the the user context object,
+    // then take them to the main screen
     AsyncStorage.getItem('user')
       .then(user => JSON.parse(user || '') as User)
       .then(user => {
@@ -86,7 +89,7 @@ const App = (): JSX.Element => {
   );
 
   useEffect(() => {
-    loadUser();
+    loadUserFromStorage();
   }, []);
 
   if (!fontsLoaded || loader.isLoading) {

@@ -17,21 +17,21 @@ type UseLoadingHook = {
 /**
  * A custom hook that pairs will with the `Loading` component. This
  * helps components manage their loading state.
- * 
- * @param {bool?} initialValue The initial loading state value (`false` by default)
- * 
+ *
+ * @param initialValue The initial loading state value (`false` by default)
+ *
  * @example
  * ```jsx
  * const Component = () => {
  *  const loader = useLoading();
- * 
+ *
  *  const fetchData = async () => {
  *    loading.startLoading();
  *    // Doing some work might take a while...
  *    loader.stopLoading();
  *  }
- * 
- * 
+ *
+ *
  *  return (
  *    <Loading isLoading={loader.isLoading}/>
  *  );
@@ -50,7 +50,7 @@ const useLoader = (initialValue = false): UseLoadingHook => {
   const sleep = (ms: number): Promise<void> => {
     if (!__DEV__) {
       // eslint-disable-next-line no-console
-      console.error("Don't use sleep() in a production environment");
+      console.error("Don't use sleep() in a production environment!");
       return Promise.resolve();
     }
 

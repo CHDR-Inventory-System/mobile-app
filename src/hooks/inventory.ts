@@ -20,7 +20,7 @@ const useInventory = (): UseInventoryHook => {
 
   if (!context) {
     throw new Error(
-      `Invalid hook call for useInventory. Hooks can only be called
+      `Invalid hook call for useInventory(). Hooks can only be called
       inside of the body of a function component.`
     );
   }
