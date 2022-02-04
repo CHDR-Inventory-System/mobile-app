@@ -13,7 +13,7 @@ import BackTitleHeader from '../components/BackTitleHeader';
 import { NavigationProps, RouteProps } from '../types/navigation';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
-import { Formik, FormikProps } from 'formik';
+import { Formik, FormikHandlers, FormikProps } from 'formik';
 import { Item } from '../types/API';
 import * as yup from 'yup';
 import Alert from '../components/Alert';
@@ -23,6 +23,7 @@ import Select from '../components/Select';
 import DatePickerInput from '../components/DatePickerInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
+import * as Haptics from 'expo-haptics';
 
 const itemSchema = yup.object({
   name: yup.string().trim().required('A name is required'),
@@ -50,15 +51,20 @@ const itemSchema = yup.object({
     )
 });
 
-const EditItemScreen = (): JSX.Element => {
+const EditItemScreen = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ItemDetail'>>();
   const inventory = useInventory();
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const item = useMemo(() => inventory.getItem(params.itemId)!, [inventory.state]);
+  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.state]);
   const navigation = useNavigation<NavigationProps>();
   const loader = useLoader();
   const insets = useSafeAreaInsets();
+
+  // Because we can only get to this screen through the ItemDetail screen,
+  // this error shouldn't happen, this is just a safety check
+  if (!item) {
+    RNAlert.alert('Unexpected Error', 'Invalid item');
+    return null;
+  }
 
   const confirmBackPress = () => {
     RNAlert.alert(
@@ -85,9 +91,31 @@ const EditItemScreen = (): JSX.Element => {
 
   const onFormSubmit = async (item: Item) => {
     loader.startLoading();
+
     await inventory.updateItem(item);
+
     loader.stopLoading();
-    navigation.goBack();
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    setTimeout(() => navigation.goBack(), 300);
+  };
+
+  // Formik won't call handleSubmit if there are errors in the form, however,
+  // if there are error, we want vibrate the device with haptic feedback
+  const formSubmitHandler = (
+    values: Item,
+    handleSubmit: FormikHandlers['handleSubmit']
+  ) => {
+    if (!itemSchema.isValidSync(values)) {
+      Haptics.notificationAsync(
+        Platform.select({
+          ios: Haptics.NotificationFeedbackType.Error,
+          android: Haptics.NotificationFeedbackType.Warning
+        })
+      );
+    }
+
+    handleSubmit();
   };
 
   useEffect(() => {
@@ -231,7 +259,7 @@ const EditItemScreen = (): JSX.Element => {
       </KeyboardAvoidingView>
       <Button
         text="Save"
-        onPress={handleSubmit}
+        onPress={() => formSubmitHandler(values, handleSubmit)}
         style={{
           ...styles.saveButton,
           marginBottom: insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })

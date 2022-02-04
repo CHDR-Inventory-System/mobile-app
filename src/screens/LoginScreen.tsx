@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,13 +6,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Alert
 } from 'react-native';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
-import { Formik } from 'formik';
+import { Formik, FormikHandlers } from 'formik';
 import { Colors, Fonts } from '../global-styles';
-import Alert, { AlertProps } from '../components/Alert';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import API from '../util/API';
@@ -22,38 +21,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useUser from '../hooks/user';
 import * as yup from 'yup';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import useLoader from '../hooks/loading';
 
 type Credentials = {
   nid: string;
   password: string;
 };
 
-type ErrorObject = {
-  title: string;
-  message: string;
-  type: AlertProps['type'];
-};
-
-const validationSchema = yup.object({
+const credentialSchema = yup.object({
   nid: yup.string().required('You NID is required'),
   password: yup.string().required('Your password is required')
 });
 
 const LoginScreen = (): JSX.Element => {
-  const [isAlertShowing, setShowAlert] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorObject, setErrorObject] = useState<ErrorObject>({
-    title: '',
-    message: '',
-    type: undefined
-  });
+  const loader = useLoader();
 
   const navigation = useNavigation<NavigationProps>();
   const { dispatch: userDispatch } = useUser();
 
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
-    setIsLoading(true);
+    loader.startLoading();
 
     try {
       const user = await API.login(credentials.nid, credentials.password);
@@ -64,26 +53,41 @@ const LoginScreen = (): JSX.Element => {
         payload: user
       });
 
-      setIsLoading(false);
+      loader.stopLoading();
       navigation.replace('Main');
     } catch (err) {
       if ((err as AxiosError).response?.status === 401) {
-        setErrorObject({
-          title: 'Invalid Credentials',
-          message: 'Make sure your NID and password are correct and try again.',
-          type: 'error'
-        });
+        Alert.alert(
+          'Invalid Credentials',
+          'Make sure your NID and password are correct and try again.'
+        );
       } else {
-        setErrorObject({
-          title: 'Server Error',
-          message: 'An unexpected error occurred, please try again.',
-          type: 'error'
-        });
+        Alert.alert(
+          'Server Error',
+          'An unexpected error occurred, please try again later.'
+        );
       }
 
-      setIsLoading(false);
-      setShowAlert(true);
+      loader.stopLoading();
     }
+  };
+
+  // Formik won't call handleSubmit if there are errors in the form, however,
+  // if there are error, we want vibrate the device with haptic feedback
+  const formSubmitHandler = (
+    values: Credentials,
+    handleSubmit: FormikHandlers['handleSubmit']
+  ) => {
+    if (!credentialSchema.isValidSync(values)) {
+      Haptics.notificationAsync(
+        Platform.select({
+          ios: Haptics.NotificationFeedbackType.Error,
+          android: Haptics.NotificationFeedbackType.Warning
+        })
+      );
+    }
+
+    handleSubmit();
   };
 
   return (
@@ -96,14 +100,14 @@ const LoginScreen = (): JSX.Element => {
           <View style={{ flex: 1 }}>
             <Formik
               validateOnChange={false}
-              validationSchema={validationSchema}
+              validationSchema={credentialSchema}
               initialValues={{
                 nid: '',
                 password: ''
               }}
               onSubmit={login}
             >
-              {({ handleChange, handleSubmit, errors }) => (
+              {({ handleChange, handleSubmit, errors, values }) => (
                 <View style={styles.formContentContainer}>
                   <View>
                     <View style={styles.header}>
@@ -127,28 +131,19 @@ const LoginScreen = (): JSX.Element => {
                         onChangeText={handleChange('password')}
                         errorMessage={errors.password}
                       />
-                      {isAlertShowing && (
-                        <Alert
-                          type={errorObject.type}
-                          title={errorObject.title}
-                          message={errorObject.message}
-                          onClose={() => setShowAlert(false)}
-                        />
-                      )}
                     </View>
                   </View>
                   <Button
                     text="Login"
-                    onPress={handleSubmit}
+                    onPress={() => formSubmitHandler(values, handleSubmit)}
                     style={styles.loginButton}
-                    disabled={isLoading}
+                    disabled={loader.isLoading}
                   />
                 </View>
               )}
             </Formik>
           </View>
         </TouchableWithoutFeedback>
-        <StatusBar style="auto" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

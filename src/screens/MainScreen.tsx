@@ -61,12 +61,18 @@ const MainScreen = (): JSX.Element => {
 
   const fetchInventory = async () => {
     // TODO: Make API request here
-    setRefreshing(true);
+    loader.startLoading();
     await loader.sleep(1000);
 
     inventory.setItems(mockInventory);
     setItemCache(mockInventory);
 
+    loader.stopLoading();
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchInventory();
     setRefreshing(false);
   };
 
@@ -79,13 +85,13 @@ const MainScreen = (): JSX.Element => {
       <FlatList
         contentContainerStyle={{ flexGrow: 1 }}
         ListHeaderComponent={renderListHeader()}
-        ListEmptyComponent={<EmptyInventoryContent refreshing={isRefreshing} />}
+        ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
         data={inventory.state}
         renderItem={renderInventoryItem}
         refreshing={isRefreshing}
         keyExtractor={item => item.ID.toString()}
         initialNumToRender={5}
-        onRefresh={fetchInventory}
+        onRefresh={onRefresh}
       />
       <Button
         text="Scan Barcode"

@@ -11,17 +11,17 @@ type EmptyInventoryContentProps = {
    * the MainScreen doesn't show a 'No Items' component while it's
    * loading items.
    */
-  refreshing?: boolean;
+  loading?: boolean;
 };
 
 const EmptyInventoryContent = ({
-  refreshing = false
+  loading = false
 }: EmptyInventoryContentProps): JSX.Element => (
   <View style={styles.emptyContentContainer}>
-    {refreshing ? (
+    {loading ? (
       <LoadingOverlay
         text="Loading..."
-        loading={refreshing}
+        loading={loading}
         backdropStyle={styles.loaderBackdrop}
         textStyle={styles.loaderText}
         activityIndicatorColor={Colors.textMuted}
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     color: Colors.text
   },
   loaderBackdrop: {
-    backgroundColor: '#fff'
+    backgroundColor: Colors.appBackgroundColor
   },
   loaderText: {
     color:  Colors.textMuted

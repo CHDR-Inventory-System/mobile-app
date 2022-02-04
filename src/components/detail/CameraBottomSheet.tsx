@@ -5,18 +5,25 @@ import {
   View,
   Text,
   Alert,
-  Linking
+  Linking,
+  Image,
+  BackHandler
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Entypo, FontAwesome } from '@expo/vector-icons';
 import { Portal } from '@gorhom/portal';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps
+} from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CapturedPicture } from 'expo-camera/build/Camera.types';
 import { Colors, Fonts } from '../../global-styles';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import { Platform } from 'expo-modules-core';
 import LoadingOverlay from '../Loading';
+import * as Haptics from 'expo-haptics';
+import useLoader from '../../hooks/loading';
 
 type CameraBottomSheetProps = {
   onTakePicture?: (image: CapturedPicture) => void;
@@ -31,9 +38,10 @@ const CameraBottomSheet = ({
   const insets = useSafeAreaInsets();
   const [isCameraReady, setCameraReady] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(false);
-  const [loading, setLoading] = useState(false);
+  const loader = useLoader();
   const { showActionSheetWithOptions } = useActionSheet();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const [imageUri, setImageUri] = useState('');
 
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
@@ -84,6 +92,7 @@ const CameraBottomSheet = ({
         }
 
         if (buttonIndex === 1) {
+          setImageUri('');
           cameraRef.current?.resumePreview();
           return;
         }
@@ -95,43 +104,60 @@ const CameraBottomSheet = ({
   };
 
   const takePhoto = async () => {
-    if (!isCameraReady) {
+    if (!isCameraReady || loader.isLoading) {
       return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    loader.startLoading();
+
+    const image = await cameraRef.current?.takePictureAsync();
+
+    if (image?.uri) {
+      setImageUri(image.uri);
     }
 
     cameraRef.current?.pausePreview();
 
-    setLoading(true);
-    const image = await cameraRef.current?.takePictureAsync();
-    setLoading(false);
+    loader.stopLoading();
 
     if (image) {
       renderOptionsActionSheet(image);
     }
   };
 
+  const onBackPress = () => {
+    closeBottomSheet();
+    // Returning true here to prevent going back to the previous screen
+    // when the back button is pressed
+    return true;
+  };
+
   useEffect(() => {
     requestCameraPermission();
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    };
   }, []);
 
   useEffect(() => {
-    setLoading(!isCameraReady);
+    loader.toggleLoading(!isCameraReady);
   }, [isCameraReady]);
 
   const renderCamera = () => {
     if (!hasPermission) {
-      return <LoadingOverlay loading={loading} style={styles.loader} />;
+      return <LoadingOverlay loading={loader.isLoading} style={styles.loader} />;
     }
 
     return (
       <Camera
-        ratio="16:9"
-        useCamera2Api
         ref={cameraRef}
         style={styles.camera}
         onCameraReady={() => setCameraReady(true)}
       >
-        <LoadingOverlay loading={loading} />
         <View style={{ flex: 1 }} />
         <TouchableWithoutFeedback onPress={takePhoto}>
           <Entypo
@@ -146,6 +172,16 @@ const CameraBottomSheet = ({
           />
         </TouchableWithoutFeedback>
       </Camera>
+    );
+  };
+
+  const renderImagePreview = () => {
+    if (!imageUri) {
+      return null;
+    }
+
+    return (
+      <Image resizeMode="cover" source={{ uri: imageUri }} style={styles.imagePreview} />
     );
   };
 
@@ -179,6 +215,7 @@ const CameraBottomSheet = ({
             </View>
           </TouchableWithoutFeedback>
           {renderCamera()}
+          {renderImagePreview()}
         </View>
       </BottomSheet>
     </Portal>
@@ -233,6 +270,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.text,
     color: Colors.textMuted,
     marginTop: 8
+  },
+  imagePreview: {
+    height: '100%',
+    width: '100%'
   }
 });
 

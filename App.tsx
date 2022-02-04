@@ -18,12 +18,14 @@ import EditItemScreen from './src/screens/EditItemScreen';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { InventoryProvider } from './src/contexts/InventoryContext';
+import { StatusBar } from 'expo-status-bar';
+import useLoader from './src/hooks/loading';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
-  const [isLoading, setLoading] = useState(true);
+  const loader = useLoader(true);
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
   const [fontsLoaded] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
@@ -39,7 +41,7 @@ const App = (): JSX.Element => {
         setInitialRoute('Main');
       })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(loader.stopLoading);
   };
 
   const stack = (
@@ -87,7 +89,7 @@ const App = (): JSX.Element => {
     loadUser();
   }, []);
 
-  if (!fontsLoaded || isLoading) {
+  if (!fontsLoaded || loader.isLoading) {
     return <AppLoading />;
   }
 
@@ -97,6 +99,7 @@ const App = (): JSX.Element => {
         <UserProvider initialValue={initialUserValue}>
           <InventoryProvider>
             <NavigationContainer>
+              <StatusBar style="dark" />
               <PortalProvider>{stack}</PortalProvider>
             </NavigationContainer>
           </InventoryProvider>

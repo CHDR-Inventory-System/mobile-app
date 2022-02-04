@@ -10,8 +10,11 @@ import {
   TouchableOpacity,
   ViewStyle,
   ImageURISource,
-  GestureResponderEvent
+  GestureResponderEvent,
+  Platform
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import useLoader from '../hooks/loading';
 
 type ImageWithFallbackProps = {
   source?: ImageSourcePropType;
@@ -29,30 +32,44 @@ type ImageWithFallbackProps = {
 const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
   const { source, style, onLongPress, ...imageProps } = props;
   const [didImageFail, setDidImageFail] = useState(false);
-  const [isLoading, setLoading] = useState(false);
+  const loader = useLoader();
 
   const onErrorImagePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setDidImageFail(false);
-    setLoading(true);
+    loader.startLoading();
   };
 
   const onImageLoadError = () => {
     setDidImageFail(true);
-    setLoading(false);
+    loader.stopLoading();
+  };
+
+  const hapticLongPress = (event: GestureResponderEvent) => {
+    if (!!onLongPress) {
+      Haptics.impactAsync(
+        Platform.select({
+          ios: Haptics.ImpactFeedbackStyle.Medium,
+          android: Haptics.ImpactFeedbackStyle.Light
+        })
+      );
+
+      onLongPress(event);
+    }
   };
 
   const renderLoader = () =>
-    !isLoading ? null : (
+    !loader.isLoading ? null : (
       <View
         style={{
           // Need to give this loading container the same width, height, and
           // border radius as the image so it doesn't cause the content to
           // shift when the image finishes loading.
           ...styles.loadingContainer,
+          ...(style as ViewStyle),
           borderRadius: style?.borderRadius,
           width: style?.width,
-          height: style?.height,
-          ...(style as ViewStyle)
+          height: style?.height
         }}
       >
         <ActivityIndicator size="large" />
@@ -73,7 +90,7 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
       return (
         <TouchableOpacity
           onPress={onErrorImagePress}
-          onLongPress={onLongPress}
+          onLongPress={hapticLongPress}
           activeOpacity={0.7}
         >
           <Image style={style} source={errorImageSource} {...imageProps} />
@@ -89,13 +106,16 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
     }
 
     return (
-      <TouchableOpacity onLongPress={onLongPress} activeOpacity={!!onLongPress ? 0.8 : 1}>
+      <TouchableOpacity
+        onLongPress={hapticLongPress}
+        activeOpacity={!!onLongPress ? 0.8 : 1}
+      >
         <Image
           style={style}
           onError={onImageLoadError}
           source={source}
-          onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
+          onLoadStart={loader.startLoading}
+          onLoadEnd={loader.stopLoading}
           {...imageProps}
         />
       </TouchableOpacity>

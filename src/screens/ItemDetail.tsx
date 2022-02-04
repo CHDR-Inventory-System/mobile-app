@@ -32,6 +32,8 @@ const ItemDetail = (): JSX.Element | null => {
   const loader = useLoader();
 
   if (!item) {
+    // The item will be null here if it was deleted. Deleting
+    // an item causes this component to re-render.
     return null;
   }
 

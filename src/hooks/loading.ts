@@ -18,6 +18,8 @@ type UseLoadingHook = {
  * A custom hook that pairs will with the `Loading` component. This
  * helps components manage their loading state.
  * 
+ * @param {bool?} initialValue The initial loading state value (`false` by default)
+ * 
  * @example
  * ```jsx
  * const Component = () => {
@@ -36,8 +38,8 @@ type UseLoadingHook = {
  * }
  * ```
  */
-const useLoader = (): UseLoadingHook => {
-  const [isLoading, setLoading] = useState(false);
+const useLoader = (initialValue = false): UseLoadingHook => {
+  const [isLoading, setLoading] = useState(initialValue);
 
   const startLoading = () => setLoading(true);
 
