@@ -32,6 +32,10 @@ export type Item = {
   created: string;
   description: string | null;
   images: ItemImage[];
+  /**
+   * The ID of the base item this item refers to
+   */
+  item: number;
   location: string;
   main: boolean;
   moveable: boolean;
@@ -62,4 +66,9 @@ export type Reservation = {
   startDateTime: string;
   status: ReservationStatus;
   user: User;
+};
+
+export type ImageFormData = {
+  base64ImageData: string;
+  name: string;
 };

@@ -81,7 +81,7 @@ const CameraBottomSheet = ({
   const renderOptionsActionSheet = (image: CapturedPicture) => {
     showActionSheetWithOptions(
       {
-        title: "You image will be uploaded to CHDR's servers",
+        title: "You image will be uploaded to CHDR's server",
         options: ['Use This Picture', 'Retake'],
         cancelButtonIndex: 1,
         destructiveButtonIndex: Platform.select({ android: 1 })
@@ -112,7 +112,9 @@ const CameraBottomSheet = ({
 
     loader.startLoading();
 
-    const image = await cameraRef.current?.takePictureAsync();
+    const image = await cameraRef.current?.takePictureAsync({
+      base64: true
+    });
 
     if (image?.uri) {
       setImageUri(image.uri);
@@ -152,12 +154,19 @@ const CameraBottomSheet = ({
       return <LoadingOverlay loading={loader.isLoading} style={styles.loader} />;
     }
 
+    console.log({ isLoading: loader.isLoading });
+
     return (
       <Camera
         ref={cameraRef}
         style={styles.camera}
         onCameraReady={() => setCameraReady(true)}
       >
+        {
+          // TODO: A bug on some android devices causes the camera not to render
+          // if the loading overlay is present here
+          Platform.OS === 'ios' && <LoadingOverlay loading={loader.isLoading} />
+        }
         <View style={{ flex: 1 }} />
         <TouchableWithoutFeedback onPress={takePhoto}>
           <Entypo

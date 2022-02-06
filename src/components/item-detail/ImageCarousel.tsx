@@ -22,12 +22,19 @@ const { width: viewportWidth } = Dimensions.get('window');
 const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
   const inventory = useInventory();
   const loader = useLoader();
-  const images = useMemo(() => inventory.getImages(itemId), [inventory.state]);
+  const images = useMemo(() => inventory.getImages(itemId), [inventory.items]);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
 
   const deleteImage = async (image: ItemImage) => {
     loader.startLoading();
-    await inventory.deleteImage(itemId, image.ID);
+
+    try {
+      await inventory.deleteImage(itemId, image.ID);
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+    }
+
     loader.stopLoading();
   };
 
@@ -65,7 +72,7 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
         renderItem={renderImage}
         sliderWidth={viewportWidth * 0.93}
         itemWidth={viewportWidth * 0.93}
-        onSnapToItem={index => setActiveCarouselIndex(index)}
+        onSnapToItem={setActiveCarouselIndex}
       />
       {images.length > 0 && (
         <Text style={styles.imageDeleteText}>Tap and hold an image to delete it</Text>

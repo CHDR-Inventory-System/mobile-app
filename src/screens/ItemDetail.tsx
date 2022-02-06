@@ -10,13 +10,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import * as ImagePicker from 'expo-image-picker';
-import CameraBottomSheet from '../components/detail/CameraBottomSheet';
+import CameraBottomSheet from '../components/item-detail/CameraBottomSheet';
 import { CapturedPicture } from 'expo-camera/build/Camera.types';
-import ImageCarousel from '../components/detail/ImageCarousel';
+import ImageCarousel from '../components/item-detail/ImageCarousel';
 import { PortalHost } from '@gorhom/portal';
 import useLoader from '../hooks/loading';
 import useInventory from '../hooks/inventory';
 import LoadingOverlay from '../components/Loading';
+import * as Haptics from 'expo-haptics';
 
 const ItemDetail = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ItemDetail'>>();
@@ -24,7 +25,7 @@ const ItemDetail = (): JSX.Element | null => {
 
   // Because the inventory might be a large array to sort through, we need to
   // make sure we only search through it if an item in the inventory changes
-  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.state]);
+  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.items]);
 
   const { showActionSheetWithOptions } = useActionSheet();
   const [isCameraSheetShowing, setCameraSheetShowing] = useState(false);
@@ -89,7 +90,16 @@ const ItemDetail = (): JSX.Element | null => {
 
   const deleteItem = async () => {
     loader.startLoading();
-    await inventory.deleteItem(item.ID);
+
+    try {
+      await inventory.deleteItem(item.ID);
+    } catch (err) {
+      console.error(err);
+      loader.stopLoading();
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      return;
+    }
+
     loader.stopLoading();
     navigation.pop();
   };
@@ -99,7 +109,7 @@ const ItemDetail = (): JSX.Element | null => {
 
     const message = item.main
       ? 'Are you sure? This will delete all children, images, and reservations associated with this item.'
-      : 'Are you sure? This will delete all, images, and reservations associated with this item (the parent item will not be deleted).';
+      : 'Are you sure? This will delete all images and reservations associated with this item (the parent item will not be deleted).';
 
     Alert.alert(title, message, [
       {
@@ -114,18 +124,31 @@ const ItemDetail = (): JSX.Element | null => {
     ]);
   };
 
-  const addImage = async (image: CapturedPicture | ImagePicker.ImageInfo) => {
-    // const filename = image.uri.split('/').pop();
-    const { ID, images } = item;
+  const uploadImage = async (image: CapturedPicture | ImagePicker.ImageInfo) => {
+    // Safety check: filename shouldn't be undefined, but if it is for some
+    // reason, just use the current date as the file name
+    const filename = image.uri.split('/').pop() || `${Date.now().toString()}.jpg`;
 
     loader.startLoading();
 
-    await inventory.uploadImage(ID, {
-      ID: images.length === 0 ? 0 : images[images.length - 1].ID + 1,
-      imagePath: image.uri,
-      created: new Date().toLocaleDateString(),
-      imageURL: image.uri
-    });
+    try {
+      await inventory.uploadImage({
+        itemId: item.ID,
+        name: filename,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        base64ImageData: image.base64!,
+        image: {
+          imagePath: image.uri,
+          created: new Date().toLocaleDateString(),
+          imageURL: image.uri
+        }
+      });
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+    }
 
     loader.stopLoading();
   };
@@ -135,7 +158,8 @@ const ItemDetail = (): JSX.Element | null => {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsMultipleSelection: false,
-      allowsEditing: false
+      allowsEditing: false,
+      base64: true
     });
 
     loader.stopLoading();
@@ -144,7 +168,7 @@ const ItemDetail = (): JSX.Element | null => {
       return;
     }
 
-    addImage(result as ImagePicker.ImageInfo);
+    uploadImage(result as ImagePicker.ImageInfo);
   };
 
   const renderImageActionSheet = async () => {
@@ -232,7 +256,7 @@ const ItemDetail = (): JSX.Element | null => {
       </ScrollView>
       {isCameraSheetShowing && (
         <CameraBottomSheet
-          onTakePicture={addImage}
+          onTakePicture={uploadImage}
           onClose={() => setCameraSheetShowing(false)}
         />
       )}

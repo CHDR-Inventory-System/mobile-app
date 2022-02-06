@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { User } from '../types/API';
+import { ImageFormData, Item, User } from '../types/API';
 import { DEBUG_API_URL, PROD_API_URL } from '@env';
+import { AtLeast } from './types';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.headers.put['Content-Type'] = 'application/json';
@@ -17,12 +18,36 @@ class API {
   }
 
   static async deleteItem(id: number): Promise<void> {
-    const response = await axios.delete(`/inventory/item/${id}`, {
-      data: {
-        id
-      }
+    const response = await axios.delete(`/inventory/${id}`);
+    return response.data;
+  }
+
+  static async getAllItems(): Promise<Item[]> {
+    const response = await axios.get('/inventory/');
+    return response.data;
+  }
+
+  static async updateItem(item: AtLeast<Item, 'ID'>): Promise<void> {
+    const response = await axios.put(`/inventory/${item.ID}`, {
+      ...item
+    });
+    return response.data;
+  }
+
+  static async uploadImage(
+    itemId: number,
+    image: ImageFormData
+  ): Promise<{ imageID: number }> {
+    const response = await axios.post(`/inventory/${itemId}/uploadImage`, {
+      image: image.base64ImageData,
+      filename: image.name
     });
 
+    return response.data;
+  }
+
+  static async deleteImage(imageId: number): Promise<void> {
+    const response = await axios.delete(`/inventory/image/${imageId}`);
     return response.data;
   }
 }

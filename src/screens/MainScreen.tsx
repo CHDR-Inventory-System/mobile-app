@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, ListRenderItemInfo } from 'react-native';
+import { View, StyleSheet, FlatList, ListRenderItemInfo, Alert } from 'react-native';
 import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,19 +7,18 @@ import { SimpleLineIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { Platform } from 'expo-modules-core';
-import mockInventory from '../../assets/mocks/inventory.json';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
 import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
 import LabeledInput from '../components/LabeledInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
+import API from '../util/API';
 
 const MainScreen = (): JSX.Element => {
   // Because searching for items requires us to modify the main data source of
   // the FlatList component, we need to store the main items in a separate array
-  // so we don't have to re-query the API every time a search is cleared
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // so we don't have to re-query the API every time a search is executed
   const [itemCache, setItemCache] = useState<Item[]>([]);
   const [isRefreshing, setRefreshing] = useState(false);
   const inventory = useInventory();
@@ -60,13 +59,27 @@ const MainScreen = (): JSX.Element => {
   );
 
   const fetchInventory = async () => {
-    // TODO: Make API request here
     loader.startLoading();
-    await loader.sleep(1000);
 
-    inventory.setItems(mockInventory);
-    setItemCache(mockInventory);
+    try {
+      const items = await API.getAllItems();
+      inventory.setItems(items);
+    } catch (err) {
+      console.error(err);
 
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: fetchInventory
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
+    }
+
+    setItemCache(inventory.items);
     loader.stopLoading();
   };
 
@@ -86,7 +99,7 @@ const MainScreen = (): JSX.Element => {
         contentContainerStyle={{ flexGrow: 1 }}
         ListHeaderComponent={renderListHeader()}
         ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
-        data={inventory.state}
+        data={inventory.items}
         renderItem={renderInventoryItem}
         refreshing={isRefreshing}
         keyExtractor={item => item.ID.toString()}

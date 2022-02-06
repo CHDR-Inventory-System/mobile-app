@@ -1,9 +1,10 @@
 import { useContext } from 'react';
-import UserContext, { UserContextType } from '../contexts/UserContext';
+import UserContext from '../contexts/UserContext';
 import API from '../util/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { User } from '../types/API';
 
-type UseUserHook = UserContextType['state'] & {
+type UseUserHook = User & {
   /**
    * Makes a call to the API to log a user in. If successful, this also sets
    * the `user` field in {@link AsyncStorage} to the value of the current user.
@@ -38,7 +39,6 @@ const useUser = (): UseUserHook => {
     try {
       await AsyncStorage.removeItem('user');
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('Error clearing storage during logout call', err);
     }
 

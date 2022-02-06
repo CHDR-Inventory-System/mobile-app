@@ -1,8 +1,6 @@
 import { Item, ItemImage } from '../types/API';
 import { AtLeast } from '../util/types';
 
-type InventoryState = Item[];
-
 export type InventoryAction =
   | {
       type: 'ADD_ITEM';
@@ -65,10 +63,7 @@ const findItem = (items: Item[], itemId: number): Item | undefined => {
   return undefined;
 };
 
-const inventoryReducer = (
-  state: InventoryState,
-  action: InventoryAction
-): InventoryState => {
+const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
   switch (action.type) {
     case 'SET_ITEMS':
       return action.payload;
@@ -123,7 +118,6 @@ const inventoryReducer = (
       const updatedItem = findItem(state, itemId);
 
       if (!updatedItem) {
-        // eslint-disable-next-line no-console
         console.warn(`Couldn't find item with ID ${itemId}`);
         return state;
       }

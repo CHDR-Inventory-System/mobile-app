@@ -54,7 +54,7 @@ const itemSchema = yup.object({
 const EditItemScreen = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ItemDetail'>>();
   const inventory = useInventory();
-  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.state]);
+  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.items]);
   const navigation = useNavigation<NavigationProps>();
   const loader = useLoader();
   const insets = useSafeAreaInsets();
@@ -62,7 +62,12 @@ const EditItemScreen = (): JSX.Element | null => {
   // Because we can only get to this screen through the ItemDetail screen,
   // this error shouldn't happen, this is just a safety check
   if (!item) {
-    RNAlert.alert('Unexpected Error', 'Invalid item');
+    RNAlert.alert('Unexpected Error', 'Invalid item', [
+      {
+        text: 'Go Back',
+        onPress: () => navigation.goBack()
+      }
+    ]);
     return null;
   }
 
@@ -92,7 +97,13 @@ const EditItemScreen = (): JSX.Element | null => {
   const onFormSubmit = async (item: Item) => {
     loader.startLoading();
 
-    await inventory.updateItem(item);
+    try {
+      await inventory.updateItem(item);
+    } catch (err) {
+      loader.stopLoading();
+      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      return;
+    }
 
     loader.stopLoading();
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -131,13 +142,14 @@ const EditItemScreen = (): JSX.Element | null => {
     values,
     setFieldValue,
     errors,
-    handleSubmit
+    handleSubmit,
+    dirty
   }: FormikProps<Readonly<Item>>) => (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
       <BackTitleHeader
         title="Edit Item"
-        onBackPress={confirmBackPress}
+        onBackPress={dirty ? confirmBackPress : navigation.goBack}
         style={styles.header}
       />
       <KeyboardAvoidingView
