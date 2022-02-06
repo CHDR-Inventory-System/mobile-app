@@ -5,6 +5,7 @@ export const Colors = {
   'monoChromatic-4': '#BCBBF7',
   'monoChromatic-5': '#FBFAFE',
   danger: '#FF4D4F',
+  success: '#3D8A00',
   text: 'rgb(35, 35, 35)',
   textMuted: 'rgb(128, 128, 128)',
   appBackgroundColor: 'rgb(250, 250, 250)'
