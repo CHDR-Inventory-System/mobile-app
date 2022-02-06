@@ -10,11 +10,12 @@ import {
 import { Colors, Fonts } from '../global-styles';
 
 type ButtonProps = {
-  text: string;
+  text?: string;
   variant?: 'primary' | 'danger';
   icon?: JSX.Element;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  iconStyle?: ViewStyle;
   onPress?: () => void;
   disabled?: boolean;
   activeOpacity?: number;
@@ -25,6 +26,7 @@ const Button = ({
   textStyle,
   text,
   icon,
+  iconStyle,
   variant = 'primary',
   activeOpacity = 0.8,
   onPress = () => {},
@@ -45,8 +47,8 @@ const Button = ({
       onPress={onPress}
     >
       <View style={styles.contentRow}>
-        <Text style={[styles.buttonText, textStyle]}>{text}</Text>
-        {icon && <View style={styles.icon}>{icon}</View>}
+        {!!text && <Text style={[styles.buttonText, textStyle]}>{text}</Text>}
+        {icon && <View style={[styles.icon, iconStyle]}>{icon}</View>}
       </View>
     </TouchableOpacity>
   );

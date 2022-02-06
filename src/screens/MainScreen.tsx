@@ -1,12 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, ListRenderItemInfo, Alert } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  ListRenderItemInfo,
+  Alert,
+  Platform
+} from 'react-native';
 import { Fonts } from '../global-styles';
 import Button from '../components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SimpleLineIcons } from '@expo/vector-icons';
+import { SimpleLineIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
-import { Platform } from 'expo-modules-core';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
 import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
@@ -25,6 +31,7 @@ const MainScreen = (): JSX.Element => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
+  const flatListRef = useRef<FlatList>(null);
 
   const searchItem = (query: string) => {
     if (!query) {
@@ -89,31 +96,48 @@ const MainScreen = (): JSX.Element => {
     setRefreshing(false);
   };
 
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToOffset({
+      animated: true,
+      offset: 0
+    });
+  };
+
   useEffect(() => {
     fetchInventory();
   }, []);
 
   return (
     <View style={styles.container}>
-      <FlatList
-        contentContainerStyle={{ flexGrow: 1 }}
-        ListHeaderComponent={renderListHeader()}
-        ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
-        data={inventory.items}
-        renderItem={renderInventoryItem}
-        refreshing={isRefreshing}
-        keyExtractor={item => item.ID.toString()}
-        initialNumToRender={5}
-        onRefresh={onRefresh}
-      />
+      <View style={{ flex: 1 }}>
+        <FlatList
+          contentContainerStyle={{ flexGrow: 1 }}
+          ListHeaderComponent={renderListHeader()}
+          ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
+          data={inventory.items}
+          renderItem={renderInventoryItem}
+          refreshing={isRefreshing}
+          keyExtractor={item => item.ID.toString()}
+          initialNumToRender={5}
+          onRefresh={onRefresh}
+          ref={flatListRef}
+        />
+        {inventory.items.length > 0 && (
+          <Button
+            onPress={scrollToTop}
+            style={styles.toTopButton}
+            iconStyle={styles.topTopIcon}
+            icon={<FontAwesome5 name="chevron-up" size={16} color="#FFF" />}
+          />
+        )}
+      </View>
       <Button
         text="Scan Barcode"
         textStyle={styles.scanButtonText}
         icon={<SimpleLineIcons name="camera" size={20} color="#FFF" />}
         style={{
           ...styles.scanButton,
-          paddingBottom: insets.bottom === 0 ? 18 : insets.bottom,
-          paddingTop: insets.bottom === 0 ? 18 : insets.bottom
+          height: insets.bottom === 0 ? 56 : insets.bottom + 48
         }}
         onPress={() => navigation.navigate('BarcodeScanner')}
       />
@@ -127,7 +151,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   scanButton: {
-    borderRadius: 0
+    height: 64,
+    borderRadius: 0,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   scanButtonText: {
     fontFamily: Fonts.text,
@@ -148,6 +175,19 @@ const styles = StyleSheet.create({
   searchInputLabel: {
     fontSize: 24,
     marginBottom: 22
+  },
+  toTopButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 16,
+    right: 16
+  },
+  topTopIcon: {
+    marginLeft: 0
   }
 });
 

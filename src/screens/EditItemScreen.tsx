@@ -32,7 +32,7 @@ const itemSchema = yup.object({
   barcode: yup.string().trim().required('This item must have a barcode'),
   location: yup.string().trim().required('Location is required'),
   type: yup.string().trim().required('Type is required'),
-  serial: yup.string().trim().optional(),
+  serial: yup.string().trim().optional().nullable(true),
   quantity: yup
     .number()
     .required('Quantity is required')
@@ -117,6 +117,12 @@ const EditItemScreen = (): JSX.Element | null => {
     values: Item,
     handleSubmit: FormikHandlers['handleSubmit']
   ) => {
+    try {
+      itemSchema.validateSync(values);
+    } catch (err) {
+      console.log(err);
+    }
+
     if (!itemSchema.isValidSync(values)) {
       Haptics.notificationAsync(
         Platform.select({

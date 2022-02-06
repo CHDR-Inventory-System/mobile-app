@@ -7,7 +7,8 @@ import {
   Alert,
   Linking,
   Image,
-  BackHandler
+  BackHandler,
+  Platform
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Entypo, FontAwesome } from '@expo/vector-icons';
@@ -20,7 +21,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CapturedPicture } from 'expo-camera/build/Camera.types';
 import { Colors, Fonts } from '../../global-styles';
 import { useActionSheet } from '@expo/react-native-action-sheet';
-import { Platform } from 'expo-modules-core';
 import LoadingOverlay from '../Loading';
 import * as Haptics from 'expo-haptics';
 import useLoader from '../../hooks/loading';
