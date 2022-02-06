@@ -42,6 +42,7 @@ export type Item = {
   name: string;
   purchaseDate: string | null;
   quantity: number;
+  retiredDateTime: string | null;
   serial: string | null;
   type: string;
   vendorName: string | null;

@@ -205,6 +205,10 @@ const ItemDetail = (): JSX.Element | null => {
     );
   };
 
+  const addChildItem = async () => {
+    console.log('Not implemented');
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
@@ -245,7 +249,13 @@ const ItemDetail = (): JSX.Element | null => {
             style={styles.actionButton}
             onPress={renderImageActionSheet}
           />
-          {item.main && <Button text="Add Child Item" style={styles.actionButton} />}
+          {item.main && (
+            <Button
+              text="Add Child Item"
+              style={styles.actionButton}
+              onPress={addChildItem}
+            />
+          )}
           <Button
             text="Delete Item"
             style={styles.actionButton}

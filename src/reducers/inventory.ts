@@ -68,9 +68,21 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
     case 'SET_ITEMS':
       return action.payload;
     case 'ADD_ITEM':
+      const item = {
+        ...action.payload,
+        images: []
+      };
+      return state.concat(item as Item);
     case 'ADD_CHILD_ITEM':
-      // TODO: This needs to be implemented
-      throw new Error('Not implemented');
+      const { item: newItem, parentId } = action.payload;
+
+      return state.map(item => {
+        if (item.ID === parentId) {
+          item.children?.push(newItem);
+        }
+
+        return item;
+      });
     case 'DELETE_ITEM':
       const itemId = action.payload;
 

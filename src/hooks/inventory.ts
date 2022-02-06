@@ -22,8 +22,18 @@ type UseInventoryHook = {
   getImages: (itemId: number) => ItemImage[];
   uploadImage: (params: ImageUploadParams) => Promise<void>;
   deleteItem: (itemId: number) => Promise<void>;
-  addItem: (item: Item) => Promise<void>;
-  addChildItem: (parentId: number, item: Item) => Promise<void>;
+  addItem: (item: Partial<Item>) => Promise<void>;
+  /**
+   * @param parentId The ID of the parent item this child item belongs to
+   * @param itemId Refers to the ID of the item in the `item` table, NOT
+   * the ID of the item to be inserted.
+   * @param item The item to be inserted
+   */
+  addChildItem: (
+    parentId: number,
+    itemId: number,
+    item: AtLeast<Item, 'name' | 'type'>
+  ) => Promise<void>;
 };
 
 /**
@@ -101,7 +111,7 @@ const useInventory = (): UseInventoryHook => {
     name,
     base64ImageData
   }: ImageUploadParams): Promise<void> => {
-    const response = await API.uploadImage(itemId, {
+    const { imageID } = await API.uploadImage(itemId, {
       base64ImageData,
       name
     });
@@ -112,7 +122,7 @@ const useInventory = (): UseInventoryHook => {
         itemId,
         image: {
           ...image,
-          ID: response.imageID
+          ID: imageID
         }
       }
     });
@@ -127,21 +137,27 @@ const useInventory = (): UseInventoryHook => {
     });
   };
 
-  const addItem = async (item: Item) => {
-    // TODO: Make API call here
+  const addItem = async (item: Partial<Item>) => {
+    const response = await API.addItem(item);
+
     dispatch({
       type: 'ADD_ITEM',
-      payload: item
+      payload: response
     });
   };
 
-  const addChildItem = async (parentId: number, item: Item): Promise<void> => {
-    // TODO: Make API call here
+  const addChildItem = async (
+    parentId: number,
+    itemId: number,
+    item: AtLeast<Item, 'name' | 'type'>
+  ): Promise<void> => {
+    const response = await API.addChildItem(itemId, item);
+
     dispatch({
       type: 'ADD_CHILD_ITEM',
       payload: {
         parentId,
-        item
+        item: response
       }
     });
   };

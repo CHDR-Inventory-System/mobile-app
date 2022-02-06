@@ -50,6 +50,21 @@ class API {
     const response = await axios.delete(`/inventory/image/${imageId}`);
     return response.data;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static async addItem(item: Partial<Item>): Promise<Item> {
+    throw new Error('Not implemented');
+  }
+
+  static async addChildItem(
+    itemId: number,
+    item: AtLeast<Item, 'name' | 'type'>
+  ): Promise<Item> {
+    const response = await axios.post(`/inventory/${itemId}/addChild`, {
+      ...item
+    });
+    return response.data;
+  }
 }
 
 export default API;
