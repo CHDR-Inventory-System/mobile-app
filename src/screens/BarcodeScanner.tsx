@@ -54,8 +54,6 @@ const BarcodeScanner = (): JSX.Element => {
     );
   }
 
-  
-
   return (
     <View style={styles.container}>
       <StatusBar style="light" />

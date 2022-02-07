@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.appBackgroundColor
   },
   loaderText: {
-    color:  Colors.textMuted
+    color: Colors.textMuted
   }
 });
 

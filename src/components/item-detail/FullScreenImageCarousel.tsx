@@ -42,11 +42,7 @@ const FullScreenImageCarousel = ({
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        {...props}
-      />
+      <BottomSheetBackdrop disappearsOnIndex={-1} appearsOnIndex={0} {...props} />
     ),
     []
   );

@@ -9,7 +9,7 @@ type UseLoadingHook = {
    * A helper function used to delay code execution in async functions.
    *
    * @WARNING Don't use this in production
-   * 
+   *
    * @param ms The amount of time (in milliseconds) to wait.
    */
   sleep: (ms: number) => Promise<void>;
