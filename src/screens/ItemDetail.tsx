@@ -285,8 +285,12 @@ const ItemDetail = (): JSX.Element | null => {
           {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
           {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
           {renderItemProperty('Serial', item.serial)}
-          {renderItemProperty('Created', moment(item.created).format('MMMM Do YYYY'))}
           {renderItemProperty('Type', item.type)}
+          {renderItemProperty('Created', moment(item.created).format('MMMM Do YYYY'))}
+          {renderItemProperty(
+            'Retired Date',
+            item.retiredDateTime && moment(item.retiredDateTime).format('MMMM Do YYYY')
+          )}
           {renderItemProperty(
             'Purchase Date',
             item.purchaseDate && moment(item.purchaseDate).format('MMMM Do YYYY')
