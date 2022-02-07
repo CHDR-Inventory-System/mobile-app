@@ -15,7 +15,14 @@ type ImageUploadParams = ImageFormData & {
 
 type UseInventoryHook = {
   items: Item[];
-  setItems: (item: Item[]) => void;
+  /**
+   * This should only need to be called once at the start of the application.
+   * This makes an API call to fetch all inventory items and updates the state
+   * with those items. For convenience, this method returns the response from
+   * {@link API.getAllItems}
+   */
+  init: () => Promise<Item[]>;
+  setItems: (items: Item[]) => void;
   updateItem: (item: AtLeast<Item, 'ID'>) => Promise<void>;
   getItem: (id: number) => Item | undefined;
   deleteImage: (itemId: number, imageId: number) => Promise<void>;
@@ -64,11 +71,17 @@ const useInventory = (): UseInventoryHook => {
 
   const { state, dispatch } = context;
 
-  const setItems = (item: Item[]) => {
+  const setItems = (items: Item[]) => {
     dispatch({
       type: 'SET_ITEMS',
-      payload: item
+      payload: items
     });
+  };
+
+  const init = async (): Promise<Item[]> => {
+    const items = await API.getAllItems();
+    setItems(items);
+    return items;
   };
 
   const updateItem = async (item: AtLeast<Item, 'ID'>) => {
@@ -164,6 +177,7 @@ const useInventory = (): UseInventoryHook => {
 
   return {
     items: state,
+    init,
     setItems,
     updateItem,
     getItem,

@@ -106,21 +106,44 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
       // In this case, we'll find the id of the item we want to update
       // then combine it's properties with the existing item at that index
       return state.map(item => {
-        if (item.ID === updatedItem.ID) {
+        if (item.ID === updatedItem.ID && !wasUpdated) {
+          item.children = item.children?.map(child => ({
+            ...child,
+            // Because the children share these properties with the parent,
+            // if these values are updated in the parent item, they'll also
+            // need to be updated in every child item
+            barcode: updatedItem.barcode ?? child.barcode,
+            moveable: updatedItem.moveable ?? child.moveable,
+            available: updatedItem.available ?? child.available,
+            location: updatedItem.location ?? child.location,
+            quantity: updatedItem.quantity ?? child.quantity,
+            retiredDateTime: updatedItem.retiredDateTime ?? child.retiredDateTime
+          }));
+
           wasUpdated = true;
-          return { ...item, ...updatedItem };
+
+          return {
+            ...item,
+            ...updatedItem,
+            children: item.children
+          };
         }
 
-        // Don't search the children if we've already updated the item
-        if (!wasUpdated && item.children) {
-          item.children = item.children.map(child => {
-            if (child.ID === updatedItem.ID) {
-              return { ...child, ...updatedItem };
-            }
-
-            return child;
-          });
+        if (!item.children || wasUpdated) {
+          return item;
         }
+
+        item.children = item.children.map(child => {
+          if (child.ID === updatedItem.ID) {
+            wasUpdated = true;
+            return {
+              ...child,
+              ...updatedItem
+            };
+          }
+
+          return child;
+        });
 
         return item;
       });

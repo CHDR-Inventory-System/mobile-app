@@ -7,11 +7,12 @@ import {
   TextStyle,
   ViewStyle,
   TextInputProps,
-  Platform
+  Platform,
+  ViewProps
 } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 
-type LabeledInputProps = {
+export type LabeledInputProps = {
   label: string;
   style: ViewStyle;
   labelStyle: TextStyle;
@@ -19,6 +20,11 @@ type LabeledInputProps = {
   required?: boolean;
   disabled?: boolean;
   errorMessage?: string;
+  pointerEvents?: ViewProps['pointerEvents'];
+  /**
+   * Displays an information message underneath this input
+   */
+  help?: string;
 } & TextInputProps;
 
 const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
@@ -32,22 +38,31 @@ const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
     disabled = false,
     required = false,
     errorMessage = '',
+    help = '',
+    pointerEvents,
     ...textInputProps
   } = props;
 
   return (
-    <View style={[style]} pointerEvents={disabled ? 'none' : 'auto'}>
+    <View style={style} pointerEvents={pointerEvents}>
       <View style={styles.textLabelContainer}>
         <Text style={[styles.label, labelStyle]}>{label}</Text>
         {required && <Text style={styles.requiredAsterisk}>*</Text>}
       </View>
       <TextInput
-        style={[styles.input, errorMessage ? styles.errorInput : {}, inputStyle]}
+        editable={!disabled}
+        style={[
+          styles.input,
+          errorMessage ? styles.errorInput : {},
+          disabled ? styles.disabled : {},
+          inputStyle
+        ]}
         autoCorrect={autoCorrect}
         secureTextEntry={secureTextEntry}
         {...textInputProps}
       />
       {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+      {!!help && <Text style={styles.helpText}>{help}</Text>}
     </View>
   );
 };
@@ -89,11 +104,21 @@ const styles = StyleSheet.create({
   errorInput: {
     borderColor: '#DE1306'
   },
+  disabled: {
+    color: Colors.textMuted
+  },
   errorText: {
     fontFamily: Fonts.text,
     marginTop: 8,
     marginLeft: 4,
     color: '#DE1306',
+    lineHeight: 20
+  },
+  helpText: {
+    fontFamily: Fonts.text,
+    marginTop: 8,
+    marginLeft: 4,
+    color: Colors.textMuted,
     lineHeight: 20
   }
 });

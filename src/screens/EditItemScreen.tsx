@@ -197,6 +197,12 @@ const EditItemScreen = (): JSX.Element | null => {
               style={styles.input}
               returnKeyType="done"
               errorMessage={errors.location}
+              disabled={!item.main}
+              help={
+                !item.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <LabeledInput
               required
@@ -206,6 +212,12 @@ const EditItemScreen = (): JSX.Element | null => {
               onChangeText={handleChange('barcode')}
               returnKeyType="done"
               errorMessage={errors.barcode}
+              disabled={!item.main}
+              help={
+                !item.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <LabeledInput
               required
@@ -216,12 +228,26 @@ const EditItemScreen = (): JSX.Element | null => {
               returnKeyType="done"
               style={styles.input}
               errorMessage={errors.quantity}
+              disabled={!item.main}
+              help={
+                !item.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <Select
               required
               label="Availability"
+              sheetTitle="If an item is unavailable, users will not be able to reserve or checkout the item."
               style={styles.input}
-              defaultIndex={values.available ? 0 : 1}
+              disabled={!item.main}
+              defaultValueIndex={values.available ? 0 : 1}
+              inputProps={{
+                disabled: !item.main,
+                help: !item.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }}
               options={[
                 {
                   title: 'Available',
@@ -232,6 +258,32 @@ const EditItemScreen = (): JSX.Element | null => {
                   title: 'Unavailable',
                   value: false,
                   onSelect: () => setFieldValue('available', false)
+                }
+              ]}
+            />
+            <Select
+              required
+              label="Movable"
+              style={styles.input}
+              disabled={!item.main}
+              defaultValueIndex={values.moveable ? 0 : 1}
+              sheetTitle="Can this item be moved? If it's stationary, this should usually be set to 'No'"
+              inputProps={{
+                disabled: !item.main,
+                help: !item.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }}
+              options={[
+                {
+                  title: 'Yes',
+                  value: true,
+                  onSelect: () => setFieldValue('moveable', true)
+                },
+                {
+                  title: 'No',
+                  value: false,
+                  onSelect: () => setFieldValue('moveable', false)
                 }
               ]}
             />

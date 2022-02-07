@@ -72,8 +72,7 @@ const CameraBottomSheet = ({
             onPress: closeBottomSheet,
             style: 'cancel'
           }
-        ],
-        {}
+        ]
       );
     }
   };
@@ -153,8 +152,6 @@ const CameraBottomSheet = ({
     if (!hasPermission) {
       return <LoadingOverlay loading={loader.isLoading} style={styles.loader} />;
     }
-
-    console.log({ isLoading: loader.isLoading });
 
     return (
       <Camera

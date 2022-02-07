@@ -237,7 +237,10 @@ const DatePickerInput = ({
     >
       <View>
         <LabeledInput
-          disabled
+          // Need to set pointerEvents to none here so the the touch
+          // event from TouchableWithoutFeedback doesn't propagate
+          // to this input component
+          pointerEvents="none"
           required={required}
           label={label}
           value={getInputValue()}

@@ -2,7 +2,7 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import React, { useState } from 'react';
 import { View, TouchableWithoutFeedback, ViewStyle, Platform } from 'react-native';
 import { Fonts } from '../global-styles';
-import LabeledInput from './LabeledInput';
+import LabeledInput, { LabeledInputProps } from './LabeledInput';
 
 export type SelectOption = {
   title: string;
@@ -14,12 +14,21 @@ export type SelectOption = {
 };
 
 type SelectProps = {
-  defaultIndex: number;
+  /**
+   * The index of the default value
+   */
+  defaultValueIndex: number;
   options: SelectOption[];
+  /**
+   * The title props that's used in `showActionSheetWithOptions`
+   */
+  sheetTitle?: string;
+  disabled?: boolean;
   onCancel?: () => void;
   required?: boolean;
   label?: string;
   style?: ViewStyle;
+  inputProps?: Partial<LabeledInputProps>;
 };
 
 const Select = ({
@@ -27,13 +36,20 @@ const Select = ({
   label,
   options,
   onCancel,
-  defaultIndex,
-  required = false
+  defaultValueIndex,
+  inputProps,
+  disabled,
+  required,
+  sheetTitle
 }: SelectProps): JSX.Element => {
-  const [currentValue, setCurrentValue] = useState(options[defaultIndex].title);
+  const [currentValue, setCurrentValue] = useState(options[defaultValueIndex].title);
   const { showActionSheetWithOptions } = useActionSheet();
 
   const showActionSheet = () => {
+    if (disabled) {
+      return;
+    }
+
     // Go through the options array and grab the indices of all options
     // that have 'disabled' set to true
     const disabledIndices = options.reduce((prev, curr, index) => {
@@ -45,6 +61,7 @@ const Select = ({
         options: [...options.map(({ title }) => title), 'Cancel'],
         disabledButtonIndices: disabledIndices,
         cancelButtonIndex: options.length,
+        title: sheetTitle,
         destructiveButtonIndex: Platform.select({
           android: options.length
         }),
@@ -76,7 +93,8 @@ const Select = ({
     <TouchableWithoutFeedback onPress={showActionSheet}>
       <View>
         <LabeledInput
-          disabled
+          {...inputProps}
+          pointerEvents="none"
           required={required}
           label={label}
           editable={false}

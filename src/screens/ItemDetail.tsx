@@ -1,5 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  Alert,
+  Linking
+} from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
@@ -153,14 +161,44 @@ const ItemDetail = (): JSX.Element | null => {
     loader.stopLoading();
   };
 
+  const requestMediaPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status === 'granted') {
+      choosePicture();
+    } else {
+      Alert.alert(
+        'Media Permission',
+        'You need to enable media permission to use this feature.',
+        [
+          {
+            text: 'Open Settings',
+            onPress: () => Linking.openSettings()
+          },
+          {
+            text: 'Close',
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+  };
+
   const choosePicture = async () => {
     loader.startLoading();
+    let result: ImagePicker.ImagePickerResult;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsMultipleSelection: false,
-      allowsEditing: false,
-      base64: true
-    });
+    try {
+      result = await ImagePicker.launchImageLibraryAsync({
+        allowsMultipleSelection: false,
+        allowsEditing: false,
+        base64: true
+      });
+    } catch (err) {
+      Alert.alert('Unexpected Error', 'An unexpected error occurred, please try again.');
+      loader.stopLoading();
+      return;
+    }
 
     loader.stopLoading();
 
@@ -168,7 +206,7 @@ const ItemDetail = (): JSX.Element | null => {
       return;
     }
 
-    uploadImage(result as ImagePicker.ImageInfo);
+    uploadImage(result);
   };
 
   const renderImageActionSheet = async () => {
@@ -179,7 +217,7 @@ const ItemDetail = (): JSX.Element | null => {
       },
       {
         title: 'Choose From Library',
-        callback: () => choosePicture()
+        callback: requestMediaPermission
       },
       {
         title: 'Cancel'
@@ -206,14 +244,14 @@ const ItemDetail = (): JSX.Element | null => {
   };
 
   const addChildItem = async () => {
-    console.log('Not implemented');
+    console.error('Not implemented');
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
       <PortalHost name="ItemDetail" />
-      <LoadingOverlay loading={loader.isLoading} />
+      <LoadingOverlay loading={loader.isLoading} text="Uploading" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.contentBody}>
           <ImageCarousel itemId={params.itemId} />

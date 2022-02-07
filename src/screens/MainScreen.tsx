@@ -19,7 +19,6 @@ import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
 import LabeledInput from '../components/LabeledInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
-import API from '../util/API';
 
 const MainScreen = (): JSX.Element => {
   // Because searching for items requires us to modify the main data source of
@@ -69,8 +68,8 @@ const MainScreen = (): JSX.Element => {
     loader.startLoading();
 
     try {
-      const items = await API.getAllItems();
-      inventory.setItems(items);
+      const items = await inventory.init();
+      setItemCache(items);
     } catch (err) {
       console.error(err);
 
@@ -86,22 +85,28 @@ const MainScreen = (): JSX.Element => {
       ]);
     }
 
-    setItemCache(inventory.items);
     loader.stopLoading();
   };
 
   const onRefresh = async () => {
+    if (isRefreshing || loader.isLoading) {
+      return;
+    }
+
     setRefreshing(true);
-    await fetchInventory();
+
+    try {
+      await fetchInventory();
+    } catch (err) {}
+
     setRefreshing(false);
   };
 
-  const scrollToTop = () => {
+  const scrollToTop = () =>
     flatListRef.current?.scrollToOffset({
       animated: true,
       offset: 0
     });
-  };
 
   useEffect(() => {
     fetchInventory();
