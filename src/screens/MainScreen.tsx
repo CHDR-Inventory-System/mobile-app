@@ -66,6 +66,7 @@ const MainScreen = (): JSX.Element => {
 
   const fetchInventory = async () => {
     loader.startLoading();
+    setRefreshing(true);
 
     try {
       const items = await inventory.init();
@@ -76,7 +77,7 @@ const MainScreen = (): JSX.Element => {
       Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
         {
           text: 'Retry',
-          onPress: fetchInventory
+          onPress: () => fetchInventory()
         },
         {
           text: 'Cancel',
@@ -85,21 +86,8 @@ const MainScreen = (): JSX.Element => {
       ]);
     }
 
-    loader.stopLoading();
-  };
-
-  const onRefresh = async () => {
-    if (isRefreshing || loader.isLoading) {
-      return;
-    }
-
-    setRefreshing(true);
-
-    try {
-      await fetchInventory();
-    } catch (err) {}
-
     setRefreshing(false);
+    loader.stopLoading();
   };
 
   const scrollToTop = () =>
@@ -124,7 +112,7 @@ const MainScreen = (): JSX.Element => {
           refreshing={isRefreshing}
           keyExtractor={item => item.ID.toString()}
           initialNumToRender={5}
-          onRefresh={onRefresh}
+          onRefresh={fetchInventory}
           ref={flatListRef}
         />
         {inventory.items.length > 0 && (

@@ -101,7 +101,16 @@ const EditItemScreen = (): JSX.Element | null => {
       await inventory.updateItem(item);
     } catch (err) {
       loader.stopLoading();
-      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: () => onFormSubmit(item)
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
       return;
     }
 
@@ -117,12 +126,6 @@ const EditItemScreen = (): JSX.Element | null => {
     values: Item,
     handleSubmit: FormikHandlers['handleSubmit']
   ) => {
-    try {
-      itemSchema.validateSync(values);
-    } catch (err) {
-      console.log(err);
-    }
-
     if (!itemSchema.isValidSync(values)) {
       Haptics.notificationAsync(
         Platform.select({
@@ -355,7 +358,7 @@ const styles = StyleSheet.create({
     zIndex: 200,
     paddingTop: Platform.select({
       ios: 8,
-      android: 32
+      android: 16
     })
   },
   inputContainer: {

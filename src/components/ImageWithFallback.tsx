@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   ViewStyle,
   ImageURISource,
-  GestureResponderEvent,
   Platform
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -19,7 +18,8 @@ import useLoader from '../hooks/loading';
 type ImageWithFallbackProps = {
   source?: ImageSourcePropType;
   style?: ImageStyle;
-  onLongPress?: (event: GestureResponderEvent) => void;
+  onPress?: (hasError: boolean) => void;
+  onLongPress?: () => void;
 } & Omit<ImageProps, 'source'>;
 
 /**
@@ -30,12 +30,13 @@ type ImageWithFallbackProps = {
  * for the source.
  */
 const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
-  const { source, style, onLongPress, ...imageProps } = props;
+  const { source, style, onPress, onLongPress, ...imageProps } = props;
   const [didImageFail, setDidImageFail] = useState(false);
   const loader = useLoader();
 
   const onErrorImagePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress?.(didImageFail);
     setDidImageFail(false);
     loader.startLoading();
   };
@@ -45,7 +46,7 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
     loader.stopLoading();
   };
 
-  const hapticLongPress = (event: GestureResponderEvent) => {
+  const hapticLongPress = () => {
     if (!!onLongPress) {
       Haptics.impactAsync(
         Platform.select({
@@ -54,7 +55,7 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
         })
       );
 
-      onLongPress(event);
+      onLongPress();
     }
   };
 
@@ -107,6 +108,7 @@ const ImageWithFallback = (props: ImageWithFallbackProps): JSX.Element => {
 
     return (
       <TouchableOpacity
+        onPress={() => onPress?.(false)}
         onLongPress={hapticLongPress}
         activeOpacity={!!onLongPress ? 0.8 : 1}
       >

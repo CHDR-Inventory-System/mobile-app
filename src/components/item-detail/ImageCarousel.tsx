@@ -7,8 +7,9 @@ import { Colors, Fonts } from '../../global-styles';
 import LoadingOverlay from '../Loading';
 import useLoader from '../../hooks/loading';
 import useInventory from '../../hooks/inventory';
+import FullScreenImageCarousel from './FullScreenImageCarousel';
 
-type CarouselItem<T> = {
+export type CarouselItem<T> = {
   index: number;
   item: T;
 };
@@ -24,15 +25,26 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
   const loader = useLoader();
   const images = useMemo(() => inventory.getImages(itemId), [inventory.items]);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
+  const [isBottomSheetShowing, setBottomSheetShowing] = useState(false);
 
   const deleteImage = async (image: ItemImage) => {
     loader.startLoading();
 
     try {
       await inventory.deleteImage(itemId, image.ID);
+      setActiveCarouselIndex(0);
     } catch (err) {
       console.error(err);
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: () => deleteImage(image)
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
     }
 
     loader.stopLoading();
@@ -52,8 +64,15 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
     ]);
   };
 
+  const openPreviewBottomSheet = (hasError: boolean) => {
+    if (!hasError) {
+      setBottomSheetShowing(true);
+    }
+  };
+
   const renderImage = ({ item }: CarouselItem<ItemImage>) => (
     <ImageWithFallback
+      onPress={openPreviewBottomSheet}
       style={styles.image}
       source={{ uri: item.imageURL }}
       onLongPress={() => confirmDelete(item)}
@@ -84,6 +103,13 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
           activeDotIndex={activeCarouselIndex}
         />
       </View>
+      {isBottomSheetShowing && (
+        <FullScreenImageCarousel
+          onClose={() => setBottomSheetShowing(false)}
+          images={images}
+          activeCarouselIndex={activeCarouselIndex}
+        />
+      )}
     </View>
   );
 };

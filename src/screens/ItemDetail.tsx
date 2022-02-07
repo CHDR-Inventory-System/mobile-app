@@ -104,7 +104,16 @@ const ItemDetail = (): JSX.Element | null => {
     } catch (err) {
       console.error(err);
       loader.stopLoading();
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: () => deleteItem()
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
       return;
     }
 
@@ -155,7 +164,16 @@ const ItemDetail = (): JSX.Element | null => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error(err);
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.');
+      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: () => uploadImage(image)
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
     }
 
     loader.stopLoading();
@@ -320,7 +338,7 @@ const styles = StyleSheet.create({
     zIndex: 11,
     paddingTop: Platform.select({
       ios: 12,
-      android: 32
+      android: 16
     })
   },
   contentBody: {
