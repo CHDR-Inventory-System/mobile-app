@@ -1,7 +1,7 @@
 import { User } from '../types/API';
 
 type UserInitAction = {
-  type: 'INIT';
+  type: 'LOGIN';
   payload: User;
 };
 
@@ -13,7 +13,7 @@ export type UserAction = UserInitAction | UserLogoutAction;
 
 const userReducer = (state: User, action: UserAction): User => {
   switch (action.type) {
-    case 'INIT':
+    case 'LOGIN':
       return {
         ...action.payload
       };

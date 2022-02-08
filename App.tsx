@@ -27,7 +27,7 @@ const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
   const loader = useLoader(true);
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontLoadError] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
     'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
     'Gotham-Bold': require('./assets/fonts/Gotham-Bold.ttf')
@@ -40,10 +40,14 @@ const App = (): JSX.Element => {
     AsyncStorage.getItem('user')
       .then(user => JSON.parse(user || '') as User)
       .then(user => {
-        setInitialUserValue(user);
-        setInitialRoute('Main');
+        if (user.token) {
+          setInitialUserValue(user);
+          setInitialRoute('Main');
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        // This catch block is needed to silence "unhandled rejection" errors
+      })
       .finally(loader.stopLoading);
   };
 
@@ -91,6 +95,12 @@ const App = (): JSX.Element => {
   useEffect(() => {
     loadUserFromStorage();
   }, []);
+
+  useEffect(() => {
+    if (fontLoadError) {
+      console.error('Error loading fonts', fontLoadError);
+    }
+  }, [fontLoadError]);
 
   if (!fontsLoaded || loader.isLoading) {
     return <AppLoading />;

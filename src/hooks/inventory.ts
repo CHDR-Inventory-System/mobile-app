@@ -14,7 +14,7 @@ type ImageUploadParams = ImageFormData & {
 };
 
 type UseInventoryHook = {
-  items: Item[];
+  readonly items: Readonly<Item[]>;
   /**
    * This should only need to be called once at the start of the application.
    * This makes an API call to fetch all inventory items and updates the state

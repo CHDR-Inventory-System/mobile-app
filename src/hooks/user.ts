@@ -4,7 +4,8 @@ import API from '../util/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/API';
 
-type UseUserHook = User & {
+type UseUserHook = {
+  readonly state: Readonly<User>;
   /**
    * Makes a call to the API to log a user in. If successful, this also sets
    * the `user` field in {@link AsyncStorage} to the value of the current user.
@@ -25,12 +26,14 @@ const useUser = (): UseUserHook => {
     );
   }
 
+  const { state, dispatch } = context;
+
   const login = async (nid: string, password: string): Promise<void> => {
     const user = await API.login(nid, password);
     await AsyncStorage.setItem('user', JSON.stringify(user));
 
-    context.dispatch({
-      type: 'INIT',
+    dispatch({
+      type: 'LOGIN',
       payload: user
     });
   };
@@ -42,11 +45,11 @@ const useUser = (): UseUserHook => {
       console.error('Error clearing storage during logout call', err);
     }
 
-    context.dispatch({ type: 'LOG_OUT' });
+    dispatch({ type: 'LOG_OUT' });
   };
 
   return {
-    ...context.state,
+    state,
     login,
     logout
   };
