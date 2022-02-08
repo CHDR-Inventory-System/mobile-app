@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 type UseLoadingHook = {
-  isLoading: Readonly<boolean>;
+  readonly isLoading: boolean;
   startLoading: () => void;
   stopLoading: () => void;
   toggleLoading: (isLoading: boolean) => void;
