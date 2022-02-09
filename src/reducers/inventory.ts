@@ -54,7 +54,7 @@ const findItem = (items: Item[], itemId: number): Item | undefined => {
 
   const child = items
     .flatMap(({ children }) => children)
-    .find(child => child?.ID === itemId);
+    .find(childItem => childItem?.ID === itemId);
 
   if (child) {
     return { ...child };
@@ -67,13 +67,14 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
   switch (action.type) {
     case 'SET_ITEMS':
       return action.payload;
-    case 'ADD_ITEM':
+    case 'ADD_ITEM': {
       const item = {
         ...action.payload,
         images: []
       };
       return state.concat(item as Item);
-    case 'ADD_CHILD_ITEM':
+    }
+    case 'ADD_CHILD_ITEM': {
       const { item: newItem, parentId } = action.payload;
 
       return state.map(item => {
@@ -83,7 +84,8 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
 
         return item;
       });
-    case 'DELETE_ITEM':
+    }
+    case 'DELETE_ITEM': {
       const itemId = action.payload;
 
       return state
@@ -95,6 +97,7 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
 
           return item;
         });
+    }
     case 'UPDATE_ITEM': {
       const updatedItem = action.payload;
 
@@ -153,6 +156,7 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
       const updatedItem = findItem(state, itemId);
 
       if (!updatedItem) {
+        // eslint-disable-next-line no-console
         console.warn(`Couldn't find item with ID ${itemId}`);
         return state;
       }
