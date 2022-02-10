@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Alert } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import Avatar from './Avatar';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -8,7 +8,6 @@ import { Portal } from '@gorhom/portal';
 import { BottomSheetBackdropProps, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import useUser from '../hooks/user';
 
 type LogoutBottomSheetProps = {
@@ -16,6 +15,9 @@ type LogoutBottomSheetProps = {
 };
 
 const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => {
+  const navigation = useNavigation<NavigationProps>();
+  const user = useUser();
+
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
   const renderBackdrop = useCallback(
@@ -25,21 +27,28 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
     []
   );
 
-  const navigation = useNavigation<NavigationProps>();
-  const { userDispatch } = useUser();
+  const logout = async () => {
+    await user.logout();
 
-  const onLogoutPress = async () => {
     onClose?.();
-    userDispatch({ type: 'LOG_OUT' });
 
-    try {
-      await AsyncStorage.removeItem('user');
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error clearing storage', err);
-    }
+    // Need to let the bottom sheet finishing closing so
+    // the backdrop doesn't stay open after this component
+    // is unmounted
+    setTimeout(() => navigation.navigate('Login'), 10);
+  };
 
-    setTimeout(() => navigation.navigate('Login'));
+  const onLogoutPress = () => {
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+      {
+        text: 'Yes',
+        onPress: logout
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel'
+      }
+    ]);
   };
 
   return (

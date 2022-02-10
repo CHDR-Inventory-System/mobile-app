@@ -1,17 +1,10 @@
 import React from 'react';
-import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TextStyle
-} from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, TextStyle, Platform } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
-import { platformValue } from '../util/platform';
-import { Fonts } from '../global-styles';
+import { Colors, Fonts } from '../global-styles';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type BackTitleHeaderProps = {
   title: string;
@@ -43,9 +36,9 @@ const BackTitleHeader = ({
 
   return (
     <View style={[styles.header, style]}>
-      <TouchableOpacity activeOpacity={1} onPress={handleBackPress}>
+      <TouchableWithoutFeedback onPress={handleBackPress}>
         <AntDesign name="arrowleft" size={32} color="black" style={styles.icon} />
-      </TouchableOpacity>
+      </TouchableWithoutFeedback>
       <View style={styles.itemNameContainer}>
         <Text style={[styles.itemName, titleStyle]}>{title}</Text>
       </View>
@@ -55,6 +48,8 @@ const BackTitleHeader = ({
 
 const styles = StyleSheet.create({
   header: {
+    zIndex: 2,
+    backgroundColor: Colors.appBackgroundColor,
     paddingTop: 8,
     paddingHorizontal: 20,
     paddingBottom: 16,
@@ -76,7 +71,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     lineHeight: 30,
     flexShrink: 1,
-    marginTop: platformValue(0, 4)
+    marginTop: Platform.select({
+      android: 0,
+      ios: 4
+    })
   }
 });
 

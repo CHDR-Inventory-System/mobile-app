@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/LoginScreen';
 import MainScreen from './src/screens/MainScreen';
 import Navbar from './src/components/Navbar';
-import { Portal, PortalProvider } from '@gorhom/portal';
+import { PortalProvider } from '@gorhom/portal';
 import { RootStackParamsList } from './src/types/navigation';
 import BarcodeScanner from './src/screens/BarcodeScanner';
 import { Colors } from './src/global-styles';
@@ -14,28 +14,41 @@ import ItemDetail from './src/screens/ItemDetail';
 import { UserProvider } from './src/contexts/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from './src/types/API';
+import EditItemScreen from './src/screens/EditItemScreen';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { InventoryProvider } from './src/contexts/InventoryContext';
+import { StatusBar } from 'expo-status-bar';
+import useLoader from './src/hooks/loading';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
-  const [isLoading, setLoading] = useState(true);
-  const [initialUserValue, setInitialUserValue] = useState<User | null>(null);
-  const [fontsLoaded] = useFonts({
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
+  const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
+  const loader = useLoader(true);
+  const [fontsLoaded, fontLoadError] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
     'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
     'Gotham-Bold': require('./assets/fonts/Gotham-Bold.ttf')
   });
 
-  const loadUser = () => {
+  const loadUserFromStorage = () => {
+    // If the user was previously logged in, grab their credentials
+    // from AsyncStorage, set the the user context object,
+    // then take them to the main screen
     AsyncStorage.getItem('user')
       .then(user => JSON.parse(user || '') as User)
       .then(user => {
-        setInitialUserValue(user);
-        setInitialRoute('Main');
+        if (user.token) {
+          setInitialUserValue(user);
+          setInitialRoute('Main');
+        }
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {
+        // This catch block is needed to silence "unhandled rejection" errors
+      })
+      .finally(loader.stopLoading);
   };
 
   const stack = (
@@ -54,7 +67,7 @@ const App = (): JSX.Element => {
         component={LoginScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="Main" component={MainScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="Main" component={MainScreen} />
       <Stack.Screen
         name="BarcodeScanner"
         component={BarcodeScanner}
@@ -67,29 +80,45 @@ const App = (): JSX.Element => {
         name="ItemDetail"
         component={ItemDetail}
         options={{
-          headerShown: true,
+          headerShown: false,
           gestureEnabled: true
         }}
+      />
+      <Stack.Screen
+        name="EditItemScreen"
+        component={EditItemScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
 
   useEffect(() => {
-    loadUser();
+    loadUserFromStorage();
   }, []);
 
-  if (!fontsLoaded || isLoading) {
+  useEffect(() => {
+    if (fontLoadError) {
+      console.error('Error loading fonts', fontLoadError);
+    }
+  }, [fontLoadError]);
+
+  if (!fontsLoaded || loader.isLoading) {
     return <AppLoading />;
   }
 
   return (
-    <PortalProvider>
-      <Portal>
+    <SafeAreaProvider>
+      <ActionSheetProvider>
         <UserProvider initialValue={initialUserValue}>
-          <NavigationContainer>{stack}</NavigationContainer>
+          <InventoryProvider>
+            <NavigationContainer>
+              <StatusBar style="dark" />
+              <PortalProvider>{stack}</PortalProvider>
+            </NavigationContainer>
+          </InventoryProvider>
         </UserProvider>
-      </Portal>
-    </PortalProvider>
+      </ActionSheetProvider>
+    </SafeAreaProvider>
   );
 };
 
