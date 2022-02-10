@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
-import { platformValue } from '../util/platform';
 import Avatar from './Avatar';
 import LogoutBottomSheet from './LogoutBottomSheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Navbar = (): JSX.Element => {
   const [isSheetShowing, setSheetShowing] = useState(false);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.container}>
+    <View
+      style={{
+        ...styles.container,
+        paddingTop: insets.top
+      }}
+    >
       <View style={styles.content}>
         <View style={styles.textContainer}>
           <Text style={styles.title}>CHDR</Text>
@@ -24,11 +30,11 @@ const Navbar = (): JSX.Element => {
 
 const styles = StyleSheet.create({
   container: {
+    zIndex: 100,
     backgroundColor: Colors.appBackgroundColor
   },
   content: {
     height: 80,
-    marginTop: platformValue(24, 40),
     paddingLeft: 24,
     paddingRight: 24,
     justifyContent: 'space-between',

@@ -4,29 +4,22 @@ import userReducer, { UserAction } from '../reducers/user';
 import { User } from '../types/API';
 
 export type UserContextType = {
-  user: User;
-  userDispatch: React.Dispatch<UserAction>;
+  state: User;
+  dispatch: React.Dispatch<UserAction>;
 };
 
 type UserProviderProps = {
   children: React.ReactNode;
-  initialValue: User | null;
+  initialValue: User | undefined;
 };
 
-const UserContext = createContext<UserContextType | null>(null);
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const UserProvider = ({ children, initialValue }: UserProviderProps): JSX.Element => {
-  const [user, userDispatch] = useReducer(userReducer, initialValue || ({} as User));
+  const [state, dispatch] = useReducer(userReducer, initialValue || ({} as User));
 
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        userDispatch
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={{ state, dispatch }}>{children}</UserContext.Provider>
   );
 };
 

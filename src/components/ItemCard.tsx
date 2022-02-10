@@ -2,10 +2,11 @@ import React from 'react';
 import { StyleSheet, View, Text, ViewStyle } from 'react-native';
 import Button from './Button';
 import { Item } from '../types/API';
-import { Fonts } from '../global-styles';
+import { Colors, Fonts } from '../global-styles';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import ImageWithFallback from './ImageWithFallback';
+import { AntDesign } from '@expo/vector-icons';
 
 type ItemCardProps = {
   item: Item;
@@ -15,20 +16,47 @@ type ItemCardProps = {
 const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
 
+  const goToItemDetailScreen = () => {
+    navigation.navigate('ItemDetail', {
+      itemId: item.ID
+    });
+  };
+
   return (
     <View style={[styles.container, style]}>
       <ImageWithFallback
         style={styles.image}
-        source={{ uri: item.images[0]?.imageURL || undefined }}
+        source={
+          // Passing undefined if there are no images so that the
+          // image component will show the "No image available" placeholder
+          item.images.length === 0 ? undefined : { uri: item.images[0].imageURL }
+        }
       />
       <Text style={styles.itemName}>{item.name.replace(/[\n\r]+/g, '')}</Text>
-      {item.description && (
+      <View style={styles.itemStatusContainer}>
+        <Text style={styles.itemStatus}>Status: </Text>
+        <Text
+          style={{
+            ...styles.itemStatus,
+            color: item.available ? Colors.success : Colors.danger
+          }}
+        >
+          {item.available ? 'Available' : 'Unavailable'}
+        </Text>
+        <AntDesign
+          size={14}
+          style={styles.itemStatusIcon}
+          name={item.available ? 'checkcircle' : 'closecircle'}
+          color={item.available ? Colors.success : Colors.danger}
+        />
+      </View>
+      {!!item.description && (
         <View style={styles.descriptionContainer}>
           <Text style={styles.descriptionSubtitle}>Description</Text>
           <Text style={styles.description}>{item.description}</Text>
         </View>
       )}
-      <Button text="View Item" onPress={() => navigation.navigate('ItemDetail', item)} />
+      <Button text="View Item" onPress={goToItemDetailScreen} />
     </View>
   );
 };
@@ -74,6 +102,18 @@ const styles = StyleSheet.create({
   descriptionContainer: {
     marginTop: 8,
     marginBottom: 8
+  },
+  itemStatusContainer: {
+    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  itemStatus: {
+    fontFamily: Fonts.text,
+    fontSize: Fonts.defaultTextSize
+  },
+  itemStatusIcon: {
+    marginLeft: 6
   }
 });
 

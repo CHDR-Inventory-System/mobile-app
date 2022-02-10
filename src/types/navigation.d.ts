@@ -1,6 +1,5 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { Item } from './API';
 
 /**
  * A list of routes/screens and the props that each screen takes. Whenever
@@ -12,7 +11,12 @@ export type RootStackParamsList = {
   Login: undefined;
   Main: undefined;
   BarcodeScanner: undefined;
-  ItemDetail: Item;
+  EditItemScreen: {
+    itemId: number;
+  };
+  ItemDetail: {
+    itemId: number;
+  };
 };
 
 /**
