@@ -85,7 +85,11 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
 
   return (
     <View>
-      <LoadingOverlay loading={loader.isLoading} portalHostName="ItemDetail" />
+      <LoadingOverlay
+        loading={loader.isLoading}
+        portalHostName="ItemDetail"
+        text="Loading"
+      />
       <Carousel
         data={images}
         renderItem={renderImage}

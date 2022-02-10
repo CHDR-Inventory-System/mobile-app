@@ -269,7 +269,7 @@ const ItemDetail = (): JSX.Element | null => {
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
       <PortalHost name="ItemDetail" />
-      <LoadingOverlay loading={loader.isLoading} text="Uploading" />
+      <LoadingOverlay loading={loader.isLoading} text="Loading" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.contentBody}>
           <ImageCarousel itemId={params.itemId} />
