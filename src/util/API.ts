@@ -65,11 +65,6 @@ class API {
     });
     return response.data;
   }
-
-  static async getItemByBarcode(barcode: string): Promise<Item> {
-    const response = await axios.get(`/inventory/barcode/${barcode}`);
-    return response.data;
-  }
 }
 
 export default API;

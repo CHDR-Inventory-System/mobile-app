@@ -26,6 +26,7 @@ import useLoader from '../hooks/loading';
 import useInventory from '../hooks/inventory';
 import LoadingOverlay from '../components/Loading';
 import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
 
 const ItemDetail = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ItemDetail'>>();
@@ -267,6 +268,7 @@ const ItemDetail = (): JSX.Element | null => {
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+      <StatusBar style="dark" />
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
       <PortalHost name="ItemDetail" />
       <LoadingOverlay loading={loader.isLoading} text="Loading" />
