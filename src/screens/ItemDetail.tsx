@@ -283,6 +283,7 @@ const ItemDetail = (): JSX.Element | null => {
           )}
           {renderItemProperty('Location', item.location)}
           {renderItemProperty('Barcode', item.barcode)}
+          {renderItemProperty('Item ID', item.ID)}
           {renderItemProperty('Quantity', item.quantity)}
           {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
           {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
