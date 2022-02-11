@@ -54,9 +54,15 @@ const ItemDetail = (): JSX.Element | null => {
   };
 
   const goToChildItemDetailScreen = (childItem: Item) => {
+    // Using push here so that going back will go to the parent item screen
+    // and not the main screen
     navigation.push('ItemDetail', {
       itemId: childItem.ID
     });
+  };
+
+  const goToReservationScreen = () => {
+    navigation.navigate('ReservationScreen', { item });
   };
 
   const renderItemProperty = (property: string, value: string | number | null) => {
@@ -158,7 +164,8 @@ const ItemDetail = (): JSX.Element | null => {
         image: {
           imagePath: image.uri,
           created: new Date().toLocaleDateString(),
-          imageURL: image.uri
+          imageURL: image.uri,
+          itemChild: item.ID
         }
       });
 
@@ -307,6 +314,11 @@ const ItemDetail = (): JSX.Element | null => {
           {renderChildren()}
 
           <Button text="Edit Item" style={styles.actionButton} onPress={goToEditScreen} />
+          <Button
+            text="View Reservations"
+            style={styles.actionButton}
+            onPress={goToReservationScreen}
+          />
           <Button
             text="Upload Image"
             style={styles.actionButton}

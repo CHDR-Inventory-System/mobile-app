@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ImageFormData, Item, User } from '../types/API';
+import { ImageFormData, Item, Reservation, User } from '../types/API';
 import { DEBUG_API_URL, PROD_API_URL } from '@env';
 import { AtLeast } from './types';
 
@@ -63,6 +63,11 @@ class API {
     const response = await axios.post(`/inventory/${itemId}/addChild`, {
       ...item
     });
+    return response.data;
+  }
+
+  static async getReservations(itemId: number): Promise<Reservation[]> {
+    const response = await axios.get(`/reservations/${itemId}`);
     return response.data;
   }
 }

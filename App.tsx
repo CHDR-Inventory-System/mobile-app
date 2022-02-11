@@ -20,6 +20,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { InventoryProvider } from './src/contexts/InventoryContext';
 import { StatusBar } from 'expo-status-bar';
 import useLoader from './src/hooks/loading';
+import ReservationScreen from './src/screens/ReservationScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -88,6 +89,14 @@ const App = (): JSX.Element => {
         name="EditItemScreen"
         component={EditItemScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ReservationScreen"
+        component={ReservationScreen}
+        options={{
+          headerShown: false,
+          gestureEnabled: true
+        }}
       />
     </Stack.Navigator>
   );

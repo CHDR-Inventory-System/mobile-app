@@ -19,6 +19,7 @@ export type ItemImage = {
   created: string;
   imagePath: string;
   imageURL: string;
+  itemChild: number;
 };
 
 export type Item = {
@@ -60,13 +61,13 @@ export type ReservationStatus =
 
 export type Reservation = {
   ID: number;
-  admin: User | null;
+  admin: Omit<User, 'token'> | null;
   created: string;
   endDateTime: string;
   item: Item;
   startDateTime: string;
   status: ReservationStatus;
-  user: User;
+  user: Omit<User, 'token'>;
 };
 
 export type ImageFormData = {

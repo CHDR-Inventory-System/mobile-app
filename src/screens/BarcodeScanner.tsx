@@ -56,6 +56,8 @@ const BarcodeScanner = (): JSX.Element => {
               navigation.navigate('ItemDetail', { itemId: inventoryItem.ID });
               break;
             case 2: // View Reservations
+              navigation.navigate('ReservationScreen', { item: inventoryItem });
+              break;
             case 3: // Create Reservation
               // TODO: Go to reservation screen here
               break;
