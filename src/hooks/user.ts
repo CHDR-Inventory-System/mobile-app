@@ -12,7 +12,7 @@ type UseUserHook = {
    *
    * @throws {AxiosError} Will throw an error if login was unsuccessful
    */
-  login: (nid: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -28,8 +28,8 @@ const useUser = (): UseUserHook => {
 
   const { state, dispatch } = context;
 
-  const login = async (nid: string, password: string): Promise<void> => {
-    const user = await API.login(nid, password);
+  const login = async (email: string, password: string): Promise<void> => {
+    const user = await API.login(email, password);
     await AsyncStorage.setItem('user', JSON.stringify(user));
 
     dispatch({

@@ -8,9 +8,9 @@ axios.defaults.headers.put['Content-Type'] = 'application/json';
 axios.defaults.baseURL = __DEV__ ? DEBUG_API_URL : PROD_API_URL;
 
 class API {
-  static async login(nid: string, password: string): Promise<User> {
+  static async login(email: string, password: string): Promise<User> {
     const response = await axios.post('/users/login', {
-      nid,
+      email,
       password
     });
 
