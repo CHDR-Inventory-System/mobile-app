@@ -21,7 +21,7 @@ export type RootStackParamsList = {
   ReservationScreen: {
     item: Item;
   };
-  AddReservationScreen: {
+  CreateReservationScreen: {
     item: Item;
   };
 };

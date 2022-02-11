@@ -61,7 +61,7 @@ const BarcodeScanner = (): JSX.Element => {
             navigation.navigate('ReservationScreen', { item });
             break;
           case 3: // Create Reservation
-            navigation.navigate('AddReservationScreen', { item });
+            navigation.navigate('CreateReservationScreen', { item });
             break;
         }
       }

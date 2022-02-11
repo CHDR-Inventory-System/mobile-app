@@ -15,12 +15,12 @@ import useLoader from '../hooks/loading';
 import { StatusBar } from 'expo-status-bar';
 
 type FormValues = {
-  nid: string;
+  email: string;
   checkoutDate: string;
   returnDate: string;
 };
 
-const AddReservationScreen = (): JSX.Element => {
+const CreateReservationScreen = (): JSX.Element => {
   const {
     params: { item }
   } = useRoute<RouteProps<'ReservationScreen'>>();
@@ -29,7 +29,7 @@ const AddReservationScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets();
   const loader = useLoader();
   const [initialValues] = useState<FormValues>({
-    nid: '',
+    email: '',
     checkoutDate: new Date().toString(),
     returnDate: new Date().toString()
   });
@@ -48,9 +48,9 @@ const AddReservationScreen = (): JSX.Element => {
 
     setErrors({});
 
-    if (!values.nid.trim()) {
+    if (!values.email.trim()) {
       hasError = true;
-      setFieldError('nid', 'An NID is required');
+      setFieldError('email', 'An email is required');
     }
 
     if (returnDate <= checkoutDate) {
@@ -159,18 +159,22 @@ const AddReservationScreen = (): JSX.Element => {
               message={`This will create a reservation for the item: ${item.name}`}
             />
             <LabeledInput
-              label="NID"
+              label="Email"
               required
               autoCapitalize="none"
               autoCorrect={false}
-              keyboardType="name-phone-pad"
+              keyboardType="email-address"
               style={styles.input}
-              onChangeText={handleChange('nid')}
-              errorMessage={errors.nid}
+              onChangeText={handleChange('email')}
+              errorMessage={errors.email}
             />
             <DatePickerInput
               mode="datetime"
               required
+              display={Platform.select({
+                ios: 'inline',
+                android: 'default'
+              })}
               label="Checkout Date"
               value={new Date(values.checkoutDate)}
               style={styles.input}
@@ -181,6 +185,10 @@ const AddReservationScreen = (): JSX.Element => {
             <DatePickerInput
               mode="datetime"
               required
+              display={Platform.select({
+                ios: 'inline',
+                android: 'default'
+              })}
               label="Return Date"
               value={new Date(values.returnDate)}
               style={styles.input}
@@ -232,4 +240,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default AddReservationScreen;
+export default CreateReservationScreen;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import { NavigationProps, RouteProps } from '../types/navigation';
 import API from '../util/API';
 import useLoader from '../hooks/loading';
 import LoadingOverlay from '../components/Loading';
-import useInventory from '../hooks/inventory';
 import { Reservation, ReservationStatus } from '../types/API';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -38,11 +37,11 @@ const statusColorMap: Record<ReservationStatus, string> = {
 };
 
 const ReservationScreen = (): JSX.Element | null => {
-  const { params } = useRoute<RouteProps<'ReservationScreen'>>();
+  const {
+    params: { item }
+  } = useRoute<RouteProps<'ReservationScreen'>>();
   const navigation = useNavigation<NavigationProps>();
   const loader = useLoader();
-  const inventory = useInventory();
-  const item = useMemo(() => inventory.getItem(params.item.ID), []);
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
   const [isStatusSheetShowing, setStatusSheetShowing] = useState(false);
@@ -252,7 +251,7 @@ const ReservationScreen = (): JSX.Element | null => {
           ...styles.addButton,
           height: insets.bottom === 0 ? 56 : insets.bottom + 48
         }}
-        onPress={() => navigation.navigate('AddReservationScreen', { item })}
+        onPress={() => navigation.navigate('CreateReservationScreen', { item })}
       />
       {isStatusSheetShowing && (
         <StatusBottomSheet
