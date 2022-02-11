@@ -23,12 +23,12 @@ import * as Haptics from 'expo-haptics';
 import useLoader from '../hooks/loading';
 
 type Credentials = {
-  nid: string;
+  email: string;
   password: string;
 };
 
 const credentialSchema = yup.object({
-  nid: yup.string().required('You NID is required'),
+  email: yup.string().email().required('Your email is required'),
   password: yup.string().required('Your password is required')
 });
 
@@ -43,7 +43,7 @@ const LoginScreen = (): JSX.Element => {
     loader.startLoading();
 
     try {
-      await user.login(credentials.nid, credentials.password);
+      await user.login(credentials.email, credentials.password);
 
       loader.stopLoading();
       navigation.replace('Main');
@@ -51,7 +51,7 @@ const LoginScreen = (): JSX.Element => {
       if ((err as AxiosError).response?.status === 401) {
         Alert.alert(
           'Invalid Credentials',
-          'Make sure your NID and password are correct and try again.'
+          'Make sure your email and password are correct and try again.'
         );
       } else {
         Alert.alert(
@@ -94,7 +94,7 @@ const LoginScreen = (): JSX.Element => {
               validateOnChange={false}
               validationSchema={credentialSchema}
               initialValues={{
-                nid: '',
+                email: '',
                 password: ''
               }}
               onSubmit={login}
@@ -109,16 +109,15 @@ const LoginScreen = (): JSX.Element => {
                     <View style={styles.inputContainer}>
                       <LabeledInput
                         autoCapitalize="none"
-                        label="NID"
-                        placeholder="UCF NID"
+                        label="Email"
+                        keyboardType="email-address"
                         style={styles.input}
-                        onChangeText={handleChange('nid')}
-                        errorMessage={errors.nid}
+                        onChangeText={handleChange('email')}
+                        errorMessage={errors.email}
                       />
                       <LabeledInput
                         label="Password"
                         secureTextEntry
-                        placeholder="UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
                         errorMessage={errors.password}
