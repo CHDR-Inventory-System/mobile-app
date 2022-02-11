@@ -6,7 +6,6 @@
       "created": "Wed, 12 Jan 2022 16:42:38 GMT",
       "email": "matthew.a.waldrep@Knights.ucf.edu",
       "fullName": "Matthew Waldrep",
-      "nid": "mw555555",
       "role": "Admin",
       "verified": true
     },
@@ -39,7 +38,6 @@
           "name": "Samsung Stylus\r\n",
           "purchaseDate": "Sat, 04 May 2019 00:00:00 GMT",
           "quantity": 1,
-          "retiredDateTime": null,
           "serial": "3521245",
           "type": "Computer",
           "vendorName": "BestBuy",
@@ -64,7 +62,6 @@
       "name": "Samsung CT-P5113 tablet\r\n",
       "purchaseDate": null,
       "quantity": 1,
-      "retiredDateTime": null,
       "serial": "RFCKSOENFOAKNW",
       "type": "Computer",
       "vendorName": "BestBuy",
@@ -77,7 +74,6 @@
       "created": "Wed, 12 Jan 2022 16:42:38 GMT",
       "email": "matthew.a.waldrep@Knights.ucf.edu",
       "fullName": "Matthew Waldrep",
-      "nid": "mw555555",
       "role": "Admin",
       "verified": true
     }
@@ -93,13 +89,13 @@
       "barcode": "CHDR5212",
       "children": [],
       "created": "Wed, 12 Jan 2022 16:57:34 GMT",
-      "description": null,
+      "description": "This is a cool scanner",
       "images": [
         {
-          "ID": 6,
-          "created": "Wed, 12 Jan 2022 16:59:35 GMT",
-          "imagePath": "images/scanner/scanner1.jpg",
-          "imageURL": "",
+          "ID": 90,
+          "created": "Thu, 10 Feb 2022 22:11:55 GMT",
+          "imagePath": "../images/8DBC61E6-CF60-46A0-B4C8-C4989942192C.jpg",
+          "imageURL": "http://137.135.66.77/images/8DBC61E6-CF60-46A0-B4C8-C4989942192C.jpg",
           "itemChild": 12
         }
       ],
@@ -107,10 +103,9 @@
       "location": "321B",
       "main": true,
       "moveable": true,
-      "name": "Microfilm Scanner\r\n",
+      "name": "Microfilm Scanner",
       "purchaseDate": null,
       "quantity": 2,
-      "retiredDateTime": null,
       "serial": "CN-5829291-498549-293",
       "type": "Other",
       "vendorName": null,
@@ -121,9 +116,8 @@
     "user": {
       "ID": 4,
       "created": "Wed, 12 Jan 2022 16:42:38 GMT",
-      "email": "ctcuff@ucf.ucf.edu",
+      "email": "ctcuff@gmail.com",
       "fullName": "Cameron Cuff",
-      "nid": "cc856380",
       "role": "Super",
       "verified": true
     }
@@ -156,7 +150,6 @@
       "name": "Oculus Quest\r\n",
       "purchaseDate": "Thu, 04 Jul 2019 00:00:00 GMT",
       "quantity": 1,
-      "retiredDateTime": null,
       "serial": "4678534246",
       "type": "VR",
       "vendorName": "UCF Stuff",
@@ -169,7 +162,6 @@
       "created": "Wed, 12 Jan 2022 16:42:38 GMT",
       "email": "ashensilverwolf@gmail.com",
       "fullName": "Gavin Gilbert",
-      "nid": "gg735235",
       "role": "Super",
       "verified": false
     }
@@ -202,7 +194,6 @@
       "name": "Study Room 1\r\n",
       "purchaseDate": null,
       "quantity": 6,
-      "retiredDateTime": null,
       "serial": null,
       "type": "Room",
       "vendorName": null,
@@ -213,9 +204,140 @@
     "user": {
       "ID": 4,
       "created": "Wed, 12 Jan 2022 16:42:38 GMT",
-      "email": "ctcuff@ucf.ucf.edu",
+      "email": "ctcuff@gmail.com",
       "fullName": "Cameron Cuff",
-      "nid": "cc856380",
+      "role": "Super",
+      "verified": true
+    }
+  },
+  {
+    "ID": 26,
+    "admin": null,
+    "created": "Fri, 11 Feb 2022 18:43:04 GMT",
+    "endDateTime": "Fri, 11 Feb 2022 13:35:37 GMT",
+    "item": {
+      "ID": 30,
+      "available": false,
+      "barcode": "TPP3045",
+      "children": [],
+      "created": "Wed, 19 Jan 2022 19:00:10 GMT",
+      "description": "The purpose of this item is only to test image uploading. Image uploading kind of works…",
+      "images": [
+        {
+          "ID": 92,
+          "created": "Fri, 11 Feb 2022 04:21:06 GMT",
+          "imagePath": "../images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "imageURL": "http://137.135.66.77/images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "itemChild": 30
+        }
+      ],
+      "item": 30,
+      "location": "ER45",
+      "main": true,
+      "moveable": true,
+      "name": "For Testing Image Uploading",
+      "purchaseDate": null,
+      "quantity": 0,
+      "serial": "delete-this-later!!!",
+      "type": "Test Item",
+      "vendorName": null,
+      "vendorPrice": null
+    },
+    "startDateTime": "Fri, 14 Jan 2022 02:20:55 GMT",
+    "status": "Missed",
+    "user": {
+      "ID": 4,
+      "created": "Wed, 12 Jan 2022 16:42:38 GMT",
+      "email": "ctcuff@gmail.com",
+      "fullName": "Cameron Cuff",
+      "role": "Super",
+      "verified": true
+    }
+  },
+  {
+    "ID": 27,
+    "admin": null,
+    "created": "Fri, 11 Feb 2022 18:43:17 GMT",
+    "endDateTime": "Fri, 11 Feb 2022 13:35:37 GMT",
+    "item": {
+      "ID": 30,
+      "available": false,
+      "barcode": "TPP3045",
+      "children": [],
+      "created": "Wed, 19 Jan 2022 19:00:10 GMT",
+      "description": "The purpose of this item is only to test image uploading. Image uploading kind of works…",
+      "images": [
+        {
+          "ID": 92,
+          "created": "Fri, 11 Feb 2022 04:21:06 GMT",
+          "imagePath": "../images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "imageURL": "http://137.135.66.77/images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "itemChild": 30
+        }
+      ],
+      "item": 30,
+      "location": "ER45",
+      "main": true,
+      "moveable": true,
+      "name": "For Testing Image Uploading",
+      "purchaseDate": null,
+      "quantity": 0,
+      "serial": "delete-this-later!!!",
+      "type": "Test Item",
+      "vendorName": null,
+      "vendorPrice": null
+    },
+    "startDateTime": "Fri, 14 Jan 2022 02:20:55 GMT",
+    "status": "Pending",
+    "user": {
+      "ID": 4,
+      "created": "Wed, 12 Jan 2022 16:42:38 GMT",
+      "email": "ctcuff@gmail.com",
+      "fullName": "Cameron Cuff",
+      "role": "Super",
+      "verified": true
+    }
+  },
+  {
+    "ID": 28,
+    "admin": null,
+    "created": "Fri, 11 Feb 2022 18:51:49 GMT",
+    "endDateTime": "Fri, 11 Feb 2022 13:35:37 GMT",
+    "item": {
+      "ID": 30,
+      "available": false,
+      "barcode": "TPP3045",
+      "children": [],
+      "created": "Wed, 19 Jan 2022 19:00:10 GMT",
+      "description": "The purpose of this item is only to test image uploading. Image uploading kind of works…",
+      "images": [
+        {
+          "ID": 92,
+          "created": "Fri, 11 Feb 2022 04:21:06 GMT",
+          "imagePath": "../images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "imageURL": "http://137.135.66.77/images/D41F5140-1E46-4694-A4AC-9425F6CAA377.jpg",
+          "itemChild": 30
+        }
+      ],
+      "item": 30,
+      "location": "ER45",
+      "main": true,
+      "moveable": true,
+      "name": "For Testing Image Uploading",
+      "purchaseDate": null,
+      "quantity": 0,
+      "serial": "delete-this-later!!!",
+      "type": "Test Item",
+      "vendorName": null,
+      "vendorPrice": null
+    },
+    "startDateTime": "Fri, 14 Jan 2022 02:20:55 GMT",
+    "status": "Approved",
+    "user": {
+      "ID": 4,
+      "created": "Wed, 12 Jan 2022 16:42:38 GMT",
+      "email": "ctcuff@gmail.com",
+      "fullName": "Cameron Cuff",
       "role": "Super",
       "verified": true
     }

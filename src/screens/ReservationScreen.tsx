@@ -122,7 +122,6 @@ const ReservationScreen = (): JSX.Element | null => {
 
     const filteredReservations = [...reservationCache].filter(
       reservation =>
-        reservation.user.nid.toLowerCase().includes(query.toLowerCase()) ||
         reservation.user.email.toLowerCase().includes(query.toLowerCase()) ||
         reservation.user.fullName.toLowerCase().includes(query.toLowerCase())
     );
@@ -138,7 +137,7 @@ const ReservationScreen = (): JSX.Element | null => {
         label="Search"
         returnKeyType="search"
         onSubmitEditing={event => searchStatus(event.nativeEvent.text.trim())}
-        placeholder="Search for an NID, email, or name..."
+        placeholder="Search for an email or name..."
         clearButtonMode="always"
         labelStyle={styles.searchInputLabel}
       />
@@ -159,10 +158,6 @@ const ReservationScreen = (): JSX.Element | null => {
         }}
       />
       <View style={{ paddingVertical: 2 }}>
-        <View style={styles.reservationRow}>
-          <Text style={styles.reservationRowProperty}>NID:</Text>
-          <Text style={styles.reservationRowValue}>{reservation.user.nid}</Text>
-        </View>
         <View style={styles.reservationRow}>
           <Text style={styles.reservationRowProperty}>Email:</Text>
           <Text style={styles.reservationRowValue}>{reservation.user.email}</Text>
