@@ -248,7 +248,9 @@ const styles = StyleSheet.create({
   reservationStatusBar: {
     width: 8,
     height: '100%',
-    marginRight: 8
+    marginRight: 8,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4
   },
   reservationRow: {
     flexDirection: 'row',

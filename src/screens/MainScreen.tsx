@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
-import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
+import EmptyInventoryContent from '../components/main-screen/EmptyInventoryContent';
 import LabeledInput from '../components/LabeledInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
