@@ -1,0 +1,235 @@
+import React, { useEffect, useState } from 'react';
+import { Formik, FormikHandlers, FormikHelpers } from 'formik';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Platform, StyleSheet, Alert as RNAlert, BackHandler, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Alert from '../components/Alert';
+import BackTitleHeader from '../components/BackTitleHeader';
+import Button from '../components/Button';
+import DatePickerInput from '../components/DatePickerInput';
+import LabeledInput from '../components/LabeledInput';
+import { NavigationProps, RouteProps } from '../types/navigation';
+import * as Haptics from 'expo-haptics';
+import LoadingOverlay from '../components/Loading';
+import useLoader from '../hooks/loading';
+import { StatusBar } from 'expo-status-bar';
+
+type FormValues = {
+  nid: string;
+  checkoutDate: string;
+  returnDate: string;
+};
+
+const AddReservationScreen = (): JSX.Element => {
+  const {
+    params: { item }
+  } = useRoute<RouteProps<'ReservationScreen'>>();
+
+  const navigation = useNavigation<NavigationProps>();
+  const insets = useSafeAreaInsets();
+  const loader = useLoader();
+  const [initialValues] = useState<FormValues>({
+    nid: '',
+    checkoutDate: new Date().toString(),
+    returnDate: new Date().toString()
+  });
+
+  // Formik won't call handleSubmit if there are errors in the form, however,
+  // if there are error, we want vibrate the device with haptic feedback
+  const formSubmitHandler = (
+    values: FormValues,
+    handleSubmit: FormikHandlers['handleSubmit'],
+    setErrors: FormikHelpers<FormValues>['setErrors'],
+    setFieldError: FormikHelpers<FormValues>['setFieldError']
+  ) => {
+    const checkoutDate = +new Date(values.checkoutDate);
+    const returnDate = +new Date(values.returnDate);
+    let hasError = false;
+
+    setErrors({});
+
+    if (!values.nid.trim()) {
+      hasError = true;
+      setFieldError('nid', 'An NID is required');
+    }
+
+    if (returnDate <= checkoutDate) {
+      setFieldError('returnDate', 'Return date must be after checkout date');
+      setFieldError('checkoutDate', 'Checkout date must be before return date');
+      hasError = true;
+    }
+
+    if (hasError) {
+      Haptics.notificationAsync(
+        Platform.select({
+          ios: Haptics.NotificationFeedbackType.Error,
+          android: Haptics.NotificationFeedbackType.Warning
+        })
+      );
+    } else {
+      handleSubmit();
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const onFormSubmit = async (values: FormValues) => {
+    loader.startLoading();
+
+    try {
+      // TODO: Make API call here
+      await loader.sleep(2000);
+    } catch (err) {
+      loader.stopLoading();
+      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+        {
+          text: 'Retry',
+          onPress: () => onFormSubmit(values)
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
+      return;
+    }
+
+    loader.stopLoading();
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    setTimeout(() => navigation.goBack(), 300);
+  };
+
+  const confirmBackPress = () => {
+    RNAlert.alert(
+      'Unsaved Changes',
+      "Are you sure you want to go back? you'll lose any unsaved changes.",
+      [
+        {
+          text: 'Go Back',
+          style: 'destructive',
+          onPress: () => navigation.goBack()
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
+  };
+
+  const handleHardwareBackPress = () => true;
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleHardwareBackPress);
+    };
+  }, []);
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      onSubmit={values => onFormSubmit(values)}
+      validateOnChange={false}
+      enableReinitialize
+    >
+      {({
+        values,
+        handleSubmit,
+        errors,
+        handleChange,
+        setFieldValue,
+        setFieldError,
+        setErrors,
+        dirty
+      }) => (
+        <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+          <StatusBar style="dark" />
+          <BackTitleHeader
+            title="New Reservation"
+            style={styles.header}
+            onBackPress={dirty ? confirmBackPress : navigation.goBack}
+          />
+          <LoadingOverlay loading={loader.isLoading} />
+          <View style={styles.container}>
+            <Alert
+              style={styles.infoAlert}
+              type="info"
+              message={`This will create a reservation for the item: ${item.name}`}
+            />
+            <LabeledInput
+              label="NID"
+              required
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="name-phone-pad"
+              style={styles.input}
+              onChangeText={handleChange('nid')}
+              errorMessage={errors.nid}
+            />
+            <DatePickerInput
+              mode="datetime"
+              required
+              label="Checkout Date"
+              value={new Date(values.checkoutDate)}
+              style={styles.input}
+              onChange={date => setFieldValue('checkoutDate', date)}
+              minimumDate={new Date()}
+              inputProps={{ errorMessage: errors.checkoutDate }}
+            />
+            <DatePickerInput
+              mode="datetime"
+              required
+              label="Return Date"
+              value={new Date(values.returnDate)}
+              style={styles.input}
+              onChange={date => setFieldValue('returnDate', date)}
+              minimumDate={new Date()}
+              inputProps={{ errorMessage: errors.returnDate }}
+            />
+          </View>
+          <Button
+            text="Create Reservation"
+            onPress={() =>
+              formSubmitHandler(values, handleSubmit, setErrors, setFieldError)
+            }
+            style={{
+              ...styles.createButton,
+              marginBottom:
+                insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })
+            }}
+          />
+        </SafeAreaView>
+      )}
+    </Formik>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    flex: 1
+  },
+  header: {
+    zIndex: 11,
+    paddingTop: Platform.select({
+      ios: 12,
+      android: 16
+    })
+  },
+  input: {
+    marginVertical: 14
+  },
+  createButton: {
+    marginBottom: 8,
+    marginTop: 16,
+    marginHorizontal: 16
+  },
+  infoAlert: {
+    paddingVertical: 16,
+    marginVertical: 16
+  }
+});
+
+export default AddReservationScreen;

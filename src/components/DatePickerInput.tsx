@@ -11,7 +11,7 @@ import {
   View,
   ViewStyle
 } from 'react-native';
-import LabeledInput from './LabeledInput';
+import LabeledInput, { LabeledInputProps } from './LabeledInput';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 
@@ -23,6 +23,9 @@ type DatePickerInputProps = {
   style?: ViewStyle;
   showTime?: boolean;
   onChange?: (date: Date) => void;
+  minimumDate?: Date;
+  maximumDate?: Date;
+  inputProps?: Partial<LabeledInputProps>
 };
 
 /**
@@ -39,6 +42,9 @@ const DatePickerInput = ({
   onChange,
   label,
   value,
+  minimumDate,
+  maximumDate,
+  inputProps,
   required = false,
   mode = 'date'
 }: DatePickerInputProps): JSX.Element => {
@@ -111,7 +117,8 @@ const DatePickerInput = ({
         // @ts-ignore
         onChange={onTimePickerChange}
         value={new Date(selectedDate || Date.now())}
-        maximumDate={new Date()}
+        minimumDate={minimumDate}
+        maximumDate={maximumDate}
         mode="time"
       />
     );
@@ -137,6 +144,8 @@ const DatePickerInput = ({
             mode={mode}
             display="spinner"
             style={styles.iOSDatePicker}
+            minimumDate={minimumDate}
+            maximumDate={maximumDate}
           />
         );
         break;
@@ -152,6 +161,8 @@ const DatePickerInput = ({
               mode="date"
               display="spinner"
               style={styles.iOSDatePicker}
+              minimumDate={minimumDate}
+              maximumDate={maximumDate}
             />
             <DateTimePicker
               // Disabled because this type is too complicated to write out...
@@ -162,6 +173,8 @@ const DatePickerInput = ({
               mode="time"
               display="spinner"
               style={styles.iOSDatePicker}
+              minimumDate={minimumDate}
+              maximumDate={maximumDate}
             />
           </>
         );
@@ -198,7 +211,8 @@ const DatePickerInput = ({
         // @ts-ignore
         onChange={onDatePickerChange}
         value={new Date(selectedDate || Date.now())}
-        maximumDate={new Date()}
+        minimumDate={minimumDate}
+        maximumDate={maximumDate}
         mode="date"
       />
     );
@@ -245,6 +259,7 @@ const DatePickerInput = ({
           label={label}
           value={getInputValue()}
           style={style}
+          {...inputProps}
         />
         {renderDatePicker()}
         {androidRenderTimePicker()}

@@ -26,48 +26,46 @@ const BarcodeScanner = (): JSX.Element => {
   const { showActionSheetWithOptions } = useActionSheet();
 
   const onBarcodeScanned = (barcode: BarCodeScanningResult) => {
-    loader.startLoading();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
     setHasScanned(true);
     setFlash(false);
 
-    const inventoryItem = inventory.items.find(item => item.barcode === barcode.data);
+    const item = inventory.items.find(it => it.barcode === barcode.data);
 
-    if (inventoryItem) {
-      loader.stopLoading();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      showActionSheetWithOptions(
-        {
-          options: ['Rescan', 'View Item', 'View Reservations', 'Create Reservation'],
-          cancelButtonIndex: 0,
-          textStyle: {
-            fontFamily: Fonts.text
-          }
-        },
-        buttonIndex => {
-          if (buttonIndex === undefined) {
-            return;
-          }
-
-          switch (buttonIndex) {
-            case 0: // Rescan
-              setHasScanned(false);
-              break;
-            case 1: // View Item
-              navigation.navigate('ItemDetail', { itemId: inventoryItem.ID });
-              break;
-            case 2: // View Reservations
-              navigation.navigate('ReservationScreen', { item: inventoryItem });
-              break;
-            case 3: // Create Reservation
-              // TODO: Go to reservation screen here
-              break;
-          }
-        }
-      );
+    if (!item) {
       return;
     }
 
-    loader.stopLoading();
+    showActionSheetWithOptions(
+      {
+        options: ['Rescan', 'View Item', 'View Reservations', 'Create Reservation'],
+        cancelButtonIndex: 0,
+        textStyle: {
+          fontFamily: Fonts.text
+        }
+      },
+      buttonIndex => {
+        if (buttonIndex === undefined) {
+          return;
+        }
+
+        switch (buttonIndex) {
+          case 0: // Rescan
+            setHasScanned(false);
+            break;
+          case 1: // View Item
+            navigation.navigate('ItemDetail', { itemId: item.ID });
+            break;
+          case 2: // View Reservations
+            navigation.navigate('ReservationScreen', { item });
+            break;
+          case 3: // Create Reservation
+            navigation.navigate('AddReservationScreen', { item });
+            break;
+        }
+      }
+    );
   };
 
   const requestCameraPermission = async () => {

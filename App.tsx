@@ -21,6 +21,7 @@ import { InventoryProvider } from './src/contexts/InventoryContext';
 import { StatusBar } from 'expo-status-bar';
 import useLoader from './src/hooks/loading';
 import ReservationScreen from './src/screens/ReservationScreen';
+import AddReservationScreen from './src/screens/AddReservationScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -96,6 +97,14 @@ const App = (): JSX.Element => {
         options={{
           headerShown: false,
           gestureEnabled: true
+        }}
+      />
+      <Stack.Screen
+        name="AddReservationScreen"
+        component={AddReservationScreen}
+        options={{
+          headerShown: false,
+          gestureEnabled: false
         }}
       />
     </Stack.Navigator>

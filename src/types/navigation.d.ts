@@ -20,7 +20,10 @@ export type RootStackParamsList = {
   };
   ReservationScreen: {
     item: Item;
-  }
+  };
+  AddReservationScreen: {
+    item: Item;
+  };
 };
 
 /**

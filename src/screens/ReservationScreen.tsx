@@ -8,8 +8,8 @@ import {
   FlatList
 } from 'react-native';
 import BackTitleHeader from '../components/BackTitleHeader';
-import { useRoute } from '@react-navigation/native';
-import { RouteProps } from '../types/navigation';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { NavigationProps, RouteProps } from '../types/navigation';
 import API from '../util/API';
 import useLoader from '../hooks/loading';
 import LoadingOverlay from '../components/Loading';
@@ -39,6 +39,7 @@ const statusColorMap: Record<ReservationStatus, string> = {
 
 const ReservationScreen = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ReservationScreen'>>();
+  const navigation = useNavigation<NavigationProps>();
   const loader = useLoader();
   const inventory = useInventory();
   const item = useMemo(() => inventory.getItem(params.item.ID), []);
@@ -49,6 +50,9 @@ const ReservationScreen = (): JSX.Element | null => {
   const [reservations, setReservations] = useState<Reservation[]>(
     mockReservations as Reservation[]
   );
+  // Because searching for reservations requires us to modify the main data source of
+  // the FlatList component, we need to store the reservations in a separate array
+  // so we don't have to re-query the API every time a search is executed
   const [reservationCache] = useState(mockReservations as Reservation[]);
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -202,8 +206,8 @@ const ReservationScreen = (): JSX.Element | null => {
     if (filteredStatuses.length === 0) {
       setReservations(reservationCache);
     } else {
-      setReservations(prevState =>
-        prevState.filter(({ status }) => filteredStatuses.includes(status))
+      setReservations(
+        reservationCache.filter(({ status }) => filteredStatuses.includes(status))
       );
     }
   }, [filteredStatuses]);
@@ -248,7 +252,7 @@ const ReservationScreen = (): JSX.Element | null => {
           ...styles.addButton,
           height: insets.bottom === 0 ? 56 : insets.bottom + 48
         }}
-        onPress={() => {}}
+        onPress={() => navigation.navigate('AddReservationScreen', { item })}
       />
       {isStatusSheetShowing && (
         <StatusBottomSheet
