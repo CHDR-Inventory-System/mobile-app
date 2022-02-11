@@ -24,6 +24,8 @@ import { useActionSheet } from '@expo/react-native-action-sheet';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
 import { FontAwesome5, AntDesign } from '@expo/vector-icons';
+import StatusBottomSheet from '../components/reservation-screen/StatusBottomSheet';
+import EmptyReservationList from '../components/reservation-screen/EmptyReservationList';
 
 const statusColorMap: Record<ReservationStatus, string> = {
   Approved: '#BCF898',
@@ -31,7 +33,7 @@ const statusColorMap: Record<ReservationStatus, string> = {
   Denied: '#F89898',
   Late: '#F1DE32',
   Missed: '#EF3810',
-  Pending: '#F8EE98',
+  Pending: '#C8C8C8',
   Returned: '#5452F6'
 };
 
@@ -42,9 +44,12 @@ const ReservationScreen = (): JSX.Element | null => {
   const item = useMemo(() => inventory.getItem(params.item.ID), []);
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
+  const [isStatusSheetShowing, setStatusSheetShowing] = useState(false);
+  const [filteredStatuses, setFilteredStatuses] = useState<ReservationStatus[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>(
     mockReservations as Reservation[]
   );
+  const [reservationCache] = useState(mockReservations as Reservation[]);
   const { showActionSheetWithOptions } = useActionSheet();
 
   if (!item) {
@@ -67,14 +72,7 @@ const ReservationScreen = (): JSX.Element | null => {
   };
 
   const openStatusActionSheet = (index: number) => {
-    const options: ReservationStatus[] = [
-      'Approved',
-      'Checked Out',
-      'Denied',
-      'Late',
-      'Missed',
-      'Returned'
-    ];
+    const options = Object.keys(statusColorMap) as ReservationStatus[];
 
     showActionSheetWithOptions(
       {
@@ -107,14 +105,36 @@ const ReservationScreen = (): JSX.Element | null => {
     setReservations(updatedReservations);
   };
 
-  const renderListHeader = () => (
+  const searchStatus = (query: string) => {
+    if (!query.trim()) {
+      if (filteredStatuses.length === 0) {
+        setReservations(reservationCache);
+      } else {
+        setReservations(
+          reservationCache.filter(({ status }) => filteredStatuses.includes(status))
+        );
+      }
+      return;
+    }
+
+    const filteredReservations = [...reservationCache].filter(
+      reservation =>
+        reservation.user.nid.toLowerCase().includes(query.toLowerCase()) ||
+        reservation.user.email.toLowerCase().includes(query.toLowerCase()) ||
+        reservation.user.fullName.toLowerCase().includes(query.toLowerCase())
+    );
+
+    setReservations(filteredReservations);
+  };
+
+  const renderSearchBar = () => (
     <View style={styles.searchContainer}>
       <LabeledInput
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
         editable={!loader.isLoading}
         label="Search"
         returnKeyType="search"
-        // onSubmitEditing={event => searchItem(event.nativeEvent.text.trim())}
+        onSubmitEditing={event => searchStatus(event.nativeEvent.text.trim())}
         placeholder="Search for an NID, email, or name..."
         clearButtonMode="always"
         labelStyle={styles.searchInputLabel}
@@ -122,53 +142,51 @@ const ReservationScreen = (): JSX.Element | null => {
     </View>
   );
 
-  const renderReservation = (reservation: Reservation, index: number) => {
-    return (
-      <TouchableOpacity
-        style={styles.reservationRowContainer}
-        key={reservation.ID}
-        activeOpacity={0.6}
-        onPress={() => openStatusActionSheet(index)}
-      >
-        <View
-          style={{
-            ...styles.reservationStatusBar,
-            backgroundColor: statusColorMap[reservation.status]
-          }}
-        />
-        <View style={{ paddingVertical: 2 }}>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>NID:</Text>
-            <Text style={styles.reservationRowValue}>{reservation.user.nid}</Text>
-          </View>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>Email:</Text>
-            <Text style={styles.reservationRowValue}>{reservation.user.email}</Text>
-          </View>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>Name:</Text>
-            <Text style={styles.reservationRowValue}>{reservation.user.fullName}</Text>
-          </View>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>Status:</Text>
-            <Text style={styles.reservationRowValue}>{reservation.status}</Text>
-          </View>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>Checkout:</Text>
-            <Text style={styles.reservationRowValue}>
-              {moment(reservation.startDateTime).format('MMMM Do YYYY h:mm A')}
-            </Text>
-          </View>
-          <View style={styles.reservationRow}>
-            <Text style={styles.reservationRowProperty}>Return:</Text>
-            <Text style={styles.reservationRowValue}>
-              {moment(reservation.endDateTime).format('MMMM Do YYYY h:mm A')}
-            </Text>
-          </View>
+  const renderReservation = (reservation: Reservation, index: number) => (
+    <TouchableOpacity
+      style={styles.reservationRowContainer}
+      key={reservation.ID}
+      activeOpacity={0.6}
+      onPress={() => openStatusActionSheet(index)}
+    >
+      <View
+        style={{
+          ...styles.reservationStatusBar,
+          backgroundColor: statusColorMap[reservation.status]
+        }}
+      />
+      <View style={{ paddingVertical: 2 }}>
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>NID:</Text>
+          <Text style={styles.reservationRowValue}>{reservation.user.nid}</Text>
         </View>
-      </TouchableOpacity>
-    );
-  };
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>Email:</Text>
+          <Text style={styles.reservationRowValue}>{reservation.user.email}</Text>
+        </View>
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>Name:</Text>
+          <Text style={styles.reservationRowValue}>{reservation.user.fullName}</Text>
+        </View>
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>Status:</Text>
+          <Text style={styles.reservationRowValue}>{reservation.status}</Text>
+        </View>
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>Checkout:</Text>
+          <Text style={styles.reservationRowValue}>
+            {moment(reservation.startDateTime).format('MMMM Do YYYY h:mm A')}
+          </Text>
+        </View>
+        <View style={styles.reservationRow}>
+          <Text style={styles.reservationRowProperty}>Return:</Text>
+          <Text style={styles.reservationRowValue}>
+            {moment(reservation.endDateTime).format('MMMM Do YYYY h:mm A')}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   const scrollToTop = () =>
     flatListRef.current?.scrollToOffset({
@@ -180,6 +198,16 @@ const ReservationScreen = (): JSX.Element | null => {
     // loadReservations();
   }, []);
 
+  useEffect(() => {
+    if (filteredStatuses.length === 0) {
+      setReservations(reservationCache);
+    } else {
+      setReservations(prevState =>
+        prevState.filter(({ status }) => filteredStatuses.includes(status))
+      );
+    }
+  }, [filteredStatuses]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']} mode="margin">
       <StatusBar style="dark" />
@@ -188,8 +216,11 @@ const ReservationScreen = (): JSX.Element | null => {
       <Text style={styles.subHeader}>Tap on any reservation to update its status</Text>
       <View style={{ flex: 1 }}>
         <FlatList
+          scrollEnabled={reservations.length > 0}
           ref={flatListRef}
-          ListHeaderComponent={renderListHeader()}
+          contentContainerStyle={{ flexGrow: 1 }}
+          ListHeaderComponent={renderSearchBar()}
+          ListEmptyComponent={<EmptyReservationList loading={loader.isLoading} />}
           data={reservations}
           renderItem={({ item, index }) => renderReservation(item, index)}
           keyExtractor={reservation => reservation.ID.toString()}
@@ -203,7 +234,7 @@ const ReservationScreen = (): JSX.Element | null => {
           />
         )}
         <Button
-          onPress={scrollToTop}
+          onPress={() => setStatusSheetShowing(true)}
           style={styles.filterButton}
           iconStyle={styles.buttonIcon}
           icon={<FontAwesome5 name="filter" size={16} color="#FFF" />}
@@ -219,6 +250,15 @@ const ReservationScreen = (): JSX.Element | null => {
         }}
         onPress={() => {}}
       />
+      {isStatusSheetShowing && (
+        <StatusBottomSheet
+          onClose={statuses => {
+            setStatusSheetShowing(false);
+            setFilteredStatuses(statuses);
+          }}
+          selectedStatuses={filteredStatuses || []}
+        />
+      )}
     </SafeAreaView>
   );
 };

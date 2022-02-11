@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
-import EmptyInventoryContent from '../components/main-screen/EmptyInventoryContent';
+import EmptyInventoryList from '../components/main-screen/EmptyInventoryList';
 import LabeledInput from '../components/LabeledInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
@@ -104,9 +104,10 @@ const MainScreen = (): JSX.Element => {
     <View style={styles.container}>
       <View style={{ flex: 1 }}>
         <FlatList
+          scrollEnabled={inventory.items.length > 0}
           contentContainerStyle={{ flexGrow: 1 }}
           ListHeaderComponent={renderListHeader()}
-          ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
+          ListEmptyComponent={<EmptyInventoryList loading={loader.isLoading} />}
           data={inventory.items}
           renderItem={renderInventoryItem}
           refreshing={isRefreshing}
