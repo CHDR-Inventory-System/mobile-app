@@ -13,12 +13,28 @@ import * as Haptics from 'expo-haptics';
 import LoadingOverlay from '../components/Loading';
 import useLoader from '../hooks/loading';
 import { StatusBar } from 'expo-status-bar';
+import Select from '../components/Select';
+import { ReservationStatus } from '../types/API';
 
 type FormValues = {
   email: string;
   checkoutDate: string;
   returnDate: string;
+  status: ReservationStatus;
 };
+
+const statuses: ReservationStatus[] = [
+  'Approved',
+  'Checked Out',
+  'Denied',
+  'Late',
+  'Missed',
+  'Pending',
+  'Returned'
+];
+
+const now = new Date();
+const handleHardwareBackPress = () => true;
 
 const CreateReservationScreen = (): JSX.Element => {
   const {
@@ -30,8 +46,9 @@ const CreateReservationScreen = (): JSX.Element => {
   const loader = useLoader();
   const [initialValues] = useState<FormValues>({
     email: '',
-    checkoutDate: new Date().toString(),
-    returnDate: new Date().toString()
+    checkoutDate: now.toString(),
+    returnDate: now.toString(),
+    status: 'Pending'
   });
 
   // Formik won't call handleSubmit if there are errors in the form, however,
@@ -75,6 +92,8 @@ const CreateReservationScreen = (): JSX.Element => {
   const onFormSubmit = async (values: FormValues) => {
     loader.startLoading();
 
+    console.log(values);
+
     try {
       // TODO: Make API call here
       await loader.sleep(2000);
@@ -116,8 +135,6 @@ const CreateReservationScreen = (): JSX.Element => {
       ]
     );
   };
-
-  const handleHardwareBackPress = () => true;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
@@ -179,7 +196,7 @@ const CreateReservationScreen = (): JSX.Element => {
               value={new Date(values.checkoutDate)}
               style={styles.input}
               onChange={date => setFieldValue('checkoutDate', date)}
-              minimumDate={new Date()}
+              minimumDate={now}
               inputProps={{ errorMessage: errors.checkoutDate }}
             />
             <DatePickerInput
@@ -193,8 +210,18 @@ const CreateReservationScreen = (): JSX.Element => {
               value={new Date(values.returnDate)}
               style={styles.input}
               onChange={date => setFieldValue('returnDate', date)}
-              minimumDate={new Date()}
+              minimumDate={now}
               inputProps={{ errorMessage: errors.returnDate }}
+            />
+            <Select
+              label="Reservation Status"
+              defaultValueIndex={5} // The index of 'Pending'
+              style={styles.input}
+              options={statuses.map(status => ({
+                title: status,
+                value: status,
+                onSelect: value => setFieldValue('status', value)
+              }))}
             />
           </View>
           <Button
