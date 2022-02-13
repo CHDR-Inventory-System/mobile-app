@@ -90,7 +90,6 @@ const CreateReservationScreen = (): JSX.Element => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onFormSubmit = async (values: FormValues) => {
     loader.startLoading();
 
@@ -203,6 +202,7 @@ const CreateReservationScreen = (): JSX.Element => {
               style={styles.input}
               onChangeText={handleChange('email')}
               errorMessage={errors.email}
+              help="This is the email address of the user who want to reserve this item."
             />
             <DatePickerInput
               mode="datetime"

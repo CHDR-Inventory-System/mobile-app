@@ -104,7 +104,6 @@ const MainScreen = (): JSX.Element => {
     <View style={styles.container}>
       <View style={{ flex: 1 }}>
         <FlatList
-          scrollEnabled={inventory.items.length > 0}
           contentContainerStyle={{ flexGrow: 1 }}
           ListHeaderComponent={renderListHeader()}
           ListEmptyComponent={<EmptyInventoryList loading={loader.isLoading} />}
