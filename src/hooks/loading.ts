@@ -54,8 +54,6 @@ const useLoader = (initialValue = false): UseLoadingHook => {
       return Promise.resolve();
     }
 
-    console.warn("Don't use sleep() in a production environment!");
-
     return new Promise(resolve => setTimeout(resolve, ms));
   };
 

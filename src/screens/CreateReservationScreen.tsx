@@ -15,6 +15,7 @@ import useLoader from '../hooks/loading';
 import { StatusBar } from 'expo-status-bar';
 import Select from '../components/Select';
 import { ReservationStatus } from '../types/API';
+import useReservations from '../hooks/reservation';
 
 type FormValues = {
   email: string;
@@ -44,6 +45,7 @@ const CreateReservationScreen = (): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
   const insets = useSafeAreaInsets();
   const loader = useLoader();
+  const reservation = useReservations();
   const [initialValues] = useState<FormValues>({
     email: '',
     checkoutDate: now.toString(),
@@ -97,6 +99,23 @@ const CreateReservationScreen = (): JSX.Element => {
     try {
       // TODO: Make API call here
       await loader.sleep(2000);
+      await reservation.addReservation(4, {
+        ID: reservation.reservations[reservation.reservations.length - 1].ID + 1,
+        admin: null,
+        created: new Date().toLocaleDateString(),
+        endDateTime: values.returnDate,
+        item: item,
+        startDateTime: values.returnDate,
+        status: values.status,
+        user: {
+          ID: 4,
+          created: '2022-01-12 16:42:38',
+          email: 'test-user@example.com',
+          fullName: 'Test User',
+          role: 'Super',
+          verified: true
+        }
+      });
     } catch (err) {
       loader.stopLoading();
       RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
@@ -215,7 +234,7 @@ const CreateReservationScreen = (): JSX.Element => {
             />
             <Select
               label="Reservation Status"
-              defaultValueIndex={5} // The index of 'Pending'
+              defaultValueIndex={5 /* The index of 'Pending */}
               style={styles.input}
               options={statuses.map(status => ({
                 title: status,

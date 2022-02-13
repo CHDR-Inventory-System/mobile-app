@@ -68,11 +68,11 @@ const inventoryReducer = (state: Item[], action: InventoryAction): Item[] => {
     case 'SET_ITEMS':
       return action.payload;
     case 'ADD_ITEM': {
-      const item = {
+      const item: Item = {
         ...action.payload,
         images: []
       };
-      return state.concat(item as Item);
+      return state.concat(item);
     }
     case 'ADD_CHILD_ITEM': {
       const { item: newItem, parentId } = action.payload;

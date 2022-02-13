@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,8 @@ import {
   FlatList
 } from 'react-native';
 import BackTitleHeader from '../components/BackTitleHeader';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
-import API from '../util/API';
 import useLoader from '../hooks/loading';
 import LoadingOverlay from '../components/Loading';
 import { Reservation, ReservationStatus } from '../types/API';
@@ -18,13 +17,13 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import { Colors, Fonts } from '../global-styles';
 import moment from 'moment';
-import mockReservations from '../../assets/mocks/reservations.json';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
 import { FontAwesome5, AntDesign } from '@expo/vector-icons';
 import StatusBottomSheet from '../components/reservation-screen/StatusBottomSheet';
 import EmptyReservationList from '../components/reservation-screen/EmptyReservationList';
+import useReservations from '../hooks/reservation';
 
 const statusColorMap: Record<ReservationStatus, string> = {
   Approved: '#BCF898',
@@ -44,15 +43,17 @@ const ReservationScreen = (): JSX.Element | null => {
   const loader = useLoader();
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
+  const reservation = useReservations();
   const [isStatusSheetShowing, setStatusSheetShowing] = useState(false);
-  const [filteredStatuses, setFilteredStatuses] = useState<ReservationStatus[]>([]);
-  const [reservations, setReservations] = useState<Reservation[]>(
-    mockReservations as Reservation[]
+  // This is initially set to null so that the useEffect hook doesn't try to set the
+  // reservations to an empty array when the component is mounted
+  const [filteredStatuses, setFilteredStatuses] = useState<ReservationStatus[] | null>(
+    null
   );
   // Because searching for reservations requires us to modify the main data source of
   // the FlatList component, we need to store the reservations in a separate array
   // so we don't have to re-query the API every time a search is executed
-  const [reservationCache] = useState(mockReservations as Reservation[]);
+  const [reservationCache, setReservationCache] = useState<Reservation[]>([]);
   const { showActionSheetWithOptions } = useActionSheet();
 
   if (!item) {
@@ -64,9 +65,8 @@ const ReservationScreen = (): JSX.Element | null => {
     loader.startLoading();
 
     try {
-      const response = await API.getReservations(item.ID);
-      console.log(response);
-      setReservations(response);
+      const reservations = await reservation.init(item.item);
+      setReservationCache(reservations);
     } catch (err) {
       console.log(err);
     }
@@ -96,24 +96,26 @@ const ReservationScreen = (): JSX.Element | null => {
           return;
         }
 
-        updateReservation(options[buttonIndex], index);
+        const reservationId = reservation.reservations[index].ID;
+        const reservationStatus = options[buttonIndex];
+
+        reservation.updateStatus(reservationId, reservationStatus);
       }
     );
   };
 
-  const updateReservation = (status: ReservationStatus, index: number) => {
-    const updatedReservations = [...reservations];
-    updatedReservations[index].status = status;
-
-    setReservations(updatedReservations);
-  };
-
   const searchStatus = (query: string) => {
+    if (!filteredStatuses) {
+      return;
+    }
+
     if (!query.trim()) {
+      // Need to check if we have a filter active. If we do, we'll want to
+      // set the reservation state to all reservation that match that filter
       if (filteredStatuses.length === 0) {
-        setReservations(reservationCache);
+        reservation.setReservations(reservationCache);
       } else {
-        setReservations(
+        reservation.setReservations(
           reservationCache.filter(({ status }) => filteredStatuses.includes(status))
         );
       }
@@ -126,7 +128,7 @@ const ReservationScreen = (): JSX.Element | null => {
         reservation.user.fullName.toLowerCase().includes(query.toLowerCase())
     );
 
-    setReservations(filteredReservations);
+    reservation.setReservations(filteredReservations);
   };
 
   const renderSearchBar = () => (
@@ -193,14 +195,30 @@ const ReservationScreen = (): JSX.Element | null => {
     });
 
   useEffect(() => {
-    // loadReservations();
+    loadReservations();
   }, []);
 
+  // Navigating back to this screen from the Create Reservation screen won't cause the
+  // useEffect hook above to trigger. That means the reservation cache will still hold
+  // the old value. Because of this, we need to update the reservation cache, but only
+  // if a reservation was added (hence the length check).
+  useFocusEffect(
+    useCallback(() => {
+      if (reservation.reservations.length > reservationCache.length) {
+        setReservationCache(reservation.reservations);
+      }
+    }, [reservation.reservations])
+  );
+
   useEffect(() => {
+    if (!filteredStatuses) {
+      return;
+    }
+
     if (filteredStatuses.length === 0) {
-      setReservations(reservationCache);
+      reservation.setReservations(reservationCache);
     } else {
-      setReservations(
+      reservation.setReservations(
         reservationCache.filter(({ status }) => filteredStatuses.includes(status))
       );
     }
@@ -214,16 +232,15 @@ const ReservationScreen = (): JSX.Element | null => {
       <Text style={styles.subHeader}>Tap on any reservation to update its status</Text>
       <View style={{ flex: 1 }}>
         <FlatList
-          scrollEnabled={reservations.length > 0}
           ref={flatListRef}
           contentContainerStyle={{ flexGrow: 1 }}
           ListHeaderComponent={renderSearchBar()}
           ListEmptyComponent={<EmptyReservationList loading={loader.isLoading} />}
-          data={reservations}
+          data={reservation.reservations}
           renderItem={({ item, index }) => renderReservation(item, index)}
           keyExtractor={reservation => reservation.ID.toString()}
         />
-        {reservations.length > 0 && (
+        {reservation.reservations.length > 0 && (
           <Button
             onPress={scrollToTop}
             style={styles.toTopButton}
