@@ -6,7 +6,6 @@ import moment from 'moment';
 import { Fonts } from '../../global-styles';
 import useReservations from '../../hooks/reservation';
 import * as Haptics from 'expo-haptics';
-import useLoader from '../../hooks/loading';
 
 type ReservationListItemProps = {
   reservation: Reservation;
@@ -17,6 +16,7 @@ type ReservationListItemProps = {
 
 const statusColorMap: Record<ReservationStatus, string> = {
   Approved: '#5EE010',
+  Cancelled: '#9E1E01',
   'Checked Out': '#3F791C',
   Denied: '#EB826B',
   Late: '#F1DE32',
@@ -32,13 +32,11 @@ const ReservationListItem = ({
   onDeleteFinish
 }: ReservationListItemProps): JSX.Element => {
   const { deleteReservation } = useReservations();
-  const loader = useLoader();
 
   const onDelete = async () => {
     onDeleteStart();
 
     try {
-      await loader.sleep(2000);
       await deleteReservation(reservation.ID);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {

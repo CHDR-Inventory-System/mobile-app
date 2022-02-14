@@ -1,8 +1,6 @@
 import { useContext } from 'react';
 import ReservationContext from '../contexts/ReservationContext';
-import { Reservation, ReservationStatus } from '../types/API';
-import mockReservations from '../../assets/mocks/reservations.json';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { CreateReservationOpts, Reservation, ReservationStatus } from '../types/API';
 import API from '../util/API';
 
 type ReservationHook = {
@@ -14,9 +12,13 @@ type ReservationHook = {
    * this method 4returns the response from {@link API.getReservations}
    */
   init: (itemId: number) => Promise<Reservation[]>;
-  addReservation: (adminId: number, reservation: Reservation) => Promise<void>;
-  updateStatus: (id: number, status: ReservationStatus) => Promise<void>;
-  deleteReservation: (id: number) => Promise<void>;
+  createReservation: (opts: CreateReservationOpts) => Promise<Reservation>;
+  updateStatus: (
+    reservationId: number,
+    adminId: number,
+    status: ReservationStatus
+  ) => Promise<void>;
+  deleteReservation: (reservationId: number) => Promise<void>;
   setReservations: (reservations: Reservation[]) => void;
 };
 
@@ -39,38 +41,43 @@ const useReservations = (): ReservationHook => {
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const init = async (itemId: number): Promise<Reservation[]> => {
-    // TODO: Make API call here
-    const reservations = mockReservations as Reservation[];
+    const reservations = await API.getReservationsForItem(itemId);
     setReservations(reservations);
     return reservations;
   };
 
-  const addReservation = async (adminId: number, reservation: Reservation) => {
-    // TODO: Make API call here
+  const createReservation = async (opts: CreateReservationOpts): Promise<Reservation> => {
+    const reservation = await API.createReservation(opts);
+
     dispatch({
       type: 'ADD_RESERVATION',
       payload: reservation
     });
+
+    return reservation;
   };
 
-  const updateStatus = async (id: number, status: ReservationStatus) => {
-    // TODO: Make API call here
+  const updateStatus = async (
+    reservationId: number,
+    adminId: number,
+    status: ReservationStatus
+  ) => {
+    await API.updateReservationStatus(reservationId, adminId, status);
     dispatch({
       type: 'UPDATE_RESERVATION_STATUS',
       payload: {
-        id,
+        id: reservationId,
         status
       }
     });
   };
 
-  const deleteReservation = async (id: number) => {
-    // TODO: Make API call here
+  const deleteReservation = async (reservationId: number) => {
+    await API.deleteReservation(reservationId);
     dispatch({
       type: 'DELETE_RESERVATION',
-      payload: id
+      payload: reservationId
     });
   };
 
@@ -78,7 +85,7 @@ const useReservations = (): ReservationHook => {
     reservations: state,
     init,
     setReservations,
-    addReservation,
+    createReservation,
     updateStatus,
     deleteReservation
   };

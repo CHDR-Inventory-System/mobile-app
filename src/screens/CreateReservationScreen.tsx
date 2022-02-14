@@ -16,6 +16,8 @@ import { StatusBar } from 'expo-status-bar';
 import Select from '../components/Select';
 import { ReservationStatus } from '../types/API';
 import useReservations from '../hooks/reservation';
+import useUser from '../hooks/user';
+import { AxiosError } from 'axios';
 
 type FormValues = {
   email: string;
@@ -45,6 +47,7 @@ const CreateReservationScreen = (): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
   const insets = useSafeAreaInsets();
   const loader = useLoader();
+  const user = useUser();
   const reservation = useReservations();
   const [initialValues] = useState<FormValues>({
     email: '',
@@ -96,28 +99,32 @@ const CreateReservationScreen = (): JSX.Element => {
     console.log(values);
 
     try {
-      // TODO: Make API call here
-      await loader.sleep(2000);
-      await reservation.addReservation(4, {
-        ID: reservation.reservations[reservation.reservations.length - 1].ID + 1,
-        admin: null,
-        created: new Date().toLocaleDateString(),
-        endDateTime: values.returnDate,
-        item: item,
-        startDateTime: values.returnDate,
+      await reservation.createReservation({
+        email: values.email,
+        checkoutDate: values.checkoutDate,
+        returnDate: values.returnDate,
         status: values.status,
-        user: {
-          ID: 4,
-          created: '2022-01-12 16:42:38',
-          email: 'test-user@example.com',
-          fullName: 'Test User',
-          role: 'Super',
-          verified: true
-        }
+        adminId: user.state.ID,
+        item: item.item
       });
     } catch (err) {
+      const statusCode = (err as AxiosError).response?.status;
+      let errorTitle: string;
+      let errorMessage: string;
+
+      switch (statusCode) {
+        case 404:
+          errorTitle = 'Invalid Email';
+          errorMessage = "Couldn't find a user with this email.";
+          break;
+        default:
+          errorTitle = 'Unexpected Error';
+          errorMessage = 'An unexpected error occurred, please try again.';
+          break;
+      }
+
       loader.stopLoading();
-      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
+      RNAlert.alert(errorTitle, errorMessage, [
         {
           text: 'Retry',
           onPress: () => onFormSubmit(values)

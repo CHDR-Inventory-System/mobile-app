@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Platform, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Platform, FlatList, Alert } from 'react-native';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
@@ -17,6 +17,8 @@ import EmptyReservationList from '../components/reservation-screen/EmptyReservat
 import useReservations from '../hooks/reservation';
 import ReservationListItem from '../components/reservation-screen/ReservationListItem';
 import LoadingOverlay from '../components/Loading';
+import * as Haptics from 'expo-haptics';
+import useUser from '../hooks/user';
 
 const ReservationScreen = (): JSX.Element | null => {
   const {
@@ -38,20 +40,56 @@ const ReservationScreen = (): JSX.Element | null => {
   // so we don't have to re-query the API every time a search is executed
   const [reservationCache, setReservationCache] = useState<Reservation[]>([]);
   const { showActionSheetWithOptions } = useActionSheet();
+  const user = useUser();
 
-  if (!item) {
-    return null;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const loadReservations = async () => {
-    loader.startLoading();
-
     try {
       const reservations = await reservation.init(item.item);
       setReservationCache(reservations);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      Alert.alert(
+        'Unexpected Error',
+        'An error occurred while loading reservations for this item',
+        [
+          {
+            text: 'Retry',
+            onPress: loadReservations
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+  };
+
+  const updateReservationStatus = async (
+    reservationId: number,
+    status: ReservationStatus
+  ) => {
+    loader.startLoading();
+
+    try {
+      await reservation.updateStatus(reservationId, user.state.ID, status);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      console.error(err);
+      Alert.alert(
+        'Unexpected Error',
+        "An error occurred while updating this reservation's status",
+        [
+          {
+            text: 'Retry',
+            onPress: () => updateReservationStatus(reservationId, status)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     }
 
     loader.stopLoading();
@@ -60,6 +98,7 @@ const ReservationScreen = (): JSX.Element | null => {
   const openStatusActionSheet = (res: Reservation) => {
     const options: ReservationStatus[] = [
       'Approved',
+      'Cancelled',
       'Checked Out',
       'Denied',
       'Late',
@@ -87,7 +126,7 @@ const ReservationScreen = (): JSX.Element | null => {
           return;
         }
 
-        reservation.updateStatus(res.ID, options[buttonIndex]);
+        updateReservationStatus(res.ID, options[buttonIndex]);
       }
     );
   };
@@ -137,11 +176,23 @@ const ReservationScreen = (): JSX.Element | null => {
   const renderReservation = (reservation: Reservation) => (
     <ReservationListItem
       reservation={reservation}
-      onPress={res => openStatusActionSheet(res)}
+      onPress={openStatusActionSheet}
       onDeleteStart={loader.startLoading}
       onDeleteFinish={loader.stopLoading}
     />
   );
+
+  const onRefresh = async () => {
+    loader.startRefreshing();
+    await loadReservations();
+    loader.stopRefreshing();
+  };
+
+  const init = async () => {
+    loader.startLoading();
+    await loadReservations();
+    loader.stopLoading();
+  };
 
   const scrollToTop = () =>
     flatListRef.current?.scrollToOffset({
@@ -150,7 +201,13 @@ const ReservationScreen = (): JSX.Element | null => {
     });
 
   useEffect(() => {
-    loadReservations();
+    init();
+
+    return () => {
+      // Resets the reservation state so that the previous item's reservations
+      // don't render on the screen while the new reservations load
+      reservation.setReservations([]);
+    };
   }, []);
 
   // Navigating back to this screen from the Create Reservation screen won't cause the
@@ -187,15 +244,17 @@ const ReservationScreen = (): JSX.Element | null => {
       <BackTitleHeader title="Reservations" style={styles.header} />
       <Text style={styles.subHeader}>Tap on any reservation to update its status</Text>
       <View style={{ flex: 1 }}>
-        <LoadingOverlay text="Loading" loading={loader.isLoading} />
+        <LoadingOverlay loading={loader.isLoading} />
         <FlatList
           ref={flatListRef}
           contentContainerStyle={{ flexGrow: 1 }}
           ListHeaderComponent={renderSearchBar()}
-          ListEmptyComponent={<EmptyReservationList />}
+          ListEmptyComponent={<EmptyReservationList loading={loader.isLoading} />}
           data={reservation.reservations}
           renderItem={({ item }) => renderReservation(item)}
           keyExtractor={reservation => reservation.ID.toString()}
+          refreshing={loader.isRefreshing}
+          onRefresh={onRefresh}
         />
         {reservation.reservations.length > 0 && (
           <Button
@@ -206,7 +265,7 @@ const ReservationScreen = (): JSX.Element | null => {
           />
         )}
         <Button
-          disabled={loader.isLoading}
+          disabled={loader.isLoading || loader.isRefreshing}
           onPress={() => setStatusSheetShowing(true)}
           style={styles.filterButton}
           iconStyle={styles.buttonIcon}
@@ -214,7 +273,6 @@ const ReservationScreen = (): JSX.Element | null => {
         />
       </View>
       <Button
-        disabled={loader.isLoading}
         text="Create Reservation"
         textStyle={styles.addButtonText}
         icon={<AntDesign name="plus" size={20} color="#FFF" />}

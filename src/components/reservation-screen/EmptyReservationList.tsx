@@ -2,17 +2,36 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors, Fonts } from '../../global-styles';
+import LoadingOverlay from '../Loading';
 
-const EmptyReservationList = (): JSX.Element => (
+type EmptyReservationListProps = {
+  loading: boolean;
+};
+
+const EmptyReservationList = ({ loading }: EmptyReservationListProps): JSX.Element => (
   <View style={styles.emptyContentContainer}>
-    <FontAwesome
-      name="calendar-times-o"
-      size={100}
-      color="black"
-      style={styles.calendarIcon}
-    />
-    <Text style={styles.emptyTextTitle}>No reservations to show</Text>
-    <Text style={styles.emptyTextDescription}>Create a reservation to get started</Text>
+    {loading ? (
+      <LoadingOverlay
+        text="Loading..."
+        loading={loading}
+        backdropStyle={styles.loaderBackdrop}
+        textStyle={styles.loaderText}
+        activityIndicatorColor={Colors.textMuted}
+      />
+    ) : (
+      <>
+        <FontAwesome
+          name="calendar-times-o"
+          size={100}
+          color="black"
+          style={styles.calendarIcon}
+        />
+        <Text style={styles.emptyTextTitle}>No reservations to show</Text>
+        <Text style={styles.emptyTextDescription}>
+          Create a reservation to get started
+        </Text>
+      </>
+    )}
   </View>
 );
 
@@ -39,6 +58,12 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     alignSelf: 'center',
     color: Colors.text
+  },
+  loaderBackdrop: {
+    backgroundColor: Colors.appBackgroundColor
+  },
+  loaderText: {
+    color: Colors.textMuted
   }
 });
 

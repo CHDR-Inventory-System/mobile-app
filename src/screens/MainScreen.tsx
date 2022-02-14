@@ -25,7 +25,6 @@ const MainScreen = (): JSX.Element => {
   // the FlatList component, we need to store the main items in a separate array
   // so we don't have to re-query the API every time a search is executed
   const [itemCache, setItemCache] = useState<Item[]>([]);
-  const [isRefreshing, setRefreshing] = useState(false);
   const inventory = useInventory();
   const loader = useLoader();
   const insets = useSafeAreaInsets();
@@ -53,7 +52,7 @@ const MainScreen = (): JSX.Element => {
     <View style={styles.searchContainer}>
       <LabeledInput
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        editable={!isRefreshing}
+        editable={!loader.isLoading}
         label="Search"
         returnKeyType="search"
         onSubmitEditing={event => searchItem(event.nativeEvent.text.trim())}
@@ -66,7 +65,6 @@ const MainScreen = (): JSX.Element => {
 
   const fetchInventory = async () => {
     loader.startLoading();
-    setRefreshing(true);
 
     try {
       const items = await inventory.init();
@@ -86,7 +84,6 @@ const MainScreen = (): JSX.Element => {
       ]);
     }
 
-    setRefreshing(false);
     loader.stopLoading();
   };
 
@@ -109,7 +106,7 @@ const MainScreen = (): JSX.Element => {
           ListEmptyComponent={<EmptyInventoryList loading={loader.isLoading} />}
           data={inventory.items}
           renderItem={renderInventoryItem}
-          refreshing={isRefreshing}
+          refreshing={loader.isLoading}
           keyExtractor={item => item.ID.toString()}
           initialNumToRender={5}
           onRefresh={fetchInventory}

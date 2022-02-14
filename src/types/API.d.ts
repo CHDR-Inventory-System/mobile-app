@@ -51,6 +51,7 @@ export type Item = {
 
 export type ReservationStatus =
   | 'Approved'
+  | 'Cancelled'
   | 'Checked Out'
   | 'Denied'
   | 'Late'
@@ -73,3 +74,15 @@ export type ImageFormData = {
   base64ImageData: string;
   name: string;
 };
+
+export type CreateReservationOpts = {
+  email: string;
+  checkoutDate: string;
+  returnDate: string;
+  status: ReservationStatus;
+  adminId: number;
+  /**
+   * This refers to the ID of the item in the item table.
+   */
+  item: number;
+}

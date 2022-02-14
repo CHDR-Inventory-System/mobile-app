@@ -1,5 +1,12 @@
 import axios from 'axios';
-import { ImageFormData, Item, Reservation, User } from '../types/API';
+import {
+  CreateReservationOpts,
+  ImageFormData,
+  Item,
+  Reservation,
+  ReservationStatus,
+  User
+} from '../types/API';
 import { DEBUG_API_URL, PROD_API_URL } from '@env';
 import { AtLeast } from './types';
 
@@ -66,8 +73,45 @@ class API {
     return response.data;
   }
 
-  static async getReservations(itemId: number): Promise<Reservation[]> {
-    const response = await axios.get(`/reservations/${itemId}`);
+  static async getReservationsForItem(itemId: number): Promise<Reservation[]> {
+    const response = await axios.get(`/reservations/item/${itemId}`);
+    return response.data;
+  }
+
+  static async updateReservationStatus(
+    reservationId: number,
+    adminId: number,
+    status: ReservationStatus
+  ): Promise<void> {
+    const response = await axios.patch(`/reservations/${reservationId}/status`, {
+      status,
+      adminId
+    });
+    return response.data;
+  }
+
+  static async createReservation({
+    email,
+    item,
+    checkoutDate,
+    returnDate,
+    status,
+    adminId
+  }: CreateReservationOpts): Promise<Reservation> {
+    const response = await axios.post('/reservations/', {
+      email,
+      item,
+      status,
+      adminId,
+      startDateTime: checkoutDate,
+      endDateTime: returnDate
+    });
+
+    return response.data;
+  }
+
+  static async deleteReservation(reservationId: number): Promise<void> {
+    const response = await axios.delete(`/reservations/${reservationId}`);
     return response.data;
   }
 }
