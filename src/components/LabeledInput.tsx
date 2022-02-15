@@ -6,47 +6,66 @@ import {
   StyleSheet,
   TextStyle,
   ViewStyle,
-  TextInputProps
+  TextInputProps,
+  Platform,
+  ViewProps
 } from 'react-native';
-import { platformValue } from '../util/platform';
 import { Colors, Fonts } from '../global-styles';
 
-type LabeledInputProps = {
+export type LabeledInputProps = {
   label: string;
   style: ViewStyle;
   labelStyle: TextStyle;
   inputStyle: TextStyle;
+  required?: boolean;
+  disabled?: boolean;
+  errorMessage?: string;
+  pointerEvents?: ViewProps['pointerEvents'];
+  /**
+   * Displays an information message underneath this input
+   */
+  help?: string;
 } & TextInputProps;
 
-const LabeledInput = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  style,
-  labelStyle,
-  inputStyle,
-  keyboardType,
-  onBlur,
-  autoCapitalize,
-  secureTextEntry = false,
-  autoCorrect = false
-}: Partial<LabeledInputProps>): JSX.Element => (
-  <View style={[style]}>
-    <Text style={[labelStyle, styles.label]}>{label}</Text>
-    <TextInput
-      autoCapitalize={autoCapitalize}
-      onBlur={onBlur}
-      style={[inputStyle, styles.input]}
-      value={value}
-      keyboardType={keyboardType}
-      placeholder={placeholder}
-      secureTextEntry={secureTextEntry}
-      autoCorrect={autoCorrect}
-      onChangeText={onChangeText}
-    />
-  </View>
-);
+const LabeledInput = (props: Partial<LabeledInputProps>): JSX.Element => {
+  const {
+    label,
+    style,
+    labelStyle,
+    inputStyle,
+    secureTextEntry = false,
+    autoCorrect = false,
+    disabled = false,
+    required = false,
+    errorMessage = '',
+    help = '',
+    pointerEvents,
+    ...textInputProps
+  } = props;
+
+  return (
+    <View style={style} pointerEvents={pointerEvents}>
+      <View style={styles.textLabelContainer}>
+        <Text style={[styles.label, labelStyle]}>{label}</Text>
+        {required && <Text style={styles.requiredAsterisk}>*</Text>}
+      </View>
+      <TextInput
+        editable={!disabled}
+        style={[
+          styles.input,
+          errorMessage ? styles.errorInput : {},
+          disabled ? styles.disabled : {},
+          inputStyle
+        ]}
+        autoCorrect={autoCorrect}
+        secureTextEntry={secureTextEntry}
+        {...textInputProps}
+      />
+      {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+      {!!help && <Text style={styles.helpText}>{help}</Text>}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   label: {
@@ -55,17 +74,52 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: Colors.text
   },
+  textLabelContainer: {
+    flexDirection: 'row'
+  },
+  requiredAsterisk: {
+    marginLeft: 4,
+    fontFamily: Fonts.text,
+    color: '#ff4d4f',
+    transform: [{ scale: 1.5 }, { translateY: 6 }]
+  },
   input: {
-    paddingTop: platformValue(8, 12),
-    paddingBottom: platformValue(8, 12),
+    paddingTop: Platform.select({
+      android: 8,
+      ios: 12
+    }),
+    paddingBottom: Platform.select({
+      android: 8,
+      ios: 12
+    }),
     paddingLeft: 8,
     paddingRight: 8,
     fontSize: Fonts.defaultTextSize,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 6,
     borderColor: 'rgb(218, 218, 218)',
     fontFamily: Fonts.text,
     color: Colors.text
+  },
+  errorInput: {
+    borderColor: '#DE1306'
+  },
+  disabled: {
+    color: Colors.textMuted
+  },
+  errorText: {
+    fontFamily: Fonts.text,
+    marginTop: 8,
+    marginLeft: 4,
+    color: '#DE1306',
+    lineHeight: 20
+  },
+  helpText: {
+    fontFamily: Fonts.text,
+    marginTop: 8,
+    marginLeft: 4,
+    color: Colors.textMuted,
+    lineHeight: 20
   }
 });
 

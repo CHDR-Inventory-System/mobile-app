@@ -1,0 +1,280 @@
+[
+  {
+    "ID": 1,
+    "available": false,
+    "barcode": "TEST5000",
+    "children": [],
+    "created": "Wed, 12 Jan 2022 06:55:38 GMT",
+    "description": "Some very random item, IDK what it is...",
+    "images": [],
+    "item": 7,
+    "location": "Guess :)",
+    "main": true,
+    "moveable": false,
+    "name": "Random Item",
+    "purchaseDate": "Thu, 13 Jan 2022 00:00:00 GMT",
+    "quantity": 10000,
+    "serial": "HN-2OL42I-19299-38M-8DGL",
+    "type": "Other",
+    "vendorName": null,
+    "vendorPrice": null
+  },
+  {
+    "ID": 10,
+    "available": false,
+    "barcode": "TEST3000",
+    "children": [
+      {
+        "ID": 11,
+        "available": false,
+        "barcode": "TEST3000",
+        "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+        "description": "",
+        "images": [
+          {
+            "ID": 5,
+            "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+            "imagePath": "images/Canon/lens1.jpg",
+            "imageURL": "",
+            "itemChild": 11
+          }
+        ],
+        "item": 8,
+        "location": "35C",
+        "main": false,
+        "moveable": false,
+        "name": "Micro-fiber Cloth",
+        "purchaseDate": "Thu, 13 Jan 2022 00:00:00 GMT",
+        "quantity": 5,
+        "serial": "AY-3AN52U-66399-90R-5BWT",
+        "type": "Other",
+        "vendorName": "Stuff Services",
+        "vendorPrice": null
+      }
+    ],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": "Here's a description",
+    "images": [
+      {
+        "ID": 3,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/Canon/image1.jpg",
+        "imageURL": "",
+        "itemChild": 10
+      },
+      {
+        "ID": 4,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/Canon/image2.jpg",
+        "imageURL": "",
+        "itemChild": 10
+      }
+    ],
+    "item": 8,
+    "location": "35C",
+    "main": true,
+    "moveable": false,
+    "name": "Canon EOS7D Camera\r\n",
+    "purchaseDate": "Tue, 05 Nov 2019 00:00:00 GMT",
+    "quantity": 5,
+    "serial": "143421321421",
+    "type": "Camera",
+    "vendorName": "Stuff Services",
+    "vendorPrice": 599.32
+  },
+  {
+    "ID": 12,
+    "available": false,
+    "barcode": "CHDR5212",
+    "children": [],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": null,
+    "images": [
+      {
+        "ID": 6,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/scanner/scanner1.jpg",
+        "imageURL": "",
+        "itemChild": 12
+      }
+    ],
+    "item": 9,
+    "location": "321B",
+    "main": true,
+    "moveable": true,
+    "name": "Microfilm Scanner\r\n",
+    "purchaseDate": null,
+    "quantity": 2,
+    "serial": "CN-5829291-498549-293",
+    "type": "Other",
+    "vendorName": null,
+    "vendorPrice": 2000
+  },
+  {
+    "ID": 13,
+    "available": true,
+    "barcode": "CHDR9749",
+    "children": [],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": "Here's another description",
+    "images": [
+      {
+        "ID": 7,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/vr/oculus1.jpg",
+        "imageURL": "",
+        "itemChild": 13
+      }
+    ],
+    "item": 10,
+    "location": "321B",
+    "main": true,
+    "moveable": true,
+    "name": "Oculus Quest\r\n",
+    "purchaseDate": "Thu, 04 Jul 2019 00:00:00 GMT",
+    "quantity": 1,
+    "serial": "4678534246",
+    "type": "VR",
+    "vendorName": "UCF Stuff",
+    "vendorPrice": 3252.21
+  },
+  {
+    "ID": 14,
+    "available": true,
+    "barcode": "CHDR2849",
+    "children": [
+      {
+        "ID": 15,
+        "available": true,
+        "barcode": "CHDR2849",
+        "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+        "description": "Here's a stylus for that computer",
+        "images": [
+          {
+            "ID": 9,
+            "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+            "imagePath": "images/samsung/stylus1.jpg",
+            "imageURL": "",
+            "itemChild": 15
+          }
+        ],
+        "item": 11,
+        "location": "321A",
+        "main": false,
+        "moveable": false,
+        "name": "Samsung Stylus\r\n",
+        "purchaseDate": "Sat, 04 May 2019 00:00:00 GMT",
+        "quantity": 1,
+        "serial": "3521245",
+        "type": "Computer",
+        "vendorName": "BestBuy",
+        "vendorPrice": 2334.32
+      }
+    ],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": "Here's a computer",
+    "images": [
+      {
+        "ID": 8,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/samsung/tablet1.jpg",
+        "imageURL": "",
+        "itemChild": 14
+      }
+    ],
+    "item": 11,
+    "location": "321A",
+    "main": true,
+    "moveable": false,
+    "name": "Samsung CT-P5113 tablet\r\n",
+    "purchaseDate": null,
+    "quantity": 1,
+    "serial": "RFCKSOENFOAKNW",
+    "type": "Computer",
+    "vendorName": "BestBuy",
+    "vendorPrice": null
+  },
+  {
+    "ID": 16,
+    "available": false,
+    "barcode": "CHDR9593",
+    "children": [],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": "Here's a study room",
+    "images": [
+      {
+        "ID": 10,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/physical/rooms/study1_1.jpg",
+        "imageURL": "",
+        "itemChild": 16
+      }
+    ],
+    "item": 12,
+    "location": "321A",
+    "main": true,
+    "moveable": false,
+    "name": "Study Room 1\r\n",
+    "purchaseDate": null,
+    "quantity": 6,
+    "serial": null,
+    "type": "Room",
+    "vendorName": null,
+    "vendorPrice": null
+  },
+  {
+    "ID": 17,
+    "available": true,
+    "barcode": "CHDR2134",
+    "children": [],
+    "created": "Wed, 12 Jan 2022 16:57:34 GMT",
+    "description": "Here's another camera",
+    "images": [
+      {
+        "ID": 11,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/Polaroid/camera1.jpg",
+        "imageURL": "",
+        "itemChild": 17
+      },
+      {
+        "ID": 12,
+        "created": "Wed, 12 Jan 2022 16:59:35 GMT",
+        "imagePath": "images/Polaroid/camera2.jpg",
+        "imageURL": "",
+        "itemChild": 17
+      }
+    ],
+    "item": 13,
+    "location": "321E",
+    "main": true,
+    "moveable": true,
+    "name": "Polaroid Camera\r\n",
+    "purchaseDate": "Fri, 05 Oct 2018 00:00:00 GMT",
+    "quantity": 8,
+    "serial": "245dwqd21f2",
+    "type": "Camera",
+    "vendorName": "Polaroid",
+    "vendorPrice": 21.35
+  },
+  {
+    "ID": 30,
+    "available": true,
+    "barcode": "TPP3045",
+    "children": [],
+    "created": "Wed, 19 Jan 2022 19:00:10 GMT",
+    "description": "The purpose of this item is only to test image uploading",
+    "images": [],
+    "item": 30,
+    "location": "ER45",
+    "main": true,
+    "moveable": true,
+    "name": "Hello another test item",
+    "purchaseDate": null,
+    "quantity": 0,
+    "serial": "delete-this-later!!!",
+    "type": "Test Item",
+    "vendorName": null,
+    "vendorPrice": null
+  }
+]

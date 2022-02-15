@@ -1,26 +1,36 @@
 import React from 'react';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 
 export type AlertProps = {
-  title: string;
+  title?: string;
   message: string;
-  type?: 'warning' | 'error';
+  type?: 'warning' | 'error' | 'info';
   onClose?: () => void;
+  style?: ViewStyle;
 };
 
 const Alert = ({
   title,
   message,
-  type = 'error',
-  onClose = () => {}
+  onClose,
+  style,
+  type = 'error'
 }: AlertProps): JSX.Element => {
+  const styleMap = {
+    error: styles.error,
+    warning: styles.warning,
+    info: styles.info
+  };
+
   return (
-    <TouchableOpacity onPress={onClose}>
-      <View style={[styles.container, type === 'error' ? styles.error : styles.warning]}>
-        <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity onPress={onClose} activeOpacity={!!onClose ? 0.7 : 1}>
+      <View style={[styles.container, styleMap[type], style]}>
+        {!!title && <Text style={styles.title}>{title}</Text>}
         <Text style={styles.message}>{message}</Text>
-        <Text style={[styles.message, styles.dismissText]}>Tap to dismiss.</Text>
+        {!!onClose && (
+          <Text style={[styles.message, styles.dismissText]}>Tap to dismiss.</Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -34,6 +44,10 @@ const styles = StyleSheet.create({
   warning: {
     backgroundColor: '#FFFBE6',
     borderColor: '#FFE58F'
+  },
+  info: {
+    backgroundColor: '#E6F7FF',
+    borderColor: '#91D5FF'
   },
   container: {
     borderWidth: 1,

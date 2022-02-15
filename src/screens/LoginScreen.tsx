@@ -1,80 +1,85 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Alert
 } from 'react-native';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
-import { Formik } from 'formik';
+import { Formik, FormikHandlers } from 'formik';
 import { Colors, Fonts } from '../global-styles';
-import { platformValue } from '../util/platform';
-import Alert, { AlertProps } from '../components/Alert';
-import API from '../util/API';
+import { useNavigation } from '@react-navigation/native';
+import { NavigationProps } from '../types/navigation';
 import { AxiosError } from 'axios';
+import useUser from '../hooks/user';
+import * as yup from 'yup';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import useLoader from '../hooks/loading';
 
 type Credentials = {
   nid: string;
   password: string;
 };
 
-type ErrorObject = {
-  title: string;
-  message: string;
-  type: AlertProps['type'];
-};
+const credentialSchema = yup.object({
+  nid: yup.string().required('You NID is required'),
+  password: yup.string().required('Your password is required')
+});
 
 const LoginScreen = (): JSX.Element => {
-  const [isAlertShowing, setShowAlert] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorObject, setErrorObject] = useState<ErrorObject>({
-    title: '',
-    message: '',
-    type: undefined
-  });
+  const loader = useLoader();
 
-  // login function called when login button is pressed
+  const navigation = useNavigation<NavigationProps>();
+  const user = useUser();
+
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
-    setIsLoading(true);
-    // seee if either nid or password field is empty, if it is display error
-    if (credentials.nid === '' || credentials.password === '') {
-      setErrorObject({
-        title: 'Missing Field',
-        message: 'Your NID and/or password are required Please fill and try again',
-        type: 'error'
-      });
-      setShowAlert(true);
-      setIsLoading(false);
-      return;
+    loader.startLoading();
+
+    try {
+      await user.login(credentials.nid, credentials.password);
+
+      loader.stopLoading();
+      navigation.replace('Main');
+    } catch (err) {
+      if ((err as AxiosError).response?.status === 401) {
+        Alert.alert(
+          'Invalid Credentials',
+          'Make sure your NID and password are correct and try again.'
+        );
+      } else {
+        Alert.alert(
+          'Server Error',
+          'An unexpected error occurred, please try again later.'
+        );
+      }
+
+      loader.stopLoading();
     }
-    // otherwise call loginApi and check if credentials match, if not display error as seen fit
-    API.login(credentials.nid, credentials.password)
-      .then(() => new Error('Not Implemented'))
-      .catch((err: AxiosError) => {
-        if (err.response?.status === 404) {
-          setErrorObject({
-            title: 'Invalid Credentials',
-            message: 'Make sure your NID and password are correct and try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        } else {
-          setErrorObject({
-            title: 'Server Error',
-            message: 'An unexpected error occurred, please try again.',
-            type: 'error'
-          });
-          setShowAlert(true);
-        }
-      })
-      .finally(() => setIsLoading(false));
+  };
+
+  // Formik won't call handleSubmit if there are errors in the form, however,
+  // if there are error, we want vibrate the device with haptic feedback
+  const formSubmitHandler = (
+    values: Credentials,
+    handleSubmit: FormikHandlers['handleSubmit']
+  ) => {
+    if (!credentialSchema.isValidSync(values)) {
+      Haptics.notificationAsync(
+        Platform.select({
+          ios: Haptics.NotificationFeedbackType.Error,
+          android: Haptics.NotificationFeedbackType.Warning
+        })
+      );
+    }
+
+    handleSubmit();
   };
 
   return (
@@ -86,13 +91,15 @@ const LoginScreen = (): JSX.Element => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={{ flex: 1 }}>
             <Formik
+              validateOnChange={false}
+              validationSchema={credentialSchema}
               initialValues={{
                 nid: '',
                 password: ''
               }}
               onSubmit={login}
             >
-              {({ handleChange, handleBlur, handleSubmit }) => (
+              {({ handleChange, handleSubmit, errors, values }) => (
                 <View style={styles.formContentContainer}>
                   <View>
                     <View style={styles.header}>
@@ -102,43 +109,33 @@ const LoginScreen = (): JSX.Element => {
                     <View style={styles.inputContainer}>
                       <LabeledInput
                         autoCapitalize="none"
-                        onBlur={handleBlur('nid')}
                         label="NID"
-                        //keyboardType="default"
-                        placeholder="*UCF NID"
+                        placeholder="UCF NID"
                         style={styles.input}
                         onChangeText={handleChange('nid')}
+                        errorMessage={errors.nid}
                       />
                       <LabeledInput
-                        onBlur={handleBlur('password')}
                         label="Password"
                         secureTextEntry
-                        placeholder="*UCF Password"
+                        placeholder="UCF Password"
                         style={styles.input}
                         onChangeText={handleChange('password')}
+                        errorMessage={errors.password}
                       />
-                      {isAlertShowing && (
-                        <Alert
-                          type={errorObject.type}
-                          title={errorObject.title}
-                          message={errorObject.message}
-                          onClose={() => setShowAlert(false)}
-                        />
-                      )}
                     </View>
                   </View>
                   <Button
                     text="Login"
-                    onPress={handleSubmit}
+                    onPress={() => formSubmitHandler(values, handleSubmit)}
                     style={styles.loginButton}
-                    disabled={isLoading}
+                    disabled={loader.isLoading}
                   />
                 </View>
               )}
             </Formik>
           </View>
         </TouchableWithoutFeedback>
-        <StatusBar style="auto" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -155,7 +152,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   header: {
-    paddingTop: platformValue(64, 42),
+    paddingTop: Platform.select({
+      android: 48,
+      ios: 36
+    }),
     paddingBottom: 24
   },
   title: {

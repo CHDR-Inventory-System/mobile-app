@@ -40,6 +40,11 @@
     "import"
   ],
   "rules": {
+    "no-case-declarations": "error",
+    "eqeqeq": [
+      "error",
+      "always"
+    ],
     "arrow-parens": [
       "error",
       "as-needed"
@@ -50,11 +55,14 @@
       "error",
       "never"
     ],
+    "curly": [
+      "error",
+      "all"
+    ],
     "semi": [
       "error",
       "always"
     ],
-    "no-console": "warn",
     // Disabled to let TypeScript handle unused variable checking.
     // Otherwise, ESLint would report unused variables in a type's
     // function callback declaration
