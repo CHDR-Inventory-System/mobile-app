@@ -93,8 +93,22 @@ const MainScreen = (): JSX.Element => {
       offset: 0
     });
 
+  const init = async () => {
+    loader.startLoading();
+    await fetchInventory();
+    loader.stopLoading();
+  };
+
+  const onRefresh = async () => {
+    if (!loader.isRefreshing || !loader.isLoading) {
+      loader.startRefreshing();
+      await fetchInventory();
+      loader.stopRefreshing();
+    }
+  };
+
   useEffect(() => {
-    fetchInventory();
+    init();
   }, []);
 
   return (
@@ -106,10 +120,10 @@ const MainScreen = (): JSX.Element => {
           ListEmptyComponent={<EmptyInventoryList loading={loader.isLoading} />}
           data={inventory.items}
           renderItem={renderInventoryItem}
-          refreshing={loader.isLoading}
+          refreshing={loader.isRefreshing}
           keyExtractor={item => item.ID.toString()}
           initialNumToRender={5}
-          onRefresh={fetchInventory}
+          onRefresh={onRefresh}
           ref={flatListRef}
         />
         {inventory.items.length > 0 && (

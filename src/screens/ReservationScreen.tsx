@@ -16,7 +16,6 @@ import StatusBottomSheet from '../components/reservation-screen/StatusBottomShee
 import EmptyReservationList from '../components/reservation-screen/EmptyReservationList';
 import useReservations from '../hooks/reservation';
 import ReservationListItem from '../components/reservation-screen/ReservationListItem';
-import LoadingOverlay from '../components/Loading';
 import * as Haptics from 'expo-haptics';
 import useUser from '../hooks/user';
 
@@ -183,9 +182,11 @@ const ReservationScreen = (): JSX.Element | null => {
   );
 
   const onRefresh = async () => {
-    loader.startRefreshing();
-    await loadReservations();
-    loader.stopRefreshing();
+    if (!loader.isRefreshing || !loader.isLoading) {
+      loader.startRefreshing();
+      await loadReservations();
+      loader.stopRefreshing();
+    }
   };
 
   const init = async () => {
@@ -244,10 +245,15 @@ const ReservationScreen = (): JSX.Element | null => {
       <BackTitleHeader title="Reservations" style={styles.header} />
       <Text style={styles.subHeader}>Tap on any reservation to update its status</Text>
       <View style={{ flex: 1 }}>
-        <LoadingOverlay loading={loader.isLoading} />
         <FlatList
           ref={flatListRef}
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            // Added a little padding to the bottom of the list so that the filter
+            // and scroll to top buttons don't overlap the last reservation item.
+            paddingBottom:
+              loader.isLoading || reservation.reservations.length === 0 ? 0 : 132
+          }}
           ListHeaderComponent={renderSearchBar()}
           ListEmptyComponent={<EmptyReservationList loading={loader.isLoading} />}
           data={reservation.reservations}

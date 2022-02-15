@@ -9,7 +9,12 @@ type EmptyReservationListProps = {
 };
 
 const EmptyReservationList = ({ loading }: EmptyReservationListProps): JSX.Element => (
-  <View style={styles.emptyContentContainer}>
+  <View
+    style={{
+      ...styles.emptyContentContainer,
+      marginBottom: loading ? 80 : 120
+    }}
+  >
     {loading ? (
       <LoadingOverlay
         text="Loading..."
@@ -40,7 +45,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flex: 1,
     justifyContent: 'center',
-    marginBottom: 120,
     alignItems: 'center'
   },
   emptyTextTitle: {
