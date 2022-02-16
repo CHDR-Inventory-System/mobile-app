@@ -25,7 +25,7 @@ import AddItemScreen from './src/screens/addItemScreen';
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
 const App = (): JSX.Element => {
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('AddItem');
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
   const loader = useLoader(true);
   const [fontsLoaded, fontLoadError] = useFonts({

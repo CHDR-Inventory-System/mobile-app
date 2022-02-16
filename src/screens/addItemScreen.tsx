@@ -1,3 +1,4 @@
+// All Imports used to make this page
 import React, { useEffect } from 'react';
 import {
   Alert as RNAlert,
@@ -52,7 +53,7 @@ const itemSchema = yup.object({
       originalValue === '' ? null : value
     )
 });
-
+// initial item fields that are blank or undefined
 const init: Partial<Item> = {
   name: '',
   type: '',
@@ -61,10 +62,10 @@ const init: Partial<Item> = {
   quantity: -1,
   barcode: '',
   serial: '',
-  available: false,
-  moveable: false,
-  main: false,
-  //created: '',
+  available: undefined,
+  moveable: undefined,
+  main: undefined,
+  created: '',
   vendorName: '',
   vendorPrice: -1,
   purchaseDate: ''
@@ -130,7 +131,7 @@ const AddItemScreen = (): JSX.Element => {
 
     setTimeout(() => navigation.goBack(), 300);
   };
-
+  // function to handle form submittion using formik
   const formSubmitHandler = (
     values: Partial<Item>,
     handleSubmit: FormikHandlers['handleSubmit']
@@ -166,6 +167,7 @@ const AddItemScreen = (): JSX.Element => {
   }: FormikProps<Readonly<Partial<Item>>>) => (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
+      {/* back press button UI */}
       <BackTitleHeader
         title="Add Item"
         onBackPress={dirty ? confirmBackPress : navigation.goBack}
@@ -183,6 +185,7 @@ const AddItemScreen = (): JSX.Element => {
             type="info"
             style={styles.requiredFieldsAlert}
           />
+          {/* Item fields admins have to type in to add an item  */}
           <View style={styles.inputContainer}>
             <LabeledInput
               required
@@ -312,13 +315,13 @@ const AddItemScreen = (): JSX.Element => {
               style={styles.input}
               onChangeText={handleChange('serial')}
             />
-            {/* <DatePickerInput
+            <DatePickerInput
               mode="date"
               onChange={date => setFieldValue('created', date)}
               value={values.purchaseDate ? new Date(values.purchaseDate) : null}
               label="Created On Date"
               style={styles.input}
-            /> */}
+            />
             <LabeledInput
               onBlur={handleBlur('vendorName')}
               label="Vendor Name"
@@ -360,6 +363,7 @@ const AddItemScreen = (): JSX.Element => {
       />
     </SafeAreaView>
   );
+  // Formik props that calls functions to check fields are filled
   return (
     <Formik
       initialValues={init}
@@ -372,6 +376,7 @@ const AddItemScreen = (): JSX.Element => {
   );
 };
 
+// style sheets used for CSS
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -401,10 +406,10 @@ const styles = StyleSheet.create({
     color: Colors.textMuted
   },
   inputContainer: {
-    marginTop: 32
+    paddingHorizontal: 16
   },
   input: {
-    marginBottom: 24
+    marginVertical: 12
   },
   AddItemButton: {
     marginBottom: 16
