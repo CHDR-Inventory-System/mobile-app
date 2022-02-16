@@ -85,4 +85,4 @@ export type CreateReservationOpts = {
    * This refers to the ID of the item in the item table.
    */
   item: number;
-}
+};

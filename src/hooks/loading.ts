@@ -6,8 +6,8 @@ type UseLoadingHook = {
   startLoading: () => void;
   stopLoading: () => void;
   toggleLoading: (isLoading: boolean) => void;
-  startRefreshing:() => void;
-  stopRefreshing:() => void;
+  startRefreshing: () => void;
+  stopRefreshing: () => void;
   toggleRefreshing: (isRefreshing: boolean) => void;
   /**
    * A helper function used to delay code execution in async functions.
