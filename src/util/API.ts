@@ -53,7 +53,7 @@ class API {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static async addItem(item: Partial<Item>): Promise<Item> {
-    const response = await axios.post(`/inventory/${item}/addChild`, {
+    const response = await axios.post(`/inventory/add`, {
       ...item
     });
     return response.data;
