@@ -160,13 +160,7 @@ const ItemDetail = (): JSX.Element | null => {
         itemId: item.ID,
         name: filename,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        base64ImageData: image.base64!,
-        image: {
-          imagePath: image.uri,
-          created: new Date().toLocaleDateString(),
-          imageURL: image.uri,
-          itemChild: item.ID
-        }
+        base64ImageData: image.base64!
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

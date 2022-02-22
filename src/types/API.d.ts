@@ -70,7 +70,8 @@ export type Reservation = {
   user: Omit<User, 'token'>;
 };
 
-export type ImageFormData = {
+export type ImageUploadParams = {
+  itemId: number;
   base64ImageData: string;
   name: string;
 };

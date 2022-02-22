@@ -1,8 +1,9 @@
 import axios from 'axios';
 import {
   CreateReservationOpts,
-  ImageFormData,
+  ImageUploadParams,
   Item,
+  ItemImage,
   Reservation,
   ReservationStatus,
   User
@@ -41,13 +42,14 @@ class API {
     return response.data;
   }
 
-  static async uploadImage(
-    itemId: number,
-    image: ImageFormData
-  ): Promise<{ imageID: number }> {
+  static async uploadImage({
+    itemId,
+    base64ImageData,
+    name
+  }: ImageUploadParams): Promise<ItemImage> {
     const response = await axios.post(`/inventory/${itemId}/uploadImage`, {
-      image: image.base64ImageData,
-      filename: image.name
+      image: base64ImageData,
+      filename: name
     });
 
     return response.data;
