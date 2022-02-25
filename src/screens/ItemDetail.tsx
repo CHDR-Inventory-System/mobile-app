@@ -148,7 +148,7 @@ const ItemDetail = (): JSX.Element | null => {
     ]);
   };
 
-  const uploadImage = async (image: CapturedPicture | ImagePicker.ImageInfo) => {
+  const uploadImage = async (image: CapturedPicture) => {
     // Safety check: filename shouldn't be undefined, but if it is for some
     // reason, just use the current date as the file name
     const filename = image.uri.split('/').pop() || `${Date.now().toString()}.jpg`;
