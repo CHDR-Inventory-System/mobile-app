@@ -60,6 +60,7 @@ class API {
   }
 
   static async addChildItem(
+    parentId: number,
     itemId: number,
     item: AtLeast<Item, 'name' | 'type'>
   ): Promise<Item> {

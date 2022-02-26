@@ -57,7 +57,12 @@ const ItemDetail = (): JSX.Element | null => {
       itemId: childItem.ID
     });
   };
-
+  // go to Add Item screen with parameter Item to add child Items
+  const goToAddChildScreen = async () => {
+    navigation.navigate('AddItem', {
+      item: item
+    });
+  };
   const renderItemProperty = (property: string, value: string | number | null) => {
     if (value === null || value === undefined || !value.toString().trim()) {
       return null;
@@ -261,10 +266,6 @@ const ItemDetail = (): JSX.Element | null => {
     );
   };
 
-  const addChildItem = async () => {
-    console.error('Not implemented');
-  };
-
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
@@ -313,7 +314,7 @@ const ItemDetail = (): JSX.Element | null => {
             <Button
               text="Add Child Item"
               style={styles.actionButton}
-              onPress={addChildItem}
+              onPress={goToAddChildScreen}
             />
           )}
           <Button

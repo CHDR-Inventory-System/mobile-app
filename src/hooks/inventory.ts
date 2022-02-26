@@ -164,7 +164,7 @@ const useInventory = (): UseInventoryHook => {
     itemId: number,
     item: AtLeast<Item, 'name' | 'type'>
   ): Promise<void> => {
-    const response = await API.addChildItem(itemId, item);
+    const response = await API.addChildItem(parentId, itemId, item);
 
     dispatch({
       type: 'ADD_CHILD_ITEM',

@@ -11,7 +11,9 @@ export type RootStackParamsList = {
   Login: undefined;
   Main: undefined;
   BarcodeScanner: undefined;
-  AddItem: undefined;
+  AddItem: {
+    item: Item;
+  };
   EditItemScreen: {
     itemId: number;
   };

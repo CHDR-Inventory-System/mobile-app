@@ -26,6 +26,7 @@ import useLoader from '../hooks/loading';
 import useInventory from '../hooks/inventory';
 import Select from '../components/Select';
 import Alert from '../components/Alert';
+//import { AtLeast } from '../util/types';   Uncomment hthis once addItemChildren api is implemented
 
 // Item fields
 const itemSchema = yup.object({
@@ -53,6 +54,7 @@ const itemSchema = yup.object({
       originalValue === '' ? null : value
     )
 });
+
 // initial item fields that are blank or undefined
 const init: Partial<Item> = {
   name: '',
@@ -70,15 +72,25 @@ const init: Partial<Item> = {
   vendorPrice: -1,
   purchaseDate: ''
 };
+const parentId = -1; //HAVING PROBLEM WITH PARENTID can't pass parentID if i put it in ,A //t parentId = -1;
 
-// Formik won't call handleSubmit if there are errors in the form, however,
-// if there are error, we want vibrate the device with haptic feedback
-
-const AddItemScreen = (): JSX.Element => {
+const AddItemScreen = (props: Item): JSX.Element => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
   const inventory = useInventory();
+  /*const { params } = useRoute<RouteProps<'ItemDetail'>>(); For AddChild Item api 
+  const sItem = inventory.getItem(params.itemId); 
+  */
+
+  //check if props is null
+  if (props !== null) {
+    //parentId = props.ID;
+    init.location = props.location;
+    init.barcode = props.barcode;
+    init.quantity = props.quantity;
+    init.moveable = props.moveable;
+  }
 
   // back press button
   const confirmBackPress = () => {
@@ -106,17 +118,24 @@ const AddItemScreen = (): JSX.Element => {
   };
 
   // form submit and API call
-  const onFormSubmit = async (item: Partial<Item>) => {
+  const onFormSubmit = async (item: Partial<Item>, parentId: number) => {
     loader.startLoading();
 
     try {
-      await inventory.addItem(item);
+      // if item's main is true, this means that we are trying to add a parent Item
+      if (item.main === true) {
+        await inventory.addItem(item);
+      }
+      // otherwise it's a child Item that we will add to the Parent item that already exists
+      /*else {
+        await inventory.addChildItem(parentId, sItem?.ID, item as AtLeast<Item, 'name' | 'type'>);
+      }*/
     } catch (err) {
       loader.stopLoading();
       RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
         {
           text: 'Retry',
-          onPress: () => onFormSubmit(item)
+          onPress: () => onFormSubmit(item, parentId)
         },
         {
           text: 'Cancel',
@@ -156,6 +175,8 @@ const AddItemScreen = (): JSX.Element => {
     };
   }, []);
 
+  // child renderform
+
   const renderForm = ({
     handleChange,
     values,
@@ -169,7 +190,7 @@ const AddItemScreen = (): JSX.Element => {
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
       {/* back press button UI */}
       <BackTitleHeader
-        title="Add Item"
+        title="Add Main/ Child Item"
         onBackPress={dirty ? confirmBackPress : navigation.goBack}
         style={styles.header}
       />
@@ -367,7 +388,7 @@ const AddItemScreen = (): JSX.Element => {
   return (
     <Formik
       initialValues={init}
-      onSubmit={values => onFormSubmit(values)}
+      onSubmit={values => onFormSubmit(values, parentId)}
       validationSchema={itemSchema}
       validateOnChange={false}
     >
