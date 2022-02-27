@@ -9,7 +9,7 @@ import {
   ScrollView,
   BackHandler
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
@@ -17,7 +17,7 @@ import { Formik, FormikHandlers, FormikProps } from 'formik';
 import { Colors, Fonts } from '../global-styles';
 import DatePickerInput from '../components/DatePickerInput';
 import BackTitleHeader from '../components/BackTitleHeader';
-import { NavigationProps } from '../types/navigation';
+import { NavigationProps, RouteProps } from '../types/navigation';
 import * as Haptics from 'expo-haptics';
 import * as yup from 'yup';
 import { Item } from '../types/API';
@@ -26,7 +26,7 @@ import useLoader from '../hooks/loading';
 import useInventory from '../hooks/inventory';
 import Select from '../components/Select';
 import Alert from '../components/Alert';
-//import { AtLeast } from '../util/types';   Uncomment hthis once addItemChildren api is implemented
+import { AtLeast } from '../util/types';
 
 // Item fields
 const itemSchema = yup.object({
@@ -72,24 +72,27 @@ const init: Partial<Item> = {
   vendorPrice: -1,
   purchaseDate: ''
 };
-const parentId = -1; //HAVING PROBLEM WITH PARENTID can't pass parentID if i put it in ,A //t parentId = -1;
 
-const AddItemScreen = (props: Item): JSX.Element => {
+const AddItemScreen = (): JSX.Element => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
   const inventory = useInventory();
-  /*const { params } = useRoute<RouteProps<'ItemDetail'>>(); For AddChild Item api 
-  const sItem = inventory.getItem(params.itemId); 
-  */
+  const { params } = useRoute<RouteProps<'AddItem'>>();
 
-  //check if props is null
-  if (props !== null) {
-    //parentId = props.ID;
-    init.location = props.location;
-    init.barcode = props.barcode;
-    init.quantity = props.quantity;
-    init.moveable = props.moveable;
+  /* if parameter item that is passed in is not null it means that you're adding a child item
+  copy over location, barcode, quantity, availablemovable into init and store the itemId into parentId */
+  if (params.item !== null) {
+    init.location = params.item.location;
+    init.barcode = params.item.barcode;
+    init.quantity = params.item.quantity;
+    init.available = params.item.available;
+    init.moveable = params.item.moveable;
+    init.main = false;
+  }
+  // otherwise it's a Parent Item and main is set to true
+  else {
+    init.main = true;
   }
 
   // back press button
@@ -118,7 +121,7 @@ const AddItemScreen = (props: Item): JSX.Element => {
   };
 
   // form submit and API call
-  const onFormSubmit = async (item: Partial<Item>, parentId: number) => {
+  const onFormSubmit = async (item: Partial<Item>) => {
     loader.startLoading();
 
     try {
@@ -127,15 +130,19 @@ const AddItemScreen = (props: Item): JSX.Element => {
         await inventory.addItem(item);
       }
       // otherwise it's a child Item that we will add to the Parent item that already exists
-      /*else {
-        await inventory.addChildItem(parentId, sItem?.ID, item as AtLeast<Item, 'name' | 'type'>);
-      }*/
+      else {
+        await inventory.addChildItem(
+          params.item.ID,
+          params.item.item,
+          item as AtLeast<Item, 'name' | 'type'>
+        );
+      }
     } catch (err) {
       loader.stopLoading();
       RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
         {
           text: 'Retry',
-          onPress: () => onFormSubmit(item, parentId)
+          onPress: () => onFormSubmit(item)
         },
         {
           text: 'Cancel',
@@ -174,8 +181,6 @@ const AddItemScreen = (props: Item): JSX.Element => {
       BackHandler.removeEventListener('hardwareBackPress', handleHardwareBackPress);
     };
   }, []);
-
-  // child renderform
 
   const renderForm = ({
     handleChange,
@@ -388,7 +393,7 @@ const AddItemScreen = (props: Item): JSX.Element => {
   return (
     <Formik
       initialValues={init}
-      onSubmit={values => onFormSubmit(values, parentId)}
+      onSubmit={values => onFormSubmit(values)}
       validationSchema={itemSchema}
       validateOnChange={false}
     >
