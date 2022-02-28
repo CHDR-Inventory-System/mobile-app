@@ -59,19 +59,20 @@ const itemSchema = yup.object({
 const init: Partial<Item> = {
   name: '',
   type: '',
-  description: '',
+  description: null,
   location: '',
   quantity: -1,
   barcode: '',
-  serial: '',
+  serial: null,
   available: undefined,
   moveable: undefined,
   main: undefined,
-  created: '',
-  vendorName: '',
-  vendorPrice: -1,
-  purchaseDate: ''
+  vendorName: null,
+  vendorPrice: null,
+  purchaseDate: null
 };
+// variable to add title of screen based on whether it's a child or Parent Item
+let title = '';
 
 const AddItemScreen = (): JSX.Element => {
   const loader = useLoader();
@@ -83,6 +84,7 @@ const AddItemScreen = (): JSX.Element => {
   /* if parameter item that is passed in is not null it means that you're adding a child item
   copy over location, barcode, quantity, availablemovable into init and store the itemId into parentId */
   if (params.item !== null) {
+    title = 'Add Child Item';
     init.location = params.item.location;
     init.barcode = params.item.barcode;
     init.quantity = params.item.quantity;
@@ -92,6 +94,7 @@ const AddItemScreen = (): JSX.Element => {
   }
   // otherwise it's a Parent Item and main is set to true
   else {
+    title = 'Add Item';
     init.main = true;
   }
 
@@ -195,7 +198,7 @@ const AddItemScreen = (): JSX.Element => {
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
       {/* back press button UI */}
       <BackTitleHeader
-        title="Add Main/ Child Item"
+        title={title}
         onBackPress={dirty ? confirmBackPress : navigation.goBack}
         style={styles.header}
       />
@@ -340,13 +343,6 @@ const AddItemScreen = (): JSX.Element => {
               placeholder="12-3456-312-43"
               style={styles.input}
               onChangeText={handleChange('serial')}
-            />
-            <DatePickerInput
-              mode="date"
-              onChange={date => setFieldValue('created', date)}
-              value={values.purchaseDate ? new Date(values.purchaseDate) : null}
-              label="Created On Date"
-              style={styles.input}
             />
             <LabeledInput
               onBlur={handleBlur('vendorName')}
