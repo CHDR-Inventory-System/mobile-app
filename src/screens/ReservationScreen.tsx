@@ -139,18 +139,20 @@ const ReservationScreen = (): JSX.Element | null => {
   };
 
   const searchStatus = (query: string) => {
-    if (!filteredStatuses) {
-      return;
-    }
+    const statuses = reservation.reservations.map(res => res.status);
 
     if (!query.trim()) {
       // Need to check if we have a filter active. If we do, we'll want to
       // set the reservation state to all reservation that match that filter
-      if (filteredStatuses.length === 0) {
+      if (!filteredStatuses || filteredStatuses.length === 0) {
         reservation.setReservations(reservationCache);
       } else {
         reservation.setReservations(
-          reservationCache.filter(({ status }) => filteredStatuses.includes(status))
+          reservationCache.filter(({ status }) => {
+            return filteredStatuses?.length === 0
+              ? statuses.includes(status)
+              : filteredStatuses?.includes(status);
+          })
         );
       }
       return;
@@ -198,7 +200,7 @@ const ReservationScreen = (): JSX.Element | null => {
   );
 
   const onRefresh = async () => {
-    if (!loader.isRefreshing || !loader.isLoading) {
+    if (!loader.isRefreshing && !loader.isLoading) {
       loader.startRefreshing();
       await loadReservations();
       loader.stopRefreshing();
