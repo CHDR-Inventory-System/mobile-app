@@ -1,17 +1,8 @@
 import { useContext } from 'react';
 import InventoryContext from '../contexts/InventoryContext';
-import { ImageFormData, Item, ItemImage } from '../types/API';
+import { ImageUploadParams, Item, ItemImage } from '../types/API';
 import API from '../util/API';
 import { AtLeast } from '../util/types';
-
-type ImageUploadParams = ImageFormData & {
-  /**
-   * The image ID is omitted here because we won't know the image
-   * ID util we get a response from the server
-   */
-  image: Omit<ItemImage, 'ID'>;
-  itemId: number;
-};
 
 type UseInventoryHook = {
   readonly items: Readonly<Item[]>;
@@ -27,7 +18,7 @@ type UseInventoryHook = {
   getItem: (id: number) => Item | undefined;
   deleteImage: (itemId: number, imageId: number) => Promise<void>;
   getImages: (itemId: number) => ItemImage[];
-  uploadImage: (params: ImageUploadParams) => Promise<void>;
+  uploadImage: (params: ImageUploadParams) => Promise<ItemImage>;
   deleteItem: (itemId: number) => Promise<void>;
   addItem: (item: Partial<Item>) => Promise<void>;
   /**
@@ -118,27 +109,18 @@ const useInventory = (): UseInventoryHook => {
 
   const getImages = (itemId: number): ItemImage[] => getItem(itemId)?.images || [];
 
-  const uploadImage = async ({
-    itemId,
-    image,
-    name,
-    base64ImageData
-  }: ImageUploadParams): Promise<void> => {
-    const { imageID } = await API.uploadImage(itemId, {
-      base64ImageData,
-      name
-    });
+  const uploadImage = async (params: ImageUploadParams): Promise<ItemImage> => {
+    const response = await API.uploadImage(params);
 
     dispatch({
       type: 'ADD_IMAGE',
       payload: {
-        itemId,
-        image: {
-          ...image,
-          ID: imageID
-        }
+        itemId: params.itemId,
+        image: response
       }
     });
+
+    return response;
   };
 
   const deleteItem = async (itemId: number) => {

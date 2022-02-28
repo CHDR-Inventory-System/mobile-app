@@ -15,7 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import ItemCard from '../components/ItemCard';
 import { Item } from '../types/API';
-import EmptyInventoryContent from '../components/main/EmptyInventoryContent';
+import EmptyInventoryList from '../components/main-screen/EmptyInventoryList';
 import LabeledInput from '../components/LabeledInput';
 import useInventory from '../hooks/inventory';
 import useLoader from '../hooks/loading';
@@ -25,7 +25,6 @@ const MainScreen = (): JSX.Element => {
   // the FlatList component, we need to store the main items in a separate array
   // so we don't have to re-query the API every time a search is executed
   const [itemCache, setItemCache] = useState<Item[]>([]);
-  const [isRefreshing, setRefreshing] = useState(false);
   const inventory = useInventory();
   const loader = useLoader();
   const insets = useSafeAreaInsets();
@@ -53,7 +52,7 @@ const MainScreen = (): JSX.Element => {
     <View style={styles.searchContainer}>
       <LabeledInput
         placeholderTextColor="rgba(0, 0, 0, 0.5)"
-        editable={!isRefreshing}
+        editable={!loader.isLoading}
         label="Search"
         returnKeyType="search"
         onSubmitEditing={event => searchItem(event.nativeEvent.text.trim())}
@@ -66,7 +65,6 @@ const MainScreen = (): JSX.Element => {
 
   const fetchInventory = async () => {
     loader.startLoading();
-    setRefreshing(true);
 
     try {
       const items = await inventory.init();
@@ -86,7 +84,6 @@ const MainScreen = (): JSX.Element => {
       ]);
     }
 
-    setRefreshing(false);
     loader.stopLoading();
   };
 
@@ -96,8 +93,22 @@ const MainScreen = (): JSX.Element => {
       offset: 0
     });
 
+  const init = async () => {
+    loader.startLoading();
+    await fetchInventory();
+    loader.stopLoading();
+  };
+
+  const onRefresh = async () => {
+    if (!loader.isRefreshing || !loader.isLoading) {
+      loader.startRefreshing();
+      await fetchInventory();
+      loader.stopRefreshing();
+    }
+  };
+
   useEffect(() => {
-    fetchInventory();
+    init();
   }, []);
 
   return (
@@ -106,13 +117,13 @@ const MainScreen = (): JSX.Element => {
         <FlatList
           contentContainerStyle={{ flexGrow: 1 }}
           ListHeaderComponent={renderListHeader()}
-          ListEmptyComponent={<EmptyInventoryContent loading={loader.isLoading} />}
+          ListEmptyComponent={<EmptyInventoryList loading={loader.isLoading} />}
           data={inventory.items}
           renderItem={renderInventoryItem}
-          refreshing={isRefreshing}
+          refreshing={loader.isRefreshing}
           keyExtractor={item => item.ID.toString()}
           initialNumToRender={5}
-          onRefresh={fetchInventory}
+          onRefresh={onRefresh}
           ref={flatListRef}
         />
         {inventory.items.length > 0 && (

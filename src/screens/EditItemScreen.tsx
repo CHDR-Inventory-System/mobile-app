@@ -89,10 +89,7 @@ const EditItemScreen = (): JSX.Element | null => {
     );
   };
 
-  const handleHardwareBackPress = () => {
-    confirmBackPress();
-    return true;
-  };
+  const handleHardwareBackPress = () => true;
 
   const onFormSubmit = async (item: Item) => {
     loader.startLoading();

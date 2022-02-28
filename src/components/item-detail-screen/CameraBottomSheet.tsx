@@ -61,14 +61,14 @@ const CameraBottomSheet = ({
     if (status === 'denied') {
       Alert.alert(
         'Camera Permission',
-        'You need to enable camera permissions in order to use this feature.',
+        "You'll need to enable camera permissions in order to use this feature.",
         [
           {
             text: 'Open Settings',
             onPress: () => Linking.openSettings()
           },
           {
-            text: 'Close',
+            text: 'Cancel',
             onPress: closeBottomSheet,
             style: 'cancel'
           }
@@ -80,10 +80,13 @@ const CameraBottomSheet = ({
   const renderOptionsActionSheet = (image: CapturedPicture) => {
     showActionSheetWithOptions(
       {
-        title: "You image will be uploaded to CHDR's server",
+        title: "Your image will be uploaded to CHDR's server",
         options: ['Use This Picture', 'Retake'],
         cancelButtonIndex: 1,
-        destructiveButtonIndex: Platform.select({ android: 1 })
+        destructiveButtonIndex: Platform.select({ android: 1 }),
+        textStyle: {
+          fontFamily: Fonts.text
+        }
       },
       buttonIndex => {
         if (buttonIndex === undefined) {

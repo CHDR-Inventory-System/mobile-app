@@ -20,6 +20,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { InventoryProvider } from './src/contexts/InventoryContext';
 import { StatusBar } from 'expo-status-bar';
 import useLoader from './src/hooks/loading';
+import ReservationScreen from './src/screens/ReservationScreen';
+import CreateReservationScreen from './src/screens/CreateReservationScreen';
+import { ReservationProvider } from './src/contexts/ReservationContext';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -89,6 +92,22 @@ const App = (): JSX.Element => {
         component={EditItemScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="ReservationScreen"
+        component={ReservationScreen}
+        options={{
+          headerShown: false,
+          gestureEnabled: true
+        }}
+      />
+      <Stack.Screen
+        name="CreateReservationScreen"
+        component={CreateReservationScreen}
+        options={{
+          headerShown: false,
+          gestureEnabled: false
+        }}
+      />
     </Stack.Navigator>
   );
 
@@ -106,19 +125,27 @@ const App = (): JSX.Element => {
     return <AppLoading />;
   }
 
-  return (
+  const WithProviders = ({ children }: { children: React.ReactNode }) => (
     <SafeAreaProvider>
       <ActionSheetProvider>
-        <UserProvider initialValue={initialUserValue}>
-          <InventoryProvider>
-            <NavigationContainer>
-              <StatusBar style="dark" />
-              <PortalProvider>{stack}</PortalProvider>
-            </NavigationContainer>
-          </InventoryProvider>
-        </UserProvider>
+        <InventoryProvider>
+          <UserProvider initialValue={initialUserValue}>
+            <ReservationProvider>
+              <PortalProvider>{children}</PortalProvider>
+            </ReservationProvider>
+          </UserProvider>
+        </InventoryProvider>
       </ActionSheetProvider>
     </SafeAreaProvider>
+  );
+
+  return (
+    <WithProviders>
+      <NavigationContainer>
+        <StatusBar style="dark" />
+        {stack}
+      </NavigationContainer>
+    </WithProviders>
   );
 };
 

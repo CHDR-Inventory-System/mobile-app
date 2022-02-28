@@ -1,65 +1,130 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarCodeScanningResult, Camera } from 'expo-camera';
 import { BarCodeScanner as ExpoBarcodeScanner } from 'expo-barcode-scanner';
-import { View, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Linking, Text } from 'react-native';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
 import { StatusBar } from 'expo-status-bar';
-
-const Spacer = () => <View style={{ flex: 1 }} />;
+import { Fonts } from '../global-styles';
+import useLoader from '../hooks/loading';
+import useInventory from '../hooks/inventory';
+import { useActionSheet } from '@expo/react-native-action-sheet';
+import LoadingOverlay from '../components/Loading';
+import * as Haptics from 'expo-haptics';
 
 const BarcodeScanner = (): JSX.Element => {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
   const [hasScanned, setHasScanned] = useState(false);
   const [isFlashOn, setFlash] = useState(false);
+  const loader = useLoader();
   const insets = useSafeAreaInsets();
-  const cameraRef = useRef<Camera>();
+  const cameraRef = useRef<Camera>(null);
   const navigation = useNavigation<NavigationProps>();
+  const inventory = useInventory();
+  const { showActionSheetWithOptions } = useActionSheet();
 
   const onBarcodeScanned = (barcode: BarCodeScanningResult) => {
-    setHasScanned(true);
-    cameraRef.current?.pausePreview();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    Alert.alert('Barcode Scanned', barcode.data, [
+    setHasScanned(true);
+    setFlash(false);
+
+    const item = inventory.items.find(it => it.barcode === barcode.data);
+
+    if (!item) {
+      // TODO: Go to add item screen
+      return;
+    }
+
+    showActionSheetWithOptions(
       {
-        text: 'OK',
-        onPress: () => {
-          setHasScanned(false);
-          cameraRef.current?.resumePreview();
+        options: ['Rescan', 'View Item', 'View Reservations', 'Create Reservation'],
+        cancelButtonIndex: 0,
+        textStyle: {
+          fontFamily: Fonts.text
+        }
+      },
+      buttonIndex => {
+        if (buttonIndex === undefined) {
+          return;
+        }
+
+        switch (buttonIndex) {
+          case 0: // Rescan
+            setHasScanned(false);
+            break;
+          case 1: // View Item
+            navigation.navigate('ItemDetail', { itemId: item.ID });
+            break;
+          case 2: // View Reservations
+            navigation.navigate('ReservationScreen', { item });
+            break;
+          case 3: // Create Reservation
+            navigation.navigate('CreateReservationScreen', { item });
+            break;
         }
       }
-    ]);
+    );
   };
 
   const requestCameraPermission = async () => {
     const { status } = await Camera.requestCameraPermissionsAsync();
     setHasPermission(status === 'granted');
+
+    if (status === 'denied') {
+      Alert.alert(
+        'Camera Permission',
+        "You'll need to enable camera permissions in order to use this feature.",
+        [
+          {
+            text: 'Open Settings',
+            onPress: () => Linking.openSettings()
+          },
+          {
+            text: 'Cancel',
+            onPress: () => navigation.goBack(),
+            style: 'cancel'
+          }
+        ]
+      );
+    }
   };
+
+  const renderRescanScreen = () =>
+    hasScanned && !loader.isLoading ? (
+      <TouchableOpacity
+        style={styles.rescanContainer}
+        activeOpacity={1}
+        onPress={() => setHasScanned(false)}
+      >
+        <Text style={styles.rescanText}>Tap to rescan</Text>
+      </TouchableOpacity>
+    ) : null;
 
   useEffect(() => {
     requestCameraPermission();
   }, []);
 
-  if (hasPermission === null) {
-    return <View />;
-  }
+  useEffect(() => {
+    if (hasScanned) {
+      cameraRef.current?.pausePreview();
+    } else {
+      cameraRef.current?.resumePreview();
+    }
+  }, [hasScanned]);
 
-  if (hasPermission === false) {
-    return (
-      <View style={styles.container}>
-        <Text>No access to camera</Text>
-      </View>
-    );
+  if (!hasPermission) {
+    return <LoadingOverlay loading />;
   }
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      {renderRescanScreen()}
+      <LoadingOverlay loading={loader.isLoading} text="Loading..." />
       <Camera
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         ref={cameraRef}
         ratio="16:9"
         flashMode={isFlashOn ? 'torch' : 'off'}
@@ -76,7 +141,7 @@ const BarcodeScanner = (): JSX.Element => {
         }}
         onBarCodeScanned={hasScanned ? undefined : onBarcodeScanned}
       >
-        <Spacer />
+        <View style={{ flex: 1 }} />
         <View
           style={{
             ...styles.controls,
@@ -115,8 +180,18 @@ const styles = StyleSheet.create({
     paddingRight: 56,
     justifyContent: 'space-between'
   },
-  cameraButton: {
+  rescanText: {
+    fontFamily: Fonts.subtitle,
+    fontSize: 24,
     color: '#FFF'
+  },
+  rescanContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 2,
+    flexDirection: 'column'
   }
 });
 

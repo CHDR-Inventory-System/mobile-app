@@ -9,7 +9,6 @@ export type User = JWT & {
   created: string;
   email: string;
   fullName: string;
-  nid: string;
   role: UserRole;
   verified: boolean;
 };
@@ -19,6 +18,7 @@ export type ItemImage = {
   created: string;
   imagePath: string;
   imageURL: string;
+  itemChild: number;
 };
 
 export type Item = {
@@ -51,6 +51,7 @@ export type Item = {
 
 export type ReservationStatus =
   | 'Approved'
+  | 'Cancelled'
   | 'Checked Out'
   | 'Denied'
   | 'Late'
@@ -60,16 +61,29 @@ export type ReservationStatus =
 
 export type Reservation = {
   ID: number;
-  admin: User | null;
+  admin: Omit<User, 'token'> | null;
   created: string;
   endDateTime: string;
   item: Item;
   startDateTime: string;
   status: ReservationStatus;
-  user: User;
+  user: Omit<User, 'token'>;
 };
 
-export type ImageFormData = {
+export type ImageUploadParams = {
+  itemId: number;
   base64ImageData: string;
   name: string;
+};
+
+export type CreateReservationOpts = {
+  email: string;
+  checkoutDate: string;
+  returnDate: string;
+  status: ReservationStatus;
+  adminId: number;
+  /**
+   * This refers to the ID of the item in the item table.
+   */
+  item: number;
 };

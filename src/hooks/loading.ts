@@ -2,9 +2,13 @@ import { useState } from 'react';
 
 type UseLoadingHook = {
   readonly isLoading: boolean;
+  readonly isRefreshing: boolean;
   startLoading: () => void;
   stopLoading: () => void;
   toggleLoading: (isLoading: boolean) => void;
+  startRefreshing: () => void;
+  stopRefreshing: () => void;
+  toggleRefreshing: (isRefreshing: boolean) => void;
   /**
    * A helper function used to delay code execution in async functions.
    *
@@ -17,7 +21,8 @@ type UseLoadingHook = {
 
 /**
  * A custom hook that pairs will with the `Loading` component. This
- * helps components manage their loading state.
+ * helps components manage their loading state. This hook also provides
+ * a utility to manage refresh state for list views too.
  *
  * @param initialValue The initial loading state value (`false` by default)
  *
@@ -41,20 +46,21 @@ type UseLoadingHook = {
  */
 const useLoader = (initialValue = false): UseLoadingHook => {
   const [isLoading, setLoading] = useState(initialValue);
+  const [isRefreshing, setRefreshing] = useState(false);
 
   const startLoading = () => setLoading(true);
-
   const stopLoading = () => setLoading(false);
-
   const toggleLoading = (loading: boolean) => setLoading(loading);
+
+  const startRefreshing = () => setRefreshing(true);
+  const stopRefreshing = () => setRefreshing(false);
+  const toggleRefreshing = (refreshing: boolean) => setLoading(refreshing);
 
   const sleep = (ms: number): Promise<void> => {
     if (!__DEV__) {
       // There's no sleeping in production!
       return Promise.resolve();
     }
-
-    console.warn("Don't use sleep() in a production environment!");
 
     return new Promise(resolve => setTimeout(resolve, ms));
   };
@@ -64,7 +70,11 @@ const useLoader = (initialValue = false): UseLoadingHook => {
     startLoading,
     stopLoading,
     toggleLoading,
-    sleep
+    sleep,
+    startRefreshing,
+    stopRefreshing,
+    toggleRefreshing,
+    isRefreshing
   };
 };
 
