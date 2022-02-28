@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Platform, FlatList, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  FlatList,
+  Alert as RNAlert
+} from 'react-native';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NavigationProps, RouteProps } from '../types/navigation';
@@ -18,6 +25,7 @@ import useReservations from '../hooks/reservation';
 import ReservationListItem from '../components/reservation-screen/ReservationListItem';
 import * as Haptics from 'expo-haptics';
 import useUser from '../hooks/user';
+import Alert from '../components/Alert';
 
 const ReservationScreen = (): JSX.Element | null => {
   const {
@@ -47,7 +55,7 @@ const ReservationScreen = (): JSX.Element | null => {
       setReservationCache(reservations);
     } catch (err) {
       console.error(err);
-      Alert.alert(
+      RNAlert.alert(
         'Unexpected Error',
         'An error occurred while loading reservations for this item',
         [
@@ -75,7 +83,7 @@ const ReservationScreen = (): JSX.Element | null => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error(err);
-      Alert.alert(
+      RNAlert.alert(
         'Unexpected Error',
         "An error occurred while updating this reservation's status",
         [
@@ -169,6 +177,14 @@ const ReservationScreen = (): JSX.Element | null => {
         clearButtonMode="always"
         labelStyle={styles.searchInputLabel}
       />
+      {(!item.available || item.quantity === 0) && (
+        <Alert
+          title="Cannot Create Reservation"
+          message="You cannot create a reservation on an item that's unavailable."
+          type="warning"
+          style={styles.itemWarning}
+        />
+      )}
     </View>
   );
 
@@ -286,6 +302,7 @@ const ReservationScreen = (): JSX.Element | null => {
           ...styles.addButton,
           height: insets.bottom === 0 ? 56 : insets.bottom + 48
         }}
+        disabled={!item.available || item.quantity === 0}
         onPress={() => navigation.navigate('CreateReservationScreen', { item })}
       />
       {isStatusSheetShowing && (
@@ -365,6 +382,9 @@ const styles = StyleSheet.create({
       ios: 3,
       android: 0
     })
+  },
+  itemWarning: {
+    marginTop: 16
   }
 });
 

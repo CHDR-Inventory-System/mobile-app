@@ -34,6 +34,7 @@ const BarcodeScanner = (): JSX.Element => {
     const item = inventory.items.find(it => it.barcode === barcode.data);
 
     if (!item) {
+      // TODO: Go to add item screen
       return;
     }
 
