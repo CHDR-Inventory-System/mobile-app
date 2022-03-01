@@ -1,5 +1,13 @@
 import axios from 'axios';
-import { ImageFormData, Item, User } from '../types/API';
+import {
+  CreateReservationOpts,
+  ImageUploadParams,
+  Item,
+  ItemImage,
+  Reservation,
+  ReservationStatus,
+  User
+} from '../types/API';
 import { DEBUG_API_URL, PROD_API_URL } from '@env';
 import { AtLeast } from './types';
 
@@ -8,9 +16,9 @@ axios.defaults.headers.put['Content-Type'] = 'application/json';
 axios.defaults.baseURL = __DEV__ ? DEBUG_API_URL : PROD_API_URL;
 
 class API {
-  static async login(nid: string, password: string): Promise<User> {
+  static async login(email: string, password: string): Promise<User> {
     const response = await axios.post('/users/login', {
-      nid,
+      email,
       password
     });
 
@@ -34,13 +42,14 @@ class API {
     return response.data;
   }
 
-  static async uploadImage(
-    itemId: number,
-    image: ImageFormData
-  ): Promise<{ imageID: number }> {
+  static async uploadImage({
+    itemId,
+    base64ImageData,
+    name
+  }: ImageUploadParams): Promise<ItemImage> {
     const response = await axios.post(`/inventory/${itemId}/uploadImage`, {
-      image: image.base64ImageData,
-      filename: image.name
+      image: base64ImageData,
+      filename: name
     });
 
     return response.data;
@@ -67,6 +76,48 @@ class API {
     const response = await axios.post(`/inventory/${itemId}/addChild`, {
       ...item
     });
+    return response.data;
+  }
+
+  static async getReservationsForItem(itemId: number): Promise<Reservation[]> {
+    const response = await axios.get(`/reservations/item/${itemId}`);
+    return response.data;
+  }
+
+  static async updateReservationStatus(
+    reservationId: number,
+    adminId: number,
+    status: ReservationStatus
+  ): Promise<void> {
+    const response = await axios.patch(`/reservations/${reservationId}/status`, {
+      status,
+      adminId
+    });
+    return response.data;
+  }
+
+  static async createReservation({
+    email,
+    item,
+    checkoutDate,
+    returnDate,
+    status,
+    adminId
+  }: CreateReservationOpts): Promise<Reservation> {
+    const response = await axios.post('/reservations/', {
+      email,
+      item,
+      status,
+      adminId,
+      startDateTime: checkoutDate,
+      endDateTime: returnDate
+    });
+
+    return response.data;
+  }
+
+  static async deleteReservation(reservationId: number): Promise<void> {
+    const response = await axios.delete(`/reservations/${reservationId}`);
     return response.data;
   }
 }

@@ -4,19 +4,19 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Fonts } from '../../global-styles';
 import LoadingOverlay from '../Loading';
 
-type EmptyInventoryContentProps = {
+type EmptyInventoryListProps = {
   /**
    * If set to true, this will hide the content of the component
    * but the component will still fill the screen. This is so that
-   * the MainScreen doesn't show a 'No Items' component while it's
+   * the Main screen doesn't show a 'No Items' component while it's
    * loading items.
    */
   loading?: boolean;
 };
 
-const EmptyInventoryContent = ({
+const EmptyInventoryList = ({
   loading = false
-}: EmptyInventoryContentProps): JSX.Element => (
+}: EmptyInventoryListProps): JSX.Element => (
   <View style={styles.emptyContentContainer}>
     {loading ? (
       <LoadingOverlay
@@ -29,7 +29,7 @@ const EmptyInventoryContent = ({
     ) : (
       <>
         <FontAwesome5 name="barcode" size={128} style={styles.barcodeIcon} />
-        <Text style={styles.emptyTextTitle}>No Items in Inventory</Text>
+        <Text style={styles.emptyTextTitle}>No items in inventory</Text>
         <Text style={styles.emptyTextDescription}>Scan a barcode to get started.</Text>
       </>
     )}
@@ -68,4 +68,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default EmptyInventoryContent;
+export default EmptyInventoryList;

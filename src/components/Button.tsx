@@ -43,7 +43,7 @@ const Button = ({
     <TouchableOpacity
       disabled={disabled}
       activeOpacity={activeOpacity}
-      style={[styles.button, disabledStyle, styleMap[variant], style]}
+      style={[styles.button, styleMap[variant], disabledStyle, style]}
       onPress={onPress}
     >
       <View style={styles.contentRow}>
@@ -56,7 +56,7 @@ const Button = ({
 
 const styles = StyleSheet.create({
   disabled: {
-    backgroundColor: '#C4C4CA'
+    backgroundColor: '#777777'
   },
   primary: {
     backgroundColor: Colors['monoChromatic-1']

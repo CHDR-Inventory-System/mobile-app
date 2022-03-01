@@ -18,14 +18,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import moment from 'moment';
 import { useActionSheet } from '@expo/react-native-action-sheet';
 import * as ImagePicker from 'expo-image-picker';
-import CameraBottomSheet from '../components/item-detail/CameraBottomSheet';
+import CameraBottomSheet from '../components/item-detail-screen/CameraBottomSheet';
 import { CapturedPicture } from 'expo-camera/build/Camera.types';
-import ImageCarousel from '../components/item-detail/ImageCarousel';
+import ImageCarousel from '../components/item-detail-screen/ImageCarousel';
 import { PortalHost } from '@gorhom/portal';
 import useLoader from '../hooks/loading';
 import useInventory from '../hooks/inventory';
 import LoadingOverlay from '../components/Loading';
 import * as Haptics from 'expo-haptics';
+import { StatusBar } from 'expo-status-bar';
 
 const ItemDetail = (): JSX.Element | null => {
   const { params } = useRoute<RouteProps<'ItemDetail'>>();
@@ -53,16 +54,17 @@ const ItemDetail = (): JSX.Element | null => {
   };
 
   const goToChildItemDetailScreen = (childItem: Item) => {
+    // Using push here so that going back will go to the parent item screen
+    // and not the main screen
     navigation.push('ItemDetail', {
       itemId: childItem.ID
     });
   };
-  // go to Add Item screen with parameter Item to add child Items
-  const goToAddChildScreen = async () => {
-    navigation.navigate('AddItem', {
-      item: item
-    });
+
+  const goToReservationScreen = () => {
+    navigation.navigate('ReservationScreen', { item });
   };
+
   const renderItemProperty = (property: string, value: string | number | null) => {
     if (value === null || value === undefined || !value.toString().trim()) {
       return null;
@@ -146,7 +148,7 @@ const ItemDetail = (): JSX.Element | null => {
     ]);
   };
 
-  const uploadImage = async (image: CapturedPicture | ImagePicker.ImageInfo) => {
+  const uploadImage = async (image: CapturedPicture) => {
     // Safety check: filename shouldn't be undefined, but if it is for some
     // reason, just use the current date as the file name
     const filename = image.uri.split('/').pop() || `${Date.now().toString()}.jpg`;
@@ -158,12 +160,7 @@ const ItemDetail = (): JSX.Element | null => {
         itemId: item.ID,
         name: filename,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        base64ImageData: image.base64!,
-        image: {
-          imagePath: image.uri,
-          created: new Date().toLocaleDateString(),
-          imageURL: image.uri
-        }
+        base64ImageData: image.base64!
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -266,8 +263,13 @@ const ItemDetail = (): JSX.Element | null => {
     );
   };
 
+  const addChildItem = async () => {
+    console.error('Not implemented');
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+      <StatusBar style="dark" />
       <BackTitleHeader title={item.name.replace(/[\n\r]+/g, '')} style={styles.header} />
       <PortalHost name="ItemDetail" />
       <LoadingOverlay loading={loader.isLoading} text="Loading" />
@@ -282,6 +284,7 @@ const ItemDetail = (): JSX.Element | null => {
           )}
           {renderItemProperty('Location', item.location)}
           {renderItemProperty('Barcode', item.barcode)}
+          {renderItemProperty('Item ID', item.ID)}
           {renderItemProperty('Quantity', item.quantity)}
           {renderItemProperty('Status', item.available ? 'Available' : 'Unavailable')}
           {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
@@ -306,6 +309,11 @@ const ItemDetail = (): JSX.Element | null => {
 
           <Button text="Edit Item" style={styles.actionButton} onPress={goToEditScreen} />
           <Button
+            text="View Reservations"
+            style={styles.actionButton}
+            onPress={goToReservationScreen}
+          />
+          <Button
             text="Upload Image"
             style={styles.actionButton}
             onPress={renderImageActionSheet}
@@ -314,7 +322,7 @@ const ItemDetail = (): JSX.Element | null => {
             <Button
               text="Add Child Item"
               style={styles.actionButton}
-              onPress={goToAddChildScreen}
+              onPress={addChildItem}
             />
           )}
           <Button
