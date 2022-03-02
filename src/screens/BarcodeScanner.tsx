@@ -27,14 +27,16 @@ const BarcodeScanner = (): JSX.Element => {
 
   const onBarcodeScanned = (barcode: BarCodeScanningResult) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
     setHasScanned(true);
     setFlash(false);
 
     const item = inventory.items.find(it => it.barcode === barcode.data);
 
+    // navigate to Add Item screen with barcode if item doesn't exist
     if (!item) {
-      // TODO: Go to add item screen
+      navigation.navigate('AddItem', {
+        barcode: barcode.data
+      });
       return;
     }
 

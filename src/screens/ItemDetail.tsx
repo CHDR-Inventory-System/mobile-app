@@ -35,7 +35,6 @@ const ItemDetail = (): JSX.Element | null => {
   // Because the inventory might be a large array to sort through, we need to
   // make sure we only search through it if an item in the inventory changes
   const item = useMemo(() => inventory.getItem(params.itemId), [inventory.items]);
-
   const { showActionSheetWithOptions } = useActionSheet();
   const [isCameraSheetShowing, setCameraSheetShowing] = useState(false);
   const navigation = useNavigation<NavigationProps>();
@@ -262,9 +261,13 @@ const ItemDetail = (): JSX.Element | null => {
       }
     );
   };
-
+  // addChildren button call
   const addChildItem = async () => {
-    console.error('Not implemented');
+    // go to AddItem screen with item and barcode as parameters to get added to Parent Item
+    navigation.navigate('AddItem', {
+      item: item,
+      barcode: item.barcode
+    });
   };
 
   return (

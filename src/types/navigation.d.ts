@@ -13,7 +13,8 @@ export type RootStackParamsList = {
   Main: undefined;
   BarcodeScanner: undefined;
   AddItem: {
-    item: Item;
+    item?: Item;
+    barcode?: string;
   };
   EditItemScreen: {
     itemId: number;

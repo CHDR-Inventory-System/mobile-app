@@ -74,7 +74,7 @@ const init: Partial<Item> = {
 // variable to add title of screen based on whether it's a child or Parent Item
 let title = '';
 
-const AddItemScreen = (): JSX.Element => {
+const AddItemScreen = (): JSX.Element | null => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
@@ -83,7 +83,7 @@ const AddItemScreen = (): JSX.Element => {
 
   /* if parameter item that is passed in is not null it means that you're adding a child item
   copy over location, barcode, quantity, availablemovable into init and store the itemId into parentId */
-  if (params.item !== null) {
+  if (params.item !== undefined) {
     title = 'Add Child Item';
     init.location = params.item.location;
     init.barcode = params.item.barcode;
@@ -92,9 +92,10 @@ const AddItemScreen = (): JSX.Element => {
     init.moveable = params.item.moveable;
     init.main = false;
   }
-  // otherwise it's a Parent Item and main is set to true
+  // otherwise it's a Parent Item, set main to true and add barcode to barcode field
   else {
     title = 'Add Item';
+    init.barcode = params.barcode;
     init.main = true;
   }
 
@@ -133,7 +134,7 @@ const AddItemScreen = (): JSX.Element => {
         await inventory.addItem(item);
       }
       // otherwise it's a child Item that we will add to the Parent item that already exists
-      else {
+      else if (params.item !== undefined) {
         await inventory.addChildItem(
           params.item.ID,
           params.item.item,

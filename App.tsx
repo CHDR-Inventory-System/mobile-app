@@ -23,6 +23,7 @@ import useLoader from './src/hooks/loading';
 import ReservationScreen from './src/screens/ReservationScreen';
 import CreateReservationScreen from './src/screens/CreateReservationScreen';
 import { ReservationProvider } from './src/contexts/ReservationContext';
+import AddItemScreen from './src/screens/addItemScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -107,6 +108,11 @@ const App = (): JSX.Element => {
           headerShown: false,
           gestureEnabled: false
         }}
+      />
+      <Stack.Screen
+        name="AddItem"
+        component={AddItemScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
