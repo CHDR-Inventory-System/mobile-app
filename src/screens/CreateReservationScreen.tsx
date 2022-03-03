@@ -96,8 +96,6 @@ const CreateReservationScreen = (): JSX.Element => {
   const onFormSubmit = async (values: FormValues) => {
     loader.startLoading();
 
-    console.log(values);
-
     try {
       await reservation.createReservation({
         email: values.email,

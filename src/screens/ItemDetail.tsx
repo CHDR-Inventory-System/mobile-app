@@ -261,13 +261,11 @@ const ItemDetail = (): JSX.Element | null => {
       }
     );
   };
+
   // addChildren button call
   const addChildItem = async () => {
     // go to AddItem screen with item and barcode as parameters to get added to Parent Item
-    navigation.navigate('AddItem', {
-      item: item,
-      barcode: item.barcode
-    });
+    navigation.navigate('AddItem', { item });
   };
 
   return (

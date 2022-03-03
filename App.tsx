@@ -23,7 +23,7 @@ import useLoader from './src/hooks/loading';
 import ReservationScreen from './src/screens/ReservationScreen';
 import CreateReservationScreen from './src/screens/CreateReservationScreen';
 import { ReservationProvider } from './src/contexts/ReservationContext';
-import AddItemScreen from './src/screens/addItemScreen';
+import AddItemScreen from './src/screens/AddItemScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 

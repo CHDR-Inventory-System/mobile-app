@@ -14,7 +14,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
 import { Formik, FormikHandlers, FormikProps } from 'formik';
-import { Colors, Fonts } from '../global-styles';
 import DatePickerInput from '../components/DatePickerInput';
 import BackTitleHeader from '../components/BackTitleHeader';
 import { NavigationProps, RouteProps } from '../types/navigation';
@@ -55,49 +54,29 @@ const itemSchema = yup.object({
     )
 });
 
-// initial item fields that are blank or undefined
-const init: Partial<Item> = {
-  name: '',
-  type: '',
-  description: null,
-  location: '',
-  quantity: -1,
-  barcode: '',
-  serial: null,
-  available: undefined,
-  moveable: undefined,
-  main: undefined,
-  vendorName: null,
-  vendorPrice: null,
-  purchaseDate: null
-};
-// variable to add title of screen based on whether it's a child or Parent Item
-let title = '';
-
 const AddItemScreen = (): JSX.Element | null => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProps>();
   const inventory = useInventory();
   const { params } = useRoute<RouteProps<'AddItem'>>();
+  const title = params.barcode ? 'Add Item' : 'Add Child Item';
 
-  /* if parameter item that is passed in is not null it means that you're adding a child item
-  copy over location, barcode, quantity, availablemovable into init and store the itemId into parentId */
-  if (params.item !== undefined) {
-    title = 'Add Child Item';
-    init.location = params.item.location;
-    init.barcode = params.item.barcode;
-    init.quantity = params.item.quantity;
-    init.available = params.item.available;
-    init.moveable = params.item.moveable;
-    init.main = false;
-  }
-  // otherwise it's a Parent Item, set main to true and add barcode to barcode field
-  else {
-    title = 'Add Item';
-    init.barcode = params.barcode;
-    init.main = true;
-  }
+  // If parameter item that is passed in is not null it means that you're
+  // adding a child item, otherwise it's a Parent Item
+  const initialValues: Partial<Item> = params.barcode
+    ? {
+        barcode: params.barcode,
+        main: true
+      }
+    : {
+        location: params.item?.location,
+        barcode: params.item?.barcode,
+        quantity: params.item?.quantity,
+        available: params.item?.available,
+        moveable: params.item?.moveable,
+        main: false
+      };
 
   // back press button
   const confirmBackPress = () => {
@@ -126,19 +105,26 @@ const AddItemScreen = (): JSX.Element | null => {
 
   // form submit and API call
   const onFormSubmit = async (item: Partial<Item>) => {
+    if (!params.item) {
+      throw new Error(
+        'Cannot add undefined item, did you pass an item prop to this screen?'
+      );
+    }
+
     loader.startLoading();
 
     try {
+      const parsedItem = await itemSchema.validate(item, { abortEarly: false });
+
       // if item's main is true, this means that we are trying to add a parent Item
-      if (item.main === true) {
-        await inventory.addItem(item);
-      }
-      // otherwise it's a child Item that we will add to the Parent item that already exists
-      else if (params.item !== undefined) {
+      if (item.main) {
+        await inventory.addItem(parsedItem);
+      } else {
+        // otherwise it's a child Item that we will add to the Parent item that already exists
         await inventory.addChildItem(
           params.item.ID,
           params.item.item,
-          item as AtLeast<Item, 'name' | 'type'>
+          parsedItem as AtLeast<Item, 'name' | 'type'>
         );
       }
     } catch (err) {
@@ -191,7 +177,6 @@ const AddItemScreen = (): JSX.Element | null => {
     values,
     setFieldValue,
     errors,
-    handleBlur,
     handleSubmit,
     dirty
   }: FormikProps<Readonly<Partial<Item>>>) => (
@@ -216,13 +201,12 @@ const AddItemScreen = (): JSX.Element | null => {
             style={styles.requiredFieldsAlert}
           />
           {/* Item fields admins have to type in to add an item  */}
-          <View style={styles.inputContainer}>
+          <View>
             <LabeledInput
               required
               autoCapitalize="none"
-              onBlur={handleBlur('name')}
-              label="Title"
-              placeholder="*Name of item"
+              label="Name"
+              placeholder="Name of item"
               value={values.name}
               errorMessage={errors.name}
               style={styles.input}
@@ -230,18 +214,6 @@ const AddItemScreen = (): JSX.Element | null => {
               returnKeyType="done"
             />
             <LabeledInput
-              required
-              onBlur={handleBlur('type')}
-              label="Type"
-              placeholder="eg: Tech"
-              style={styles.input}
-              value={values.type}
-              errorMessage={errors.type}
-              onChangeText={handleChange('type')}
-              returnKeyType="done"
-            />
-            <LabeledInput
-              onBlur={handleBlur('description')}
               label="Description"
               placeholder="Microsoft's mixed reality holo lens 2"
               style={styles.input}
@@ -252,7 +224,6 @@ const AddItemScreen = (): JSX.Element | null => {
             />
             <LabeledInput
               required
-              onBlur={handleBlur('location')}
               label="Location"
               placeholder="Cabinet 14A"
               style={styles.input}
@@ -260,17 +231,28 @@ const AddItemScreen = (): JSX.Element | null => {
               errorMessage={errors.location}
               returnKeyType="done"
               onChangeText={handleChange('location')}
+              disabled={!initialValues.main}
+              help={
+                !initialValues.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <LabeledInput
               required
-              onBlur={handleBlur('barcode')}
-              label="Barcode ID"
+              label="Barcode"
               placeholder="eg: CHDR1234"
               style={styles.input}
               value={values.barcode}
               errorMessage={errors.barcode}
               returnKeyType="done"
               onChangeText={handleChange('barcode')}
+              disabled={!initialValues.main}
+              help={
+                !initialValues.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <LabeledInput
               required
@@ -281,24 +263,12 @@ const AddItemScreen = (): JSX.Element | null => {
               returnKeyType="done"
               style={styles.input}
               errorMessage={errors.quantity}
-            />
-            <Select
-              required
-              label="Main"
-              style={styles.input}
-              defaultValueIndex={values.main ? 0 : 1}
-              options={[
-                {
-                  title: 'Main Item',
-                  value: true,
-                  onSelect: () => setFieldValue('available', true)
-                },
-                {
-                  title: 'Child Item',
-                  value: false,
-                  onSelect: () => setFieldValue('available', false)
-                }
-              ]}
+              disabled={!initialValues.main}
+              help={
+                !initialValues.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }
             />
             <Select
               required
@@ -306,6 +276,13 @@ const AddItemScreen = (): JSX.Element | null => {
               sheetTitle="If an item is unavailable, users will not be able to reserve or checkout the item."
               style={styles.input}
               defaultValueIndex={values.available ? 0 : 1}
+              disabled={!initialValues.main}
+              inputProps={{
+                disabled: !initialValues.main,
+                help: !initialValues.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }}
               options={[
                 {
                   title: 'Available',
@@ -325,6 +302,13 @@ const AddItemScreen = (): JSX.Element | null => {
               style={styles.input}
               defaultValueIndex={values.moveable ? 0 : 1}
               sheetTitle="Can this item be moved? If it's stationary, this should usually be set to 'No'"
+              disabled={!initialValues.main}
+              inputProps={{
+                disabled: !initialValues.main,
+                help: !initialValues.main
+                  ? 'This value can only be updated through the parent item.'
+                  : ''
+              }}
               options={[
                 {
                   title: 'Yes',
@@ -338,15 +322,30 @@ const AddItemScreen = (): JSX.Element | null => {
                 }
               ]}
             />
+            <DatePickerInput
+              mode="date"
+              onChange={date => setFieldValue('purchaseDate', date)}
+              value={values.purchaseDate ? new Date(values.purchaseDate) : null}
+              label="Purchase Date"
+              style={styles.input}
+            />
             <LabeledInput
-              onBlur={handleBlur('serial')}
               label="Serial"
               placeholder="12-3456-312-43"
               style={styles.input}
               onChangeText={handleChange('serial')}
             />
             <LabeledInput
-              onBlur={handleBlur('vendorName')}
+              required
+              label="Type"
+              placeholder="eg: Tech"
+              style={styles.input}
+              value={values.type}
+              errorMessage={errors.type}
+              onChangeText={handleChange('type')}
+              returnKeyType="done"
+            />
+            <LabeledInput
               label="Vendor Name"
               placeholder="HP"
               style={styles.input}
@@ -356,7 +355,6 @@ const AddItemScreen = (): JSX.Element | null => {
               onChangeText={handleChange('vendorName')}
             />
             <LabeledInput
-              onBlur={handleBlur('vendorPrice')}
               label="Purchase Price"
               placeholder="$50"
               style={styles.input}
@@ -366,13 +364,6 @@ const AddItemScreen = (): JSX.Element | null => {
               keyboardType="decimal-pad"
               returnKeyType="done"
             />
-            <DatePickerInput
-              mode="date"
-              onChange={date => setFieldValue('purchaseDate', date)}
-              value={values.purchaseDate ? new Date(values.purchaseDate) : null}
-              label="Purchase Date"
-              style={styles.input}
-            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -380,16 +371,17 @@ const AddItemScreen = (): JSX.Element | null => {
         text="Add Item"
         onPress={() => formSubmitHandler(values, handleSubmit)}
         style={{
-          ...styles.AddItemButton,
+          ...styles.addItemButton,
           marginBottom: insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })
         }}
       />
     </SafeAreaView>
   );
+
   // Formik props that calls functions to check fields are filled
   return (
     <Formik
-      initialValues={init}
+      initialValues={initialValues}
       onSubmit={values => onFormSubmit(values)}
       validationSchema={itemSchema}
       validateOnChange={false}
@@ -401,15 +393,6 @@ const AddItemScreen = (): JSX.Element | null => {
 
 // style sheets used for CSS
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginLeft: 24,
-    marginRight: 24
-  },
-  formContentContainer: {
-    flex: 1,
-    justifyContent: 'space-between'
-  },
   header: {
     zIndex: 200,
     paddingTop: Platform.select({
@@ -417,25 +400,19 @@ const styles = StyleSheet.create({
       android: 16
     })
   },
-  title: {
-    fontSize: 40,
-    fontFamily: Fonts.heading,
-    color: Colors.text
-  },
-  subtitle: {
-    marginTop: 16,
-    fontSize: Fonts.defaultTextSize,
-    fontFamily: Fonts.subtitle,
-    color: Colors.textMuted
-  },
   inputContainer: {
     paddingHorizontal: 16
   },
   input: {
     marginVertical: 12
   },
-  AddItemButton: {
-    marginBottom: 16
+  multilineInput: {
+    lineHeight: 20
+  },
+  addItemButton: {
+    marginBottom: 8,
+    marginTop: 16,
+    marginHorizontal: 16
   },
   requiredFieldsAlert: {
     marginVertical: 12,
