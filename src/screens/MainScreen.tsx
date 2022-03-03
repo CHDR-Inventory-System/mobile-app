@@ -72,16 +72,20 @@ const MainScreen = (): JSX.Element => {
     } catch (err) {
       console.error(err);
 
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => fetchInventory()
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Loading Inventory',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => fetchInventory()
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     }
 
     loader.stopLoading();

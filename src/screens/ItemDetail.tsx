@@ -72,7 +72,13 @@ const ItemDetail = (): JSX.Element | null => {
     return (
       <View style={styles.itemProperty}>
         <Text style={styles.itemPropertyName}>{property}:</Text>
-        <Text style={styles.itemPropertyValue}>{value}</Text>
+        <Text
+          selectable
+          selectionColor={Colors.selection}
+          style={styles.itemPropertyValue}
+        >
+          {value}
+        </Text>
       </View>
     );
   };
@@ -110,16 +116,20 @@ const ItemDetail = (): JSX.Element | null => {
     } catch (err) {
       console.error(err);
       loader.stopLoading();
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => deleteItem()
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Deleting Item',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => deleteItem()
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
       return;
     }
 
@@ -165,16 +175,20 @@ const ItemDetail = (): JSX.Element | null => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error(err);
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => uploadImage(image)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Uploading Image',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => uploadImage(image)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     }
 
     loader.stopLoading();

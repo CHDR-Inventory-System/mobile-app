@@ -108,12 +108,6 @@ const AddItemScreen = (): JSX.Element | null => {
 
   // form submit and API call
   const onFormSubmit = async (item: Partial<Item>) => {
-    if (!params.item) {
-      throw new Error(
-        'Cannot add undefined item, did you pass an item prop to this screen?'
-      );
-    }
-
     loader.startLoading();
 
     try {
@@ -125,23 +119,29 @@ const AddItemScreen = (): JSX.Element | null => {
       } else {
         // otherwise it's a child Item that we will add to the Parent item that already exists
         await inventory.addChildItem(
-          params.item.ID,
-          params.item.item,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          params.item!.ID,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          params.item!.item,
           parsedItem as AtLeast<Item, 'name' | 'type'>
         );
       }
     } catch (err) {
       loader.stopLoading();
-      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => onFormSubmit(item)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      RNAlert.alert(
+        'Error Adding Item',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => onFormSubmit(item)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
       return;
     }
 
@@ -210,7 +210,6 @@ const AddItemScreen = (): JSX.Element | null => {
               required
               autoCapitalize="none"
               label="Name"
-              placeholder="Name of item"
               value={values.name}
               errorMessage={errors.name}
               style={styles.input}
@@ -219,7 +218,6 @@ const AddItemScreen = (): JSX.Element | null => {
             />
             <LabeledInput
               label="Description"
-              placeholder="Microsoft's mixed reality holo lens 2"
               style={styles.input}
               value={values.description || undefined}
               errorMessage={errors.description}
@@ -229,7 +227,6 @@ const AddItemScreen = (): JSX.Element | null => {
             <LabeledInput
               required
               label="Location"
-              placeholder="Cabinet 14A"
               style={styles.input}
               value={values.location}
               errorMessage={errors.location}
@@ -245,7 +242,6 @@ const AddItemScreen = (): JSX.Element | null => {
             <LabeledInput
               required
               label="Barcode"
-              placeholder="eg: CHDR1234"
               style={styles.input}
               value={values.barcode}
               errorMessage={errors.barcode}
@@ -335,14 +331,12 @@ const AddItemScreen = (): JSX.Element | null => {
             />
             <LabeledInput
               label="Serial"
-              placeholder="12-3456-312-43"
               style={styles.input}
               onChangeText={handleChange('serial')}
             />
             <LabeledInput
               required
               label="Type"
-              placeholder="eg: Tech"
               style={styles.input}
               value={values.type}
               errorMessage={errors.type}
@@ -351,7 +345,6 @@ const AddItemScreen = (): JSX.Element | null => {
             />
             <LabeledInput
               label="Vendor Name"
-              placeholder="HP"
               style={styles.input}
               value={values.vendorName || undefined}
               errorMessage={errors.vendorName}
@@ -359,8 +352,7 @@ const AddItemScreen = (): JSX.Element | null => {
               onChangeText={handleChange('vendorName')}
             />
             <LabeledInput
-              label="Purchase Price"
-              placeholder="$50"
+              label="Vendor Price"
               style={styles.input}
               value={values.vendorPrice?.toString() || undefined}
               onChangeText={value => setFieldValue('vendorPrice', value)}

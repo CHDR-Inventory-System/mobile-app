@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Formik, FormikHandlers, FormikHelpers } from 'formik';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Platform, StyleSheet, Alert as RNAlert, BackHandler, View } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Alert as RNAlert,
+  BackHandler,
+  ScrollView
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Alert from '../components/Alert';
 import BackTitleHeader from '../components/BackTitleHeader';
@@ -192,7 +198,7 @@ const CreateReservationScreen = (): JSX.Element => {
             onBackPress={dirty ? confirmBackPress : navigation.goBack}
           />
           <LoadingOverlay loading={loader.isLoading} />
-          <View style={styles.container}>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
             <Alert
               style={styles.infoAlert}
               type="info"
@@ -239,7 +245,7 @@ const CreateReservationScreen = (): JSX.Element => {
             />
             <Select
               label="Reservation Status"
-              defaultValueIndex={5 /* The index of 'Pending */}
+              defaultValueIndex={5} // The index of 'Pending'
               style={styles.input}
               options={statuses.map(status => ({
                 title: status,
@@ -247,7 +253,7 @@ const CreateReservationScreen = (): JSX.Element => {
                 onSelect: value => setFieldValue('status', value)
               }))}
             />
-          </View>
+          </ScrollView>
           <Button
             text="Create Reservation"
             onPress={() =>

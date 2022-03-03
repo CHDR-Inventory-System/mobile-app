@@ -61,7 +61,7 @@ const LoginScreen = (): JSX.Element => {
         );
       } else {
         Alert.alert(
-          'Server Error',
+          'Error Logging In',
           'An unexpected error occurred, please try again later.'
         );
       }

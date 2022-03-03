@@ -99,16 +99,20 @@ const EditItemScreen = (): JSX.Element | null => {
       await inventory.updateItem(parsedItem as Item);
     } catch (err) {
       loader.stopLoading();
-      RNAlert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => onFormSubmit(item)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      RNAlert.alert(
+        'Error Saving Changes',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => onFormSubmit(item)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
       return;
     }
 
