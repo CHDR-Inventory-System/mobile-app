@@ -52,7 +52,9 @@ const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
       </View>
       <View style={styles.descriptionContainer}>
         <Text style={styles.descriptionSubtitle}>Description</Text>
-        <Text style={styles.description}>{item.description || 'No description available'}</Text>
+        <Text style={styles.description}>
+          {item.description || 'No description available'}
+        </Text>
       </View>
 
       <Button text="View Item" onPress={goToItemDetailScreen} />

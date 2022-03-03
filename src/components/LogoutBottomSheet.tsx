@@ -65,7 +65,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
             <Avatar text="JS" size={52} textStyle={styles.avatarText} />
             <View style={styles.textRow}>
               <Text style={styles.subtitleText}>Signed in as:</Text>
-              <Text style={styles.emailText}>jsmith@ucf.edu</Text>
+              <Text style={styles.emailText}>{user.state.email}</Text>
             </View>
           </View>
           <Button text="Log Out" style={styles.logoutButton} onPress={onLogoutPress} />

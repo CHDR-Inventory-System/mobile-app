@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import Avatar from './Avatar';
 import LogoutBottomSheet from './LogoutBottomSheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useUser from '../hooks/user';
 
 const Navbar = (): JSX.Element => {
   const [isSheetShowing, setSheetShowing] = useState(false);
   const insets = useSafeAreaInsets();
+  const user = useUser();
+  const userInitials = useMemo(() => {
+    if (!user.state.fullName) {
+      return '';
+    }
+
+    const [firstName, lastName] = user.state.fullName.split(' ');
+
+    return firstName[0] + lastName[0];
+  }, [user]);
 
   return (
     <View
@@ -21,7 +32,7 @@ const Navbar = (): JSX.Element => {
           <Text style={styles.title}>CHDR</Text>
           <Text style={styles.subTitle}>Admin</Text>
         </View>
-        <Avatar text="JS" onPress={() => setSheetShowing(true)} />
+        <Avatar text={userInitials} onPress={() => setSheetShowing(true)} />
         {isSheetShowing && <LogoutBottomSheet onClose={() => setSheetShowing(false)} />}
       </View>
     </View>

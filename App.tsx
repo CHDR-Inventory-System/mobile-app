@@ -27,8 +27,27 @@ import AddItemScreen from './src/screens/AddItemScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
+type WithProvidersProps = {
+  children: React.ReactNode;
+  initialUserValue?: User;
+};
+
+const WithProviders = ({ children, initialUserValue }: WithProvidersProps) => (
+  <SafeAreaProvider>
+    <ActionSheetProvider>
+      <InventoryProvider>
+        <UserProvider initialValue={initialUserValue}>
+          <ReservationProvider>
+            <PortalProvider>{children}</PortalProvider>
+          </ReservationProvider>
+        </UserProvider>
+      </InventoryProvider>
+    </ActionSheetProvider>
+  </SafeAreaProvider>
+);
+
 const App = (): JSX.Element => {
-  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Main');
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
   const loader = useLoader(true);
   const [fontsLoaded, fontLoadError] = useFonts({
@@ -131,22 +150,8 @@ const App = (): JSX.Element => {
     return <AppLoading />;
   }
 
-  const WithProviders = ({ children }: { children: React.ReactNode }) => (
-    <SafeAreaProvider>
-      <ActionSheetProvider>
-        <InventoryProvider>
-          <UserProvider initialValue={initialUserValue}>
-            <ReservationProvider>
-              <PortalProvider>{children}</PortalProvider>
-            </ReservationProvider>
-          </UserProvider>
-        </InventoryProvider>
-      </ActionSheetProvider>
-    </SafeAreaProvider>
-  );
-
   return (
-    <WithProviders>
+    <WithProviders initialUserValue={initialUserValue}>
       <NavigationContainer>
         <StatusBar style="dark" />
         {stack}
