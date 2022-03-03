@@ -26,6 +26,7 @@ import useInventory from '../hooks/inventory';
 import Select from '../components/Select';
 import Alert from '../components/Alert';
 import { AtLeast } from '../util/types';
+import { StatusBar } from 'expo-status-bar';
 
 // Item fields
 const itemSchema = yup.object({
@@ -60,23 +61,25 @@ const AddItemScreen = (): JSX.Element | null => {
   const navigation = useNavigation<NavigationProps>();
   const inventory = useInventory();
   const { params } = useRoute<RouteProps<'AddItem'>>();
-  const title = params.barcode ? 'Add Item' : 'Add Child Item';
-
   // If parameter item that is passed in is not null it means that you're
   // adding a child item, otherwise it's a Parent Item
-  const initialValues: Partial<Item> = params.barcode
-    ? {
-        barcode: params.barcode,
-        main: true
-      }
-    : {
-        location: params.item?.location,
-        barcode: params.item?.barcode,
-        quantity: params.item?.quantity,
-        available: params.item?.available,
-        moveable: params.item?.moveable,
-        main: false
-      };
+  const initialValues: Partial<Item> =
+    params.barcode !== undefined
+      ? {
+          barcode: params.barcode,
+          available: true,
+          moveable: true,
+          main: true
+        }
+      : {
+          location: params.item?.location,
+          barcode: params.item?.barcode,
+          quantity: params.item?.quantity,
+          available: params.item?.available,
+          moveable: params.item?.moveable,
+          main: false
+        };
+  const title = initialValues.main ? 'Add Item' : 'Add Child Item';
 
   // back press button
   const confirmBackPress = () => {
@@ -181,6 +184,7 @@ const AddItemScreen = (): JSX.Element | null => {
     dirty
   }: FormikProps<Readonly<Partial<Item>>>) => (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+      <StatusBar style="dark" />
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
       {/* back press button UI */}
       <BackTitleHeader
@@ -404,7 +408,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16
   },
   input: {
-    marginVertical: 12
+    marginVertical: 16
   },
   multilineInput: {
     lineHeight: 20

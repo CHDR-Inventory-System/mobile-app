@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16
   },
   input: {
-    marginVertical: 12
+    marginVertical: 16
   },
   multilineInput: {
     lineHeight: 20
