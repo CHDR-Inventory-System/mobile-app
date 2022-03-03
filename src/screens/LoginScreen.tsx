@@ -32,6 +32,8 @@ const credentialSchema = yup.object({
   password: yup.string().required('Your password is required')
 });
 
+const validRoles = ['super', 'admin'];
+
 const LoginScreen = (): JSX.Element => {
   const loader = useLoader();
 
@@ -43,10 +45,14 @@ const LoginScreen = (): JSX.Element => {
     loader.startLoading();
 
     try {
-      await user.login(credentials.email, credentials.password);
-
+      const response = await user.login(credentials.email, credentials.password);
       loader.stopLoading();
-      navigation.replace('Main');
+
+      if (!validRoles.includes(response.role.toLowerCase())) {
+        Alert.alert('Insufficient Permissions', "You don't have permission to login.");
+      } else {
+        navigation.replace('Main');
+      }
     } catch (err) {
       if ((err as AxiosError).response?.status === 401) {
         Alert.alert(
@@ -55,7 +61,7 @@ const LoginScreen = (): JSX.Element => {
         );
       } else {
         Alert.alert(
-          'Server Error',
+          'Error Logging In',
           'An unexpected error occurred, please try again later.'
         );
       }

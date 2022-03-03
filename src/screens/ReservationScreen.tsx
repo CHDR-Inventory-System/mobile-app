@@ -336,7 +336,9 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: Fonts.defaultTextSize,
     marginLeft: 24,
-    paddingBottom: 24
+    paddingBottom: 24,
+    lineHeight: 22,
+    marginTop: -4
   },
   searchContainer: {
     width: '100%',

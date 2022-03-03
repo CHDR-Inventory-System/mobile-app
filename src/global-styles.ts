@@ -8,7 +8,8 @@ export const Colors = {
   success: '#3D8A00',
   text: 'rgb(35, 35, 35)',
   textMuted: 'rgb(128, 128, 128)',
-  appBackgroundColor: 'rgb(250, 250, 250)'
+  appBackgroundColor: 'rgb(250, 250, 250)',
+  selection: '#B4D7FF'
 };
 
 export const Fonts = {

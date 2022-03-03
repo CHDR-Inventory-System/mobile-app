@@ -1,30 +1,34 @@
-import React, { useEffect, useMemo } from 'react';
+// All Imports used to make this page
+import React, { useEffect } from 'react';
 import {
   Alert as RNAlert,
-  KeyboardAvoidingView,
   StyleSheet,
   View,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   BackHandler
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import BackTitleHeader from '../components/BackTitleHeader';
-import { NavigationProps, RouteProps } from '../types/navigation';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LabeledInput from '../components/LabeledInput';
 import Button from '../components/Button';
 import { Formik, FormikHandlers, FormikProps } from 'formik';
-import { Item } from '../types/API';
-import * as yup from 'yup';
-import Alert from '../components/Alert';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import LoadingOverlay from '../components/Loading';
-import Select from '../components/Select';
 import DatePickerInput from '../components/DatePickerInput';
-import useInventory from '../hooks/inventory';
-import useLoader from '../hooks/loading';
+import BackTitleHeader from '../components/BackTitleHeader';
+import { NavigationProps, RouteProps } from '../types/navigation';
 import * as Haptics from 'expo-haptics';
+import * as yup from 'yup';
+import { Item } from '../types/API';
+import LoadingOverlay from '../components/Loading';
+import useLoader from '../hooks/loading';
+import useInventory from '../hooks/inventory';
+import Select from '../components/Select';
+import Alert from '../components/Alert';
+import { AtLeast } from '../util/types';
+import { StatusBar } from 'expo-status-bar';
 
+// Item fields
 const itemSchema = yup.object({
   name: yup.string().trim().required('A name is required'),
   description: yup.string().trim().optional().nullable(true),
@@ -51,26 +55,33 @@ const itemSchema = yup.object({
     )
 });
 
-const EditItemScreen = (): JSX.Element | null => {
-  const { params } = useRoute<RouteProps<'ItemDetail'>>();
-  const inventory = useInventory();
-  const item = useMemo(() => inventory.getItem(params.itemId), [inventory.items]);
-  const navigation = useNavigation<NavigationProps>();
+const AddItemScreen = (): JSX.Element | null => {
   const loader = useLoader();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NavigationProps>();
+  const inventory = useInventory();
+  const { params } = useRoute<RouteProps<'AddItem'>>();
+  // If parameter item that is passed in is not null it means that you're
+  // adding a child item, otherwise it's a Parent Item
+  const initialValues: Partial<Item> =
+    params.barcode !== undefined
+      ? {
+          barcode: params.barcode,
+          available: true,
+          moveable: true,
+          main: true
+        }
+      : {
+          location: params.item?.location,
+          barcode: params.item?.barcode,
+          quantity: params.item?.quantity,
+          available: params.item?.available,
+          moveable: params.item?.moveable,
+          main: false
+        };
+  const title = initialValues.main ? 'Add Item' : 'Add Child Item';
 
-  // Because we can only get to this screen through the ItemDetail screen,
-  // this error shouldn't happen, this is just a safety check
-  if (!item) {
-    RNAlert.alert('Unexpected Error', 'Invalid item', [
-      {
-        text: 'Go Back',
-        onPress: () => navigation.goBack()
-      }
-    ]);
-    return null;
-  }
-
+  // back press button
   const confirmBackPress = () => {
     RNAlert.alert(
       'Unsaved Changes',
@@ -89,18 +100,36 @@ const EditItemScreen = (): JSX.Element | null => {
     );
   };
 
-  const handleHardwareBackPress = () => true;
+  // hardBackPress function
+  const handleHardwareBackPress = () => {
+    confirmBackPress();
+    return true;
+  };
 
-  const onFormSubmit = async (item: Item) => {
+  // form submit and API call
+  const onFormSubmit = async (item: Partial<Item>) => {
     loader.startLoading();
 
     try {
-      const parsedItem = itemSchema.validateSync(item);
-      await inventory.updateItem(parsedItem as Item);
+      const parsedItem = await itemSchema.validate(item, { abortEarly: false });
+
+      // if item's main is true, this means that we are trying to add a parent Item
+      if (item.main) {
+        await inventory.addItem(parsedItem);
+      } else {
+        // otherwise it's a child Item that we will add to the Parent item that already exists
+        await inventory.addChildItem(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          params.item!.ID,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          params.item!.item,
+          parsedItem as AtLeast<Item, 'name' | 'type'>
+        );
+      }
     } catch (err) {
       loader.stopLoading();
       RNAlert.alert(
-        'Error Saving Changes',
+        'Error Adding Item',
         'An unexpected error occurred, please try again.',
         [
           {
@@ -121,11 +150,9 @@ const EditItemScreen = (): JSX.Element | null => {
 
     setTimeout(() => navigation.goBack(), 300);
   };
-
-  // Formik won't call handleSubmit if there are errors in the form, however,
-  // if there are error, we want vibrate the device with haptic feedback
+  // function to handle form submittion using formik
   const formSubmitHandler = (
-    values: Item,
+    values: Partial<Item>,
     handleSubmit: FormikHandlers['handleSubmit']
   ) => {
     if (!itemSchema.isValidSync(values, { abortEarly: false })) {
@@ -155,11 +182,13 @@ const EditItemScreen = (): JSX.Element | null => {
     errors,
     handleSubmit,
     dirty
-  }: FormikProps<Readonly<Item>>) => (
+  }: FormikProps<Readonly<Partial<Item>>>) => (
     <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']} mode="margin">
+      <StatusBar style="dark" />
       <LoadingOverlay loading={loader.isLoading} text="Saving" />
+      {/* back press button UI */}
       <BackTitleHeader
-        title="Edit Item"
+        title={title}
         onBackPress={dirty ? confirmBackPress : navigation.goBack}
         style={styles.header}
       />
@@ -175,36 +204,37 @@ const EditItemScreen = (): JSX.Element | null => {
             type="info"
             style={styles.requiredFieldsAlert}
           />
+          {/* Item fields admins have to type in to add an item  */}
           <View>
             <LabeledInput
               required
+              autoCapitalize="none"
               label="Name"
               value={values.name}
+              errorMessage={errors.name}
               style={styles.input}
               onChangeText={handleChange('name')}
               returnKeyType="done"
-              errorMessage={errors.name}
             />
             <LabeledInput
-              multiline
-              autoCorrect
-              onChangeText={handleChange('description')}
               label="Description"
-              value={values.description || undefined}
               style={styles.input}
-              inputStyle={styles.multilineInput}
+              value={values.description || undefined}
+              errorMessage={errors.description}
+              onChangeText={handleChange('description')}
+              returnKeyType="done"
             />
             <LabeledInput
               required
               label="Location"
-              onChangeText={handleChange('location')}
-              value={values.location}
               style={styles.input}
-              returnKeyType="done"
+              value={values.location}
               errorMessage={errors.location}
-              disabled={!item.main}
+              returnKeyType="done"
+              onChangeText={handleChange('location')}
+              disabled={!initialValues.main}
               help={
-                !item.main
+                !initialValues.main
                   ? 'This value can only be updated through the parent item.'
                   : ''
               }
@@ -212,14 +242,14 @@ const EditItemScreen = (): JSX.Element | null => {
             <LabeledInput
               required
               label="Barcode"
-              value={values.barcode}
               style={styles.input}
-              onChangeText={handleChange('barcode')}
-              returnKeyType="done"
+              value={values.barcode}
               errorMessage={errors.barcode}
-              disabled={!item.main}
+              returnKeyType="done"
+              onChangeText={handleChange('barcode')}
+              disabled={!initialValues.main}
               help={
-                !item.main
+                !initialValues.main
                   ? 'This value can only be updated through the parent item.'
                   : ''
               }
@@ -227,15 +257,15 @@ const EditItemScreen = (): JSX.Element | null => {
             <LabeledInput
               required
               label="Quantity"
-              value={values.quantity.toString() || undefined}
+              value={values.quantity?.toString() || undefined}
               onChangeText={value => setFieldValue('quantity', value)}
               keyboardType="decimal-pad"
               returnKeyType="done"
               style={styles.input}
               errorMessage={errors.quantity}
-              disabled={!item.main}
+              disabled={!initialValues.main}
               help={
-                !item.main
+                !initialValues.main
                   ? 'This value can only be updated through the parent item.'
                   : ''
               }
@@ -245,11 +275,11 @@ const EditItemScreen = (): JSX.Element | null => {
               label="Availability"
               sheetTitle="If an item is unavailable, users will not be able to reserve or checkout the item."
               style={styles.input}
-              disabled={!item.main}
               defaultValueIndex={values.available ? 0 : 1}
+              disabled={!initialValues.main}
               inputProps={{
-                disabled: !item.main,
-                help: !item.main
+                disabled: !initialValues.main,
+                help: !initialValues.main
                   ? 'This value can only be updated through the parent item.'
                   : ''
               }}
@@ -270,12 +300,12 @@ const EditItemScreen = (): JSX.Element | null => {
               required
               label="Movable"
               style={styles.input}
-              disabled={!item.main}
               defaultValueIndex={values.moveable ? 0 : 1}
               sheetTitle="Can this item be moved? If it's stationary, this should usually be set to 'No'"
+              disabled={!initialValues.main}
               inputProps={{
-                disabled: !item.main,
-                help: !item.main
+                disabled: !initialValues.main,
+                help: !initialValues.main
                   ? 'This value can only be updated through the parent item.'
                   : ''
               }}
@@ -295,57 +325,59 @@ const EditItemScreen = (): JSX.Element | null => {
             <DatePickerInput
               mode="date"
               onChange={date => setFieldValue('purchaseDate', date)}
-              value={item.purchaseDate ? new Date(item.purchaseDate) : null}
+              value={values.purchaseDate ? new Date(values.purchaseDate) : null}
               label="Purchase Date"
               style={styles.input}
             />
             <LabeledInput
               label="Serial"
-              value={values.serial || undefined}
               style={styles.input}
               onChangeText={handleChange('serial')}
             />
             <LabeledInput
               required
               label="Type"
-              onChangeText={handleChange('type')}
-              value={values.type}
               style={styles.input}
+              value={values.type}
               errorMessage={errors.type}
+              onChangeText={handleChange('type')}
+              returnKeyType="done"
             />
             <LabeledInput
               label="Vendor Name"
-              value={values.vendorName || undefined}
               style={styles.input}
-              onChangeText={handleChange('vendorName')}
+              value={values.vendorName || undefined}
+              errorMessage={errors.vendorName}
               returnKeyType="done"
+              onChangeText={handleChange('vendorName')}
             />
             <LabeledInput
               label="Vendor Price"
+              style={styles.input}
               value={values.vendorPrice?.toString() || undefined}
               onChangeText={value => setFieldValue('vendorPrice', value)}
-              style={styles.input}
-              keyboardType="numeric"
-              returnKeyType="done"
               errorMessage={errors.vendorPrice}
+              keyboardType="decimal-pad"
+              returnKeyType="done"
             />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <Button
-        text="Save"
+        text="Add Item"
         onPress={() => formSubmitHandler(values, handleSubmit)}
         style={{
-          ...styles.saveButton,
+          ...styles.addItemButton,
           marginBottom: insets.bottom === 0 ? 8 : Platform.select({ ios: 24, android: 8 })
         }}
       />
     </SafeAreaView>
   );
 
+  // Formik props that calls functions to check fields are filled
   return (
     <Formik
-      initialValues={item}
+      initialValues={initialValues}
       onSubmit={values => onFormSubmit(values)}
       validationSchema={itemSchema}
       validateOnChange={false}
@@ -355,6 +387,7 @@ const EditItemScreen = (): JSX.Element | null => {
   );
 };
 
+// style sheets used for CSS
 const styles = StyleSheet.create({
   header: {
     zIndex: 200,
@@ -372,7 +405,7 @@ const styles = StyleSheet.create({
   multilineInput: {
     lineHeight: 20
   },
-  saveButton: {
+  addItemButton: {
     marginBottom: 8,
     marginTop: 16,
     marginHorizontal: 16
@@ -383,4 +416,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default EditItemScreen;
+export default AddItemScreen;

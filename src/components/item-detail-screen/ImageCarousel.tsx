@@ -35,16 +35,20 @@ const ImageCarousel = ({ itemId }: ImageCarouselProps): JSX.Element => {
       setActiveCarouselIndex(0);
     } catch (err) {
       console.error(err);
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => deleteImage(image)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Deleting Image',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => deleteImage(image)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     }
 
     loader.stopLoading();

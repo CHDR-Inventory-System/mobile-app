@@ -50,12 +50,13 @@ const ItemCard = ({ item, style }: ItemCardProps): JSX.Element => {
           color={item.available ? Colors.success : Colors.danger}
         />
       </View>
-      {!!item.description && (
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.descriptionSubtitle}>Description</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-      )}
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionSubtitle}>Description</Text>
+        <Text style={styles.description}>
+          {item.description || 'No description available'}
+        </Text>
+      </View>
+
       <Button text="View Item" onPress={goToItemDetailScreen} />
     </View>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BarCodeScanningResult, Camera } from 'expo-camera';
 import { BarCodeScanner as ExpoBarcodeScanner } from 'expo-barcode-scanner';
 import { View, StyleSheet, TouchableOpacity, Alert, Linking, Text } from 'react-native';
-import { FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, Entypo } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NavigationProps } from '../types/navigation';
@@ -27,14 +27,16 @@ const BarcodeScanner = (): JSX.Element => {
 
   const onBarcodeScanned = (barcode: BarCodeScanningResult) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
     setHasScanned(true);
     setFlash(false);
 
     const item = inventory.items.find(it => it.barcode === barcode.data);
 
+    // navigate to Add Item screen with barcode if item doesn't exist
     if (!item) {
-      // TODO: Go to add item screen
+      navigation.navigate('AddItem', {
+        barcode: barcode.data
+      });
       return;
     }
 
@@ -103,6 +105,11 @@ const BarcodeScanner = (): JSX.Element => {
       </TouchableOpacity>
     ) : null;
 
+  const goToAddItemScreen = () => {
+    setFlash(false);
+    navigation.navigate('AddItem', { barcode: '' });
+  };
+
   useEffect(() => {
     requestCameraPermission();
   }, []);
@@ -142,6 +149,9 @@ const BarcodeScanner = (): JSX.Element => {
         onBarCodeScanned={hasScanned ? undefined : onBarcodeScanned}
       >
         <View style={{ flex: 1 }} />
+        <View style={styles.promptContainer}>
+          {!hasScanned && <Text style={styles.prompt}>Align barcode in view</Text>}
+        </View>
         <View
           style={{
             ...styles.controls,
@@ -151,6 +161,10 @@ const BarcodeScanner = (): JSX.Element => {
         >
           <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={1}>
             <FontAwesome5 name="arrow-left" color="white" size={32} />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={goToAddItemScreen} activeOpacity={1}>
+            <Entypo name="plus" size={48} color="white" />
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => setFlash(!isFlashOn)} activeOpacity={1}>
@@ -192,6 +206,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 2,
     flexDirection: 'column'
+  },
+  promptContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  prompt: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: Fonts.subtitle,
+    fontSize: 24
   }
 });
 

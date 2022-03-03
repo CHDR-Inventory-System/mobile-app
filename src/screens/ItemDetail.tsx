@@ -35,7 +35,6 @@ const ItemDetail = (): JSX.Element | null => {
   // Because the inventory might be a large array to sort through, we need to
   // make sure we only search through it if an item in the inventory changes
   const item = useMemo(() => inventory.getItem(params.itemId), [inventory.items]);
-
   const { showActionSheetWithOptions } = useActionSheet();
   const [isCameraSheetShowing, setCameraSheetShowing] = useState(false);
   const navigation = useNavigation<NavigationProps>();
@@ -73,7 +72,13 @@ const ItemDetail = (): JSX.Element | null => {
     return (
       <View style={styles.itemProperty}>
         <Text style={styles.itemPropertyName}>{property}:</Text>
-        <Text style={styles.itemPropertyValue}>{value}</Text>
+        <Text
+          selectable
+          selectionColor={Colors.selection}
+          style={styles.itemPropertyValue}
+        >
+          {value}
+        </Text>
       </View>
     );
   };
@@ -111,16 +116,20 @@ const ItemDetail = (): JSX.Element | null => {
     } catch (err) {
       console.error(err);
       loader.stopLoading();
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => deleteItem()
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Deleting Item',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => deleteItem()
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
       return;
     }
 
@@ -166,16 +175,20 @@ const ItemDetail = (): JSX.Element | null => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error(err);
-      Alert.alert('Server Error', 'An unexpected error occurred, please try again.', [
-        {
-          text: 'Retry',
-          onPress: () => uploadImage(image)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]);
+      Alert.alert(
+        'Error Uploading Image',
+        'An unexpected error occurred, please try again.',
+        [
+          {
+            text: 'Retry',
+            onPress: () => uploadImage(image)
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     }
 
     loader.stopLoading();
@@ -263,8 +276,10 @@ const ItemDetail = (): JSX.Element | null => {
     );
   };
 
+  // addChildren button call
   const addChildItem = async () => {
-    console.error('Not implemented');
+    // go to AddItem screen with item and barcode as parameters to get added to Parent Item
+    navigation.navigate('AddItem', { item });
   };
 
   return (
