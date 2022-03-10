@@ -293,6 +293,7 @@ const EditItemScreen = (): JSX.Element | null => {
               ]}
             />
             <DatePickerInput
+              useUtc
               mode="date"
               onChange={date => setFieldValue('purchaseDate', date)}
               value={item.purchaseDate ? new Date(item.purchaseDate) : null}

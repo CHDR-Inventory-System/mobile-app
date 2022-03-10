@@ -121,6 +121,10 @@ const CreateReservationScreen = (): JSX.Element => {
           errorTitle = 'Invalid Email';
           errorMessage = "Couldn't find a user with this email.";
           break;
+        case 409:
+          errorTitle = "Couldn't Create Reservation";
+          errorMessage = `${values.email.trim()} already has a reservation for this item.`;
+          break;
         default:
           errorTitle = 'Unexpected Error';
           errorMessage = 'An unexpected error occurred, please try again.';
