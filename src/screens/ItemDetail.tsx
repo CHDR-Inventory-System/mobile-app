@@ -308,7 +308,8 @@ const ItemDetail = (): JSX.Element | null => {
           {renderItemProperty('Created', moment.utc(item.created).format('MMMM Do YYYY'))}
           {renderItemProperty(
             'Retired Date',
-            item.retiredDateTime && moment.utc(item.retiredDateTime).format('MMMM Do YYYY')
+            item.retiredDateTime &&
+              moment.utc(item.retiredDateTime).format('MMMM Do YYYY')
           )}
           {renderItemProperty(
             'Purchase Date',
