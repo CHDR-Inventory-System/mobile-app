@@ -50,6 +50,12 @@ const LoginScreen = (): JSX.Element => {
 
       if (!validRoles.includes(response.role.toLowerCase())) {
         Alert.alert('Insufficient Permissions', "You don't have permission to login.");
+      } else if (!response.verified) {
+        Alert.alert(
+          'Verify Your Account',
+          "Looks like you haven't verified your account yet. " +
+            'Check your email for a link to verify your account'
+        );
       } else {
         navigation.replace('Main');
       }

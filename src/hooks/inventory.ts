@@ -158,7 +158,7 @@ const useInventory = (): UseInventoryHook => {
   };
 
   return {
-    items: state,
+    items: state || [],
     init,
     setItems,
     updateItem,

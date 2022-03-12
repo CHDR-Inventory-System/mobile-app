@@ -1,4 +1,5 @@
 // This file contains a collection of utility types
+import type { JwtPayload } from 'jwt-decode';
 
 /**
  * A utility that makes all properties of a type optional except
@@ -13,3 +14,7 @@
  * ```
  */
 export type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+export interface UserJWT extends JwtPayload {
+  csrf: string;
+}
