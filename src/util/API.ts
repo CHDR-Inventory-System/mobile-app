@@ -179,6 +179,14 @@ class API {
     const response = await axios.post('/users/logout');
     return response.data;
   }
+
+  static async resendVerificationEmail(email: string): Promise<void> {
+    const response = await axios.post('/users/resendVerificationEmail', {
+      email
+    });
+
+    return response.data;
+  }
 }
 
 export default API;

@@ -1,11 +1,14 @@
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import UserContext from '../contexts/UserContext';
 import API from '../util/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types/API';
 
 type UseUserHook = {
-  readonly state: Readonly<User>;
+  readonly state: Readonly<User> & {
+    readonly firstName: string;
+    readonly lastName: string;
+  };
   /**
    * Makes a call to the API to log a user in. If successful, this also sets
    * the `user` field in {@link AsyncStorage} to the value of the current user.
@@ -14,6 +17,7 @@ type UseUserHook = {
    */
   login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
 };
 
 const useUser = (): UseUserHook => {
@@ -27,6 +31,10 @@ const useUser = (): UseUserHook => {
   }
 
   const { state, dispatch } = context;
+  const [firstName, ...lastName] = useMemo(
+    () => (state.fullName ? state.fullName.split(' ') : []),
+    [state.fullName]
+  );
 
   const login = async (email: string, password: string): Promise<User> => {
     const user = await API.login(email, password);
@@ -61,10 +69,19 @@ const useUser = (): UseUserHook => {
     dispatch({ type: 'LOG_OUT' });
   };
 
+  const resendVerificationEmail = async (email: string): Promise<void> => {
+    await API.resendVerificationEmail(email);
+  };
+
   return {
-    state,
+    state: {
+      ...state,
+      firstName: firstName || '',
+      lastName: lastName.join(' ') || ''
+    },
     login,
-    logout
+    logout,
+    resendVerificationEmail
   };
 };
 
