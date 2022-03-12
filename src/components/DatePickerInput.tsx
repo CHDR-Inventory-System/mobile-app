@@ -11,6 +11,7 @@ import moment from 'moment';
 type Display = IOSNativeProps['display'] | AndroidNativeProps['display'];
 
 type DatePickerInputProps = {
+  useUtc?: boolean;
   display?: Display;
   mode?: 'date' | 'time' | 'datetime';
   required?: boolean;
@@ -21,6 +22,11 @@ type DatePickerInputProps = {
   minimumDate?: Date;
   maximumDate?: Date;
   inputProps?: Partial<LabeledInputProps>;
+};
+
+const displayModes = {
+  android: new Set<Display>([undefined, 'default', 'spinner', 'calendar', 'clock']),
+  ios: new Set<Display>([undefined, 'default', 'spinner', 'compact', 'inline'])
 };
 
 /**
@@ -37,14 +43,11 @@ const DatePickerInput = ({
   onChange,
   minimumDate,
   maximumDate,
+  useUtc,
   mode = 'date'
 }: DatePickerInputProps): JSX.Element => {
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(value);
-  const displayModes = {
-    android: new Set<Display>([undefined, 'default', 'spinner', 'calendar', 'clock']),
-    ios: new Set<Display>([undefined, 'default', 'spinner', 'compact', 'inline'])
-  };
 
   const onConfirmDate = (date: Date) => {
     setSelectedDate(date);
@@ -57,7 +60,7 @@ const DatePickerInput = ({
       return '';
     }
 
-    const date = moment(selectedDate);
+    const date = useUtc ? moment.utc(selectedDate) : moment(selectedDate);
 
     switch (mode) {
       case 'time':

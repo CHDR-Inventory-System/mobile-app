@@ -108,13 +108,13 @@ const ReservationListItem = ({
         <View style={styles.reservationRow}>
           <Text style={styles.reservationRowProperty}>Checkout:</Text>
           <Text style={styles.reservationRowValue}>
-            {moment(reservation.startDateTime).format('MMMM Do YYYY h:mm A')}
+            {moment.utc(reservation.startDateTime).format('MMMM Do YYYY h:mm A')}
           </Text>
         </View>
         <View style={styles.reservationRow}>
           <Text style={styles.reservationRowProperty}>Return:</Text>
           <Text style={styles.reservationRowValue}>
-            {moment(reservation.endDateTime).format('MMMM Do YYYY h:mm A')}
+            {moment.utc(reservation.endDateTime).format('MMMM Do YYYY h:mm A')}
           </Text>
         </View>
       </View>

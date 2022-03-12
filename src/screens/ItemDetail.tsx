@@ -305,14 +305,15 @@ const ItemDetail = (): JSX.Element | null => {
           {renderItemProperty('Movable', item.moveable ? 'Yes' : 'No')}
           {renderItemProperty('Serial', item.serial)}
           {renderItemProperty('Type', item.type)}
-          {renderItemProperty('Created', moment(item.created).format('MMMM Do YYYY'))}
+          {renderItemProperty('Created', moment.utc(item.created).format('MMMM Do YYYY'))}
           {renderItemProperty(
             'Retired Date',
-            item.retiredDateTime && moment(item.retiredDateTime).format('MMMM Do YYYY')
+            item.retiredDateTime &&
+              moment.utc(item.retiredDateTime).format('MMMM Do YYYY')
           )}
           {renderItemProperty(
             'Purchase Date',
-            item.purchaseDate && moment(item.purchaseDate).format('MMMM Do YYYY')
+            item.purchaseDate && moment.utc(item.purchaseDate).format('MMMM Do YYYY')
           )}
           {renderItemProperty('Vendor Name', item.vendorName)}
           {renderItemProperty(
