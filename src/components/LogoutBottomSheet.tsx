@@ -17,6 +17,7 @@ type LogoutBottomSheetProps = {
 const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
   const user = useUser();
+  const userInitials = user.state.firstName[0] + user.state.lastName[0];
 
   // Need to modify the backdrop so that it shows up if we only have one snap point
   // https://github.com/gorhom/react-native-bottom-sheet/issues/585#issuecomment-900619713
@@ -62,7 +63,7 @@ const LogoutBottomSheet = ({ onClose }: LogoutBottomSheetProps): JSX.Element => 
       >
         <View style={styles.contentContainer}>
           <View style={styles.accountRow}>
-            <Avatar text="JS" size={52} textStyle={styles.avatarText} />
+            <Avatar text={userInitials} size={52} textStyle={styles.avatarText} />
             <View style={styles.textRow}>
               <Text style={styles.subtitleText}>Signed in as:</Text>
               <Text style={styles.emailText}>{user.state.email}</Text>

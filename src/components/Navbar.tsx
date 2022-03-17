@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { Colors, Fonts } from '../global-styles';
 import Avatar from './Avatar';
@@ -10,15 +10,7 @@ const Navbar = (): JSX.Element => {
   const [isSheetShowing, setSheetShowing] = useState(false);
   const insets = useSafeAreaInsets();
   const user = useUser();
-  const userInitials = useMemo(() => {
-    if (!user.state.fullName) {
-      return '';
-    }
-
-    const [firstName, lastName] = user.state.fullName.split(' ');
-
-    return firstName[0] + lastName[0];
-  }, [user]);
+  const userInitials = user.state.firstName[0] + user.state.lastName[0];
 
   return (
     <View

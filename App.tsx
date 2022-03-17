@@ -24,6 +24,9 @@ import ReservationScreen from './src/screens/ReservationScreen';
 import CreateReservationScreen from './src/screens/CreateReservationScreen';
 import { ReservationProvider } from './src/contexts/ReservationContext';
 import AddItemScreen from './src/screens/AddItemScreen';
+import jwtDecode from 'jwt-decode';
+import { UserJWT } from './src/util/types';
+import API from './src/util/API';
 
 const Stack = createNativeStackNavigator<RootStackParamsList>();
 
@@ -56,22 +59,29 @@ const App = (): JSX.Element => {
     'Gotham-Bold': require('./assets/fonts/Gotham-Bold.ttf')
   });
 
-  const loadUserFromStorage = () => {
+  const loadUserFromStorage = async () => {
     // If the user was previously logged in, grab their credentials
     // from AsyncStorage, set the the user context object,
     // then take them to the main screen
-    AsyncStorage.getItem('user')
-      .then(user => JSON.parse(user || '') as User)
-      .then(user => {
-        if (user.token) {
-          setInitialUserValue(user);
-          setInitialRoute('Main');
-        }
-      })
-      .catch(() => {
-        // This catch block is needed to silence "unhandled rejection" errors
-      })
-      .finally(loader.stopLoading);
+    try {
+      const user = await AsyncStorage.getItem('user');
+      const parsedUser = JSON.parse(user || '') as User;
+      const jwt = jwtDecode<UserJWT>(parsedUser.token);
+      const time = new Date();
+
+      time.setMinutes(time.getMinutes() - 30);
+
+      // Only log the user in if their stored JWT isn't within 30
+      // minutes of its expiration time
+      if (jwt.exp !== undefined && +time < jwt.exp * 1000) {
+        setInitialUserValue(parsedUser);
+        setInitialRoute('Main');
+      }
+    } catch (err) {
+      console.log('User not found in storage', err);
+    }
+
+    loader.stopLoading();
   };
 
   const stack = (
@@ -137,6 +147,7 @@ const App = (): JSX.Element => {
   );
 
   useEffect(() => {
+    API.setupAxiosInterceptor();
     loadUserFromStorage();
   }, []);
 

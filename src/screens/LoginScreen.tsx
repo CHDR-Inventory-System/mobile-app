@@ -40,6 +40,32 @@ const LoginScreen = (): JSX.Element => {
   const navigation = useNavigation<NavigationProps>();
   const user = useUser();
 
+  const resendVerificationEmail = async (email: string) => {
+    loader.startLoading();
+
+    try {
+      await user.resendVerificationEmail(email);
+      Alert.alert(
+        'Check Your Email',
+        `An email was sent to ${email}. Check your email for a link to verify your account.`
+      );
+    } catch {
+      Alert.alert(
+        'Error Sending Email',
+        'An error occurred while sending your verification email. Please try again.',
+        [
+          { text: 'Close' },
+          {
+            text: 'Retry',
+            onPress: () => resendVerificationEmail(email)
+          }
+        ]
+      );
+    }
+
+    loader.stopLoading();
+  };
+
   const login = async (credentials: Credentials) => {
     Keyboard.dismiss();
     loader.startLoading();
@@ -50,6 +76,20 @@ const LoginScreen = (): JSX.Element => {
 
       if (!validRoles.includes(response.role.toLowerCase())) {
         Alert.alert('Insufficient Permissions', "You don't have permission to login.");
+      } else if (!response.verified) {
+        Alert.alert(
+          'Verify Your Account',
+          "Looks like you haven't verified your account yet. " +
+            'Check your email for a link to verify your account ' +
+            'or click "Resend" to send another verification email.',
+          [
+            { text: 'Close' },
+            {
+              text: 'Resend',
+              onPress: () => resendVerificationEmail(credentials.email)
+            }
+          ]
+        );
       } else {
         navigation.replace('Main');
       }
@@ -131,7 +171,7 @@ const LoginScreen = (): JSX.Element => {
                     </View>
                   </View>
                   <Button
-                    text="Login"
+                    text={loader.isLoading ? 'Loading...' : 'Login'}
                     onPress={() => formSubmitHandler(values, handleSubmit)}
                     style={styles.loginButton}
                     disabled={loader.isLoading}
