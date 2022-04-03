@@ -10,6 +10,10 @@
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "ignorePatterns": [
+    "ios/**/*",
+    "android/**/*"
+  ],
   "settings": {
     "react": {
       "version": "detect"

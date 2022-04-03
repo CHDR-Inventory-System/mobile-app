@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "chdr-inventory",
+    "name": "CHDR Inventory",
     "slug": "chdr-inventory",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,13 +17,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chdr.inventory"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.chdr.inventory"
     },
     "web": {
       "favicon": "./assets/favicon.png"
