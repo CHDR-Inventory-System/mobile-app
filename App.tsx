@@ -49,7 +49,6 @@ const WithProviders = ({ children, initialUserValue }: WithProvidersProps) => (
   </SafeAreaProvider>
 );
 
-
 const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
@@ -82,7 +81,7 @@ const App = (): JSX.Element => {
       }
     } catch (err) {
       console.log('User not found in storage', err);
-    } finally{
+    } finally {
       loader.stopLoading();
     }
   };
