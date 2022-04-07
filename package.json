@@ -1,11 +1,10 @@
 {
-  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject",
+    "start": "react-native start",
+    "android:debug": "react-native run-android --variant debug",
+    "android:prod": "react-native run-android --variant release",
+    "ios:debug": "react-native run-ios --configuration Debug",
+    "ios:prod": "react-native run-ios --configuration Production",
     "prepare": "husky install",
     "precommit": "lint-staged",
     "lint": "eslint .",
@@ -14,7 +13,7 @@
     "format:check": "prettier --check \"./**/*{.ts,.tsx}\""
   },
   "engines": {
-    "node": "^14.17.0 || >=16.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "@expo/react-native-action-sheet": "^3.13.0",
@@ -49,7 +48,9 @@
     "react-native-screens": "~3.8.0",
     "react-native-snap-carousel": "^3.9.1",
     "react-native-web": "0.17.1",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "expo-splash-screen": "~0.13.5",
+    "expo-updates": "~0.10.13"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -67,5 +68,7 @@
     "prettier": "^2.4.1",
     "typescript": "~4.3.5"
   },
-  "private": true
+  "private": true,
+  "name": "chdr-mobile-app",
+  "version": "1.0.0"
 }

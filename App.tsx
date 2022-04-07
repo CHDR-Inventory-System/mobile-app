@@ -52,7 +52,7 @@ const WithProviders = ({ children, initialUserValue }: WithProvidersProps) => (
 const App = (): JSX.Element => {
   const [initialRoute, setInitialRoute] = useState<keyof RootStackParamsList>('Login');
   const [initialUserValue, setInitialUserValue] = useState<User | undefined>(undefined);
-  const loader = useLoader(true);
+  const loader = useLoader(false);
   const [fontsLoaded, fontLoadError] = useFonts({
     'Gotham-Book': require('./assets/fonts/Gotham-Book.ttf'),
     'Gotham-Medium': require('./assets/fonts/Gotham-Medium.ttf'),
@@ -60,6 +60,8 @@ const App = (): JSX.Element => {
   });
 
   const loadUserFromStorage = async () => {
+    loader.startLoading();
+
     // If the user was previously logged in, grab their credentials
     // from AsyncStorage, set the the user context object,
     // then take them to the main screen
@@ -79,9 +81,9 @@ const App = (): JSX.Element => {
       }
     } catch (err) {
       console.log('User not found in storage', err);
+    } finally {
+      loader.stopLoading();
     }
-
-    loader.stopLoading();
   };
 
   const stack = (
