@@ -1,10 +1,10 @@
 {
   "scripts": {
     "start": "react-native start",
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "web": "expo start --web",
-    "eject": "expo eject",
+    "android:debug": "react-native run-android --variant debug",
+    "android:prod": "react-native run-android --variant release",
+    "ios:debug": "react-native run-ios --configuration Debug",
+    "ios:prod": "react-native run-ios --configuration Production",
     "prepare": "husky install",
     "precommit": "lint-staged",
     "lint": "eslint .",
